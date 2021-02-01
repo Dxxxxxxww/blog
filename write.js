@@ -1,52 +1,50 @@
-function filterMenuRoutes(router) {
-  debugger
-  let result = []
-  result = router.filter((r) => {
-    if (r.children && r.children.length > 0) {
-      r.children = result = filterMenuRoutes(r.children)
-      return result
-    } else {
-      return !r.meta.isFunctional
+function filterAsyncRoutes(menus, parentAction = '') {
+  const res = []
+
+  menus.forEach((menu) => {
+    // const component = parentAction
+    //   ? () => import(`@/views/${parentAction}/${menu.popedomAction}/InfoMng`)
+    //   : Layout
+    const tmp = {
+      path: menu.popedomAction,
+      name: menu.popedomAction.slice(1),
+      // component,
     }
+    if (menu.children?.length) {
+      tmp.children = filterAsyncRoutes(menu.children)
+    }
+    res.push(tmp)
   })
-  return result
+
+  return res
 }
 
 const asyncRoutes = [
   {
-    path: '/merchant',
-    name: 'Merchant',
+    popedomAction: '/systemManage', // 一级菜单
+    popedomIconcls: 'xitong', //  一级菜单icon
+    popedomId: '01',
+    popedomName: '系统管理', // 一级菜单名称
+    popedomPid: '0',
     children: [
+      // 二级菜单
       {
-        path: 'infoMng',
-        name: 'InfoMng',
-        meta: {
-          isFunctional: false,
-        },
+        popedomAction: '/organization', // 二级菜单
+        popedomId: '0101',
+        popedomName: '机构信息管理', // 二级菜单名称
+        popedomPid: '01',
+        popedomButtons: ['010101', '010102'], //  当前用户拥有的按钮权限
       },
       {
-        path: 'infoMng/add',
-        name: 'InfoMngAdd',
-        meta: {
-          isFunctional: true, // 功能模块
-        },
+        popedomAction: '/organization',
+        popedomId: '0101',
+        popedomName: '机构信息管理',
+        popedomPid: '01',
+        popedomButtons: [],
       },
     ],
-    meta: {
-      icon: '',
-      isFunctional: false,
-    },
-  },
-  {
-    path: '/auditRecord',
-    name: 'AuditRecord',
-    meta: {
-      icon: '',
-      // roles: []
-      isFunctional: false,
-    },
   },
 ]
 
-const abc = filterMenuRoutes(asyncRoutes)
+const abc = filterAsyncRoutes(asyncRoutes)
 console.log(abc)
