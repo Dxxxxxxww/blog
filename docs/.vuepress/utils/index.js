@@ -21,10 +21,15 @@ function requireSidebar() {
     .readdirSync(path.join(`${rootPath}\/docs`))
     .filter((fileName) => fileName.endsWith('-module'))
 
+  function getSidebarName(folder) {
+    const lastIndex = folder.lastIndexOf('-')
+    return folder.slice(0, lastIndex)
+  }
+
   return folderList.reduce(
     (result, folder) => (
       result.push({
-        title: folder.split('-')[0],
+        title: getSidebarName(folder),
         children: requireChildren(folder),
       }),
       result
