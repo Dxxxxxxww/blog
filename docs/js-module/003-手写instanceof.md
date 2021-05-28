@@ -1,4 +1,4 @@
-# 手写之四 instanceof
+# 手写之三 instanceof
 
 ## ◆ instanceof
 ```js

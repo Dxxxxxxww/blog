@@ -1,4 +1,4 @@
-# 手写之三 reduce
+# 手写之四 reduce
 
 ## ◆ reduce
 ```js
