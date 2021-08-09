@@ -19,13 +19,13 @@ useEffect(() => {
 按照 react 官方文档的解释：
 
 它跟 class 组件中的 componentDidMount、componentDidUpdate 和 componentWillUnmount 具有相同的用途，只不过被合并成了一个 API。
-默认情况下，React 会在每次 渲染后(强调!!!) 调用副作用函数 —— 包括第一次渲染的时候。
+默认情况下，React 会在<b>每次渲染后(强调!!!) 调用副作用函数 —— 包括第一次渲染的时候。</b>
 
 等同于 vue3 中的 onMounted，onUpdated, computed。
 
 ———
 
-不同的是，useEffect 还会返回一个函数来指定如何“清除”副作用。React 会在组件销毁时执行返回的函数，然后在后续渲染时重新执行 useEffect。
+不同的是，useEffect 还会返回一个函数来指定如何“清除”副作用。React 会在<b>组件销毁时执行返回的函数</b>，然后在后续渲染时重新执行 useEffect。
 
 这里类比 vue2 来理解就是，在 mounted 中使用 $once 监听 hook:beforeDestroy 事件，这样就不需要在 beforeDestroy 写销毁逻辑。
 
@@ -50,7 +50,7 @@ mounted() {
 
 useEffect 还可以传递第二个参数，旨在通过跳过 Effect 进行性能优化。当第二个参数在两次渲染中没有发生变化，则 React 会跳过对该 effect 的调用。
 
-如果数组中有多个元素，即使只有一个元素发生变化，React 也会执行 effect。
+如果数组中有多个元素，即使只有一个元素发生变化，React 也会执行 effect。<b>注意：它会在调用一个新的 effect 之前对前一个 effect 进行清理（执行返回的函数）。</b>
 ```js
 useEffect(() => {
   document.title = `You clicked ${count} times`;
