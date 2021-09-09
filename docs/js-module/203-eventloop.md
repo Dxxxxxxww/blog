@@ -9,7 +9,7 @@
 
 [学习资料2](https://juejin.cn/post/6844903553795014663#heading-21)
 
-## ◆ promise
+## 一、promise
 
 ```js
 var p1 = new Promise((resolve, reject) => {

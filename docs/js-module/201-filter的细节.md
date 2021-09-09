@@ -1,6 +1,6 @@
 # filter 的细节
 
-## ◆ filter
+## 一、filter
 filter 无法返回 index，永远返回的是数组项。
 ```js
 var numbers = [1, 2, 3];
@@ -13,7 +13,7 @@ var b = numbers.filter(function (n, i) {
 b // [2, 3]
 ```
 
-## ◆ 替代方案
+## 二、替代方案
 如果想遍历数组返回某项 index 的话，可以使用如下替代方案：
 1. 使用 es6 findIndex；
 2. 使用 map；

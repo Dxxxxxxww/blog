@@ -1,6 +1,6 @@
 # 手写之四 reduce
 
-## ◆ reduce
+## 一、reduce
 ```js
 // 先做环境嗅探
 Array.prototype.reduce =

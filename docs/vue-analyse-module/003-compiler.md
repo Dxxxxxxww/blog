@@ -1,5 +1,5 @@
 # vue compiler 编译
-## ◆ 理顺文件脉络
+## 一、理顺文件脉络
 在 entry-runtime-with-compiler 文件中，vue 对 $mount 函数复写了一遍，其中调用了 compileToFunctions 函数来对 template 进行编译。
 
 compileToFunctions 位于 platforms/web/compiler/index

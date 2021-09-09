@@ -1,6 +1,6 @@
 # 格式化金额
 
-## ◆ JS 原生就支持格式化金额
+## 一、JS 原生就支持格式化金额
 21/04/02 更新
 ```js
 Number.prototype.toLocaleString()
@@ -8,7 +8,7 @@ Number.prototype.toLocaleString()
 let number = 123456.789
 number.toLocaleString('en-us') // "123,456.789"
 ```
-## ◆ 以 ',' 分割
+## 二、以 ',' 分割
 
 ```js
 function a(str) {

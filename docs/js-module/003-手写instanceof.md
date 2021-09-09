@@ -1,6 +1,6 @@
 # 手写之三 instanceof
 
-## ◆ instanceof
+## 一、instanceof
 ```js
 function instanceofMock(l, r) {
   // 如果是基本类型直接返回 false

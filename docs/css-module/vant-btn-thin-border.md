@@ -1,12 +1,12 @@
 # vant按钮细边框原理
 
-## ◆ 疑问
+## 一、疑问
 vant 是如何做到按钮的边框小于 1px 的？
 
-## ◆ 结论
+## 二、结论
 先说结论，vant 是通过 2倍大小的 css伪元素 再通过缩放来达到效果的
 
-## ◆ 代码
+## 三、代码
 
 ```html
 <button class="van-button van-button--primary van-button--normal van-button--plain van-button--hairline van-hairline--surround">

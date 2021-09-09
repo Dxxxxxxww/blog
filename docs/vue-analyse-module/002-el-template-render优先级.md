@@ -1,6 +1,6 @@
 # el-template-render 优先级
 
-## ◆ 代码
+## 一、代码
 
 在 <code>entry-runtime-with-compiler.js</code> 中，我们可以发现如下代码：
 

@@ -1,13 +1,13 @@
 # react 初识
 
-# ◆ react hooks
-一、State Hook
+# 一、react hooks
+1. State Hook
 ```js
 const [count, setCount] = useState(0);
 // 等同于 vue3 的 const count = ref(0)
 // 只不过针对 count 的修改操作，需要使用 useState 返回的操作函数—— setCount。
 ```
-二、Effect Hook
+2. Effect Hook
 ```js
 useEffect(() => {
   ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
@@ -31,8 +31,8 @@ useEffect(() => {
 
 在 beforeDestroy 写销毁逻辑的问题有两个：
 
-1. 它需要在这个组件实例中保存这个 picker，如果可以的话最好只有生命周期钩子可以访问到它。这并不算严重的问题，但是它可以被视为杂物。
-2. 我们的建立代码独立于我们的清理代码，这使得我们比较难于程序化地清理我们建立的所有东西。
+1). 它需要在这个组件实例中保存这个 picker，如果可以的话最好只有生命周期钩子可以访问到它。这并不算严重的问题，但是它可以被视为杂物。
+2). 我们的建立代码独立于我们的清理代码，这使得我们比较难于程序化地清理我们建立的所有东西。
 
 而使用 $once 这种程序化的事件侦听器 就能避免以上两个问题。
 ```js
