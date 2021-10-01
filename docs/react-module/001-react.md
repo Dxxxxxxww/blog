@@ -144,6 +144,14 @@ export const useDocumentTitle = (
 };
 ```
 
-4. useCallback
+4. useMemo
+
+官方文档：把“创建”函数和依赖项数组作为参数传入 useMemo，它仅会在某个依赖项改变时才重新计算 memoized 值。这种优化有助于避免在每次渲染时都进行高开销的计算。
+
+个人理解：使用 useMemo 的返回值，相当于是只在初次渲染时建立了一个缓存的公共常量对象，以后每次的修改都会取这个对象。
+
+注：传入 useMemo 的函数会在渲染期间执行。如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
+
+5. useCallback
 
 生成闭包
