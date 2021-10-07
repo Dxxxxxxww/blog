@@ -1,17 +1,39 @@
-// function flowRight(...args) {
-//   return function(value) {
-//     return args.reverse().reduce((initVal, current) => {
-//       return current(initVal)
-//     }, value)
-//   }
-// }
-const flowRight = (...args) => (value) =>
-  args.reduce((initVal, current) => current(initVal), value)
+class Left {
+  static of(value) {
+    return new Left(value)
+  }
 
-const fi = (arr) => arr[0]
-const re = (arr) => arr.reverse()
-const tu = (str) => str.toUpperCase()
+  constructor(value) {
+    this._value = value
+  }
 
-const a = ['t', 'r', 'y']
+  map() {
+    return this
+  }
+}
 
-console.log(flowRight(re, fi, tu)(a))
+class Right {
+  static of(value) {
+    return new Right(value)
+  }
+
+  constructor(value) {
+    this._value = value
+  }
+
+  map(fn) {
+    return Right.of(fn(this._value))
+  }
+}
+
+function paseJson(str) {
+  try {
+    return Right.of(JSON.parse(str))
+  } catch (error) {
+    return Left.of(error)
+  }
+}
+
+const p = paseJson('{ "name": "wahaha" }')
+
+console.log(p.map((x) => x.name.toUpperCase()))
