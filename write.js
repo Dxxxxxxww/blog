@@ -1,39 +1,48 @@
-class Left {
+const flowRight = (...args) => (value) =>
+  args.reverse().reduce((initVal, current) => current(initVal), value)
+
+class IO {
   static of(value) {
-    return new Left(value)
+    return new IO(function() {
+      return value
+    })
   }
 
-  constructor(value) {
-    this._value = value
-  }
-
-  map() {
-    return this
-  }
-}
-
-class Right {
-  static of(value) {
-    return new Right(value)
-  }
-
-  constructor(value) {
-    this._value = value
+  constructor(fn) {
+    this._value = fn
   }
 
   map(fn) {
-    return Right.of(fn(this._value))
+    return new IO(flowRight(fn, this._value))
+  }
+
+  join() {
+    return this._value()
+  }
+
+  // 组合函数
+  flatMap(fn) {
+    return this.map(fn).join()
   }
 }
 
-function paseJson(str) {
-  try {
-    return Right.of(JSON.parse(str))
-  } catch (error) {
-    return Left.of(error)
-  }
+const fa = () => {
+  return new IO(() => {
+    console.log('fa')
+    return 1
+  })
 }
 
-const p = paseJson('{ "name": "wahaha" }')
+const fb = (x) => {
+  return new IO(() => {
+    console.log('fb')
+    return x
+  })
+}
 
-console.log(p.map((x) => x.name.toUpperCase()))
+const res = fa()
+  .map((x) => x + 2) // 这里可以嵌套许多 map 函数，因为最终都会合并成一个函数
+  .flatMap(fb)
+  .join()
+
+console.log(res)
