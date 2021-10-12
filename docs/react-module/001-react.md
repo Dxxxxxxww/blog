@@ -42,13 +42,13 @@ useEffect(() => {
 它跟 class 组件中的 componentDidMount、componentDidUpdate 和 componentWillUnmount 具有相同的用途，只不过被合并成了一个 API。
 默认情况下，React 会在<b>每次渲染后(强调!!!) 调用副作用函数 —— 包括第一次渲染的时候。</b>
 
-等同于 vue3 中的 onMounted，onUpdated, computed。
+等同于 vue 中的 onMounted，onUpdated, watch。
 
 ———
 
 不同的是，useEffect 还会返回一个函数来指定如何“清除”副作用。React 会在<b>组件销毁时执行返回的函数</b>，然后在后续渲染时重新执行 useEffect。
 
-这里类比 vue2 来理解就是，在 mounted 中使用 \$once 监听 hook:beforeDestroy 事件，这样就不需要在 beforeDestroy 写销毁逻辑。
+这里类比 vue 来理解就是，在 mounted 中使用 \$once 监听 hook:beforeDestroy 事件，这样就不需要在 beforeDestroy 写销毁逻辑。
 
 在 beforeDestroy 写销毁逻辑的问题有两个：
 
@@ -151,6 +151,8 @@ export const useDocumentTitle = (
 个人理解：使用 useMemo 的返回值，相当于是只在初次渲染时建立了一个缓存的公共常量对象，以后每次的修改都会取这个对象。
 
 注：传入 useMemo 的函数会在渲染期间执行。如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
+
+可以理解为 vue 中的 computed
 
 5. useCallback
 
