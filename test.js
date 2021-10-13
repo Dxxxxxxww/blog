@@ -1,38 +1,68 @@
-var p2 = new Promise((resolve, reject) => {
-    console.log("promise1");
-    resolve("a");
+// const p = new Promise((resolve, reject) => {
+//   // 修改状态为成功，且不可更改
+//   resolve('成功')
+//   // 修改状态为失败，且不可更改
+//   reject('失败')
+// })
+
+// p.then(
+//   (value) => {
+//     console.log(value)
+//   },
+//   (err) => {
+//     console.log(err)
+//   }
+// )
+
+const PENDING = 'pending'
+const FULFILLED = 'fulfilled'
+const REJECTED = 'rejected'
+
+class MyPromise {
+  // 状态
+  state = PENDING
+  // then 接受的参数
+  value = undefined
+  // catch 接受的参数
+  reason = undefined
+
+  constructor(callback) {
+    callback(this.resolve, this.reject)
+  }
+
+  resolve = (value) => {
+    if (this.state !== PENDING) return
+    this.state = FULFILLED
+    this.value = value
+  }
+
+  reject = (reason) => {
+    if (this.state !== PENDING) return
+    this.state = REJECTED
+    this.reason = reason
+  }
+
+  then(success, fail) {
+    if (this.state === FULFILLED) {
+      return success(this.value)
+    } else if (this.state === REJECTED) {
+      return fail(this.reason)
+    }
+  }
+}
+
+const p = new MyPromise((resolve, reject) => {
+  // 修改状态为成功，且不可更改
+  resolve('成功')
+  // 修改状态为失败，且不可更改
+  reject('失败')
 })
-    .then(val => {
-        console.log("then11", val);
-        return new Promise((resolve, reject) => {
-            console.log("promise2");
-            resolve("b");
-        })
-            .then(val => {
-                console.log("then21", val);
-                return "c";
-            })
-            .then(val => {
-                console.log("then23", val);
-                return Promise.resolve()
-                    .then(() => {
-                        console.log("then23里的 then");
-                        return "d";
-                    })
-                    .then(val => {
-                        console.log("then24", val);
-                        return "e";
-                    });
-            })
-            .then(val => {
-                console.log("then25", val);
-                return "f";
-            })
-            .then(val => {
-                console.log("then26", val);
-                return "g";
-            });
-    })
-    .then(val => {
-        console.log("then12", val);
-    });
+
+p.then(
+  (value) => {
+    console.log(value)
+  },
+  (err) => {
+    console.log(err)
+  }
+)
