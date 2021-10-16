@@ -1,68 +1,58 @@
-// const p = new Promise((resolve, reject) => {
-//   // 修改状态为成功，且不可更改
-//   resolve('成功')
-//   // 修改状态为失败，且不可更改
-//   reject('失败')
-// })
-
-// p.then(
-//   (value) => {
-//     console.log(value)
-//   },
-//   (err) => {
-//     console.log(err)
-//   }
-// )
-
-const PENDING = 'pending'
-const FULFILLED = 'fulfilled'
-const REJECTED = 'rejected'
+const PENDING = "pending";
+const FULFILLED = "fulfilled";
+const REJECTED = "rejected";
 
 class MyPromise {
-  // 状态
-  state = PENDING
-  // then 接受的参数
-  value = undefined
-  // catch 接受的参数
-  reason = undefined
+    // promise 状态
+    status = PENDING;
+    // resolve 参数
+    value = undefined;
+    // reject 参数
+    reason = undefined;
+    handleSuccess = undefined;
+    handleFail = undefined;
 
-  constructor(callback) {
-    callback(this.resolve, this.reject)
-  }
-
-  resolve = (value) => {
-    if (this.state !== PENDING) return
-    this.state = FULFILLED
-    this.value = value
-  }
-
-  reject = (reason) => {
-    if (this.state !== PENDING) return
-    this.state = REJECTED
-    this.reason = reason
-  }
-
-  then(success, fail) {
-    if (this.state === FULFILLED) {
-      return success(this.value)
-    } else if (this.state === REJECTED) {
-      return fail(this.reason)
+    constructor(callback) {
+        callback(this.resolve, this.reject);
     }
-  }
+
+    resolve = value => {
+        if (this.status === PENDING) {
+            this.status = FULFILLED;
+        }
+        this.value = value;
+        this.handleSuccess(value);
+    };
+
+    reject = reason => {
+        if (this.status === PENDING) {
+            this.status = REJECTED;
+        }
+        this.reason = reason;
+        this.handleFail(reason);
+    };
+
+    then(success, fail) {
+        if (this.status === FULFILLED) {
+            success(this.value);
+        } else if (this.status === REJECTED) {
+            fail(this.reason);
+        } else {
+            this.handleSuccess = success;
+            this.handleFail = fail;
+        }
+    }
 }
 
 const p = new MyPromise((resolve, reject) => {
-  // 修改状态为成功，且不可更改
-  resolve('成功')
-  // 修改状态为失败，且不可更改
-  reject('失败')
-})
+    setTimeout(() => {
+        resolve("成功");
+    }, 2000);
+});
 
 p.then(
-  (value) => {
-    console.log(value)
-  },
-  (err) => {
-    console.log(err)
-  }
-)
+    value => {
+        console.log(value);
+    },
+    () => {}
+);

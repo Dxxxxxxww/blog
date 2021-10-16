@@ -152,8 +152,12 @@ export const useDocumentTitle = (
 
 注：传入 useMemo 的函数会在渲染期间执行。如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
 
-可以理解为 vue 中的 computed
+可以理解为 vue 中的 computed。
+
+<b>
+如果我们定义了非基本类型想要做依赖，就要用到 useMemo 和 useCallback。
+</b>这样就能限制住非基本类型在每次渲染时的重新创建。
 
 5. useCallback
 
-生成闭包
+可以理解为特殊版本的 useMemo，专门用于函数的情况。
