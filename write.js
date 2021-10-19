@@ -1,7 +1,9 @@
-Object.prototype.a = 1
+const p = new Promise((resolve, reject) => {
+  resolve(123)
+})
 
-const obj = {
-  b: 2,
-}
-
-console.log(obj.a, obj.b)
+p.then(() => {
+  throw new Error('abc')
+}).catch(err => {
+  console.log(err)
+})
