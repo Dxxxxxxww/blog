@@ -1,9 +1,9 @@
 # react 零碎待整理
 
-## 即将删除的生命周期
+## 过时的生命周期
 
-### componentReceiveProps
+### componentWillReceiveProps
 
-官方文档：如果父组件导致组件重新渲染，即使 props 没有更改，也会调用 componentReceiveProps 方法。如果只想处理更改，请确保当前值与变更值的比较。
+官方文档：如果父组件导致组件重新渲染，即使 props 没有更改，也会调用 componentWillReceiveProps 方法。如果只想处理更改，请确保当前值与变更值的比较。
 
-结论：<b>componentReceiveProps 并不是由 props 的变化触发的，而是由父组件的更新触发的。</b>
+结论：<b>componentWillReceiveProps 并不是由 props 的变化触发的，而是由父组件的更新触发的。</b>

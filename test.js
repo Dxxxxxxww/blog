@@ -3,56 +3,130 @@ const FULFILLED = "fulfilled";
 const REJECTED = "rejected";
 
 class MyPromise {
-    // promise 状态
     status = PENDING;
-    // resolve 参数
     value = undefined;
-    // reject 参数
     reason = undefined;
-    handleSuccess = undefined;
-    handleFail = undefined;
+    handleSuccess = [];
+    handleFail = [];
 
     constructor(callback) {
-        callback(this.resolve, this.reject);
+        try {
+            callback(this.resolve, this.reject);
+        } catch (error) {
+            this.reject(error);
+        }
     }
-
+    // 更改状态，保存值供下一次 then 方法使用
     resolve = value => {
-        if (this.status === PENDING) {
-            this.status = FULFILLED;
-        }
+        if (this.status !== PENDING) return;
+        this.status = FULFILLED;
         this.value = value;
-        this.handleSuccess(value);
+        while (this.handleSuccess.length) this.handleSuccess.shift()();
     };
-
+    // 更改状态，保存值供下一次 catch 方法使用
     reject = reason => {
-        if (this.status === PENDING) {
-            this.status = REJECTED;
-        }
+        if (this.status !== PENDING) return;
+        this.status = REJECTED;
         this.reason = reason;
-        this.handleFail(reason);
+        while (this.handleFail.length) this.handleFail.shift()();
     };
-
+    // 查看 promise 状态
     then(success, fail) {
-        if (this.status === FULFILLED) {
-            success(this.value);
-        } else if (this.status === REJECTED) {
-            fail(this.reason);
-        } else {
-            this.handleSuccess = success;
-            this.handleFail = fail;
-        }
+        success = isFunc(success) ? success : value => value;
+        fail = isFunc(fail)
+            ? fail
+            : reason => {
+                  throw reason;
+              };
+        const promise2 = new MyPromise((resolve, reject) => {
+            if (this.status === FULFILLED) {
+                // 通过异步，拿到 promise2
+                setTimeout(() => {
+                    try {
+                        const res = success(this.value);
+                        resolvePromise(promise2, res, resolve, reject);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 0);
+            } else if (this.status === REJECTED) {
+                setTimeout(() => {
+                    try {
+                        const err = fail(this.reason);
+                        resolvePromise(promise2, err, resolve, reject);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 0);
+            } else {
+                this.handleSuccess.push(() => {
+                    setTimeout(() => {
+                        try {
+                            const res = success(this.value);
+                            resolvePromise(promise2, res, resolve, reject);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 0);
+                });
+                this.handleFail.push(() => {
+                    setTimeout(() => {
+                        try {
+                            const err = fail(this.reason);
+                            resolvePromise(promise2, err, resolve, reject);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 0);
+                });
+            }
+        });
+        return promise2;
     }
 }
 
-const p = new MyPromise((resolve, reject) => {
-    setTimeout(() => {
-        resolve("成功");
-    }, 2000);
+const resolvePromise = (otherPromise, res, resolve, reject) => {
+    // 如果是 promise 需要查看其状态，再判断执行 resolve 还是 reject
+    if (res instanceof MyPromise) {
+        if (otherPromise === res) {
+            return reject(
+                new TypeError("死循环, Chaining cycle detected for promise")
+            );
+        }
+        return res.then(resolve, reject);
+    }
+    resolve(res);
+};
+
+const isFunc = func =>
+    Object.prototype.toString.call(func).slice(8, 16) === "Function";
+
+const p1 = new MyPromise((resolve, reject) => {
+    resolve("aaa");
 });
 
-p.then(
-    value => {
-        console.log(value);
-    },
-    () => {}
-);
+const p2 = p1
+    .then()
+    .then()
+    .then(
+        val => {
+            console.log("val-", val);
+        },
+        err => {
+            console.log("err-", err);
+        }
+    );
+
+// const p1 = new MyPromise(resolve => {
+//     resolve("123");
+// });
+
+// const p2 = p1.then(val => {
+//     console.log(val);
+//     return p2;
+// });
+
+// p2.then(
+//     () => {},
+//     err => console.log(err)
+// );
