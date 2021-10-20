@@ -281,7 +281,7 @@ class MyPromise {
     this.value = value;
     this.status = FULFILLED;
     while (this.handleSuccess.length) {
-      // 当异步完成时执行处理函数
+      // 当异步完成时执行处理函数，没有保存返回值到 this.value 中
       this.handleSuccess.shift()(value);
     }
   };
@@ -302,6 +302,7 @@ class MyPromise {
         reject(fail(this.reason));
       } else {
         // 异步时先将处理函数保存下来
+        // 这里保存了异步，然后在 resolve 里调用时没有使用 resolve 改变状态，保存 success 返回值，所以异步时无法多次调用 then 。解决方案看第八版
         success && this.handleSuccess.push(success);
         fail && this.handleFail.push(fail);
       }
@@ -309,9 +310,9 @@ class MyPromise {
   }
 }
 
-const p = new Promise((resolve, reject) => {
+const p = new MyPromise((resolve, reject) => {
   // 这一版在处理异步时有问题，第二个 then
-    不会调用
+  // 不会调用
   // setTimeout(() => resolve("成功"), 2000);
   resolve('成功')
 });
@@ -327,7 +328,7 @@ p.then(function a(v) {
 // 100
 ```
 
-## 第五版 链式调用支持返回 promise
+## 第五版 链式调用支持返回 promise(未完善)
 
 ```js
 const PENDING = "pending";
@@ -351,7 +352,7 @@ class MyPromise {
     this.value = value;
     this.status = FULFILLED;
     while (this.handleSuccess.length) {
-      // 当异步完成时执行处理函数
+      // 当异步完成时执行处理函数，没有保存返回值到 this.value 中
       this.handleSuccess.shift()(value);
     }
   };
@@ -373,6 +374,7 @@ class MyPromise {
         reject(fail(this.reason));
       } else {
         // 异步时先将处理函数保存下来
+        // 这里保存了异步，然后在 resolve 里调用时没有使用 resolve 改变状态，保存 success 返回值，所以异步时无法多次调用 then。解决方案看第八版
         success && this.handleSuccess.push(success);
         fail && this.handleFail.push(fail);
       }
@@ -389,6 +391,8 @@ const resolvePromise = (value, resolve, reject) => {
 };
 
 const p = new MyPromise((resolve, reject) => {
+  // 这一版在处理异步时有问题，第二个 then
+  // 不会调用
   // setTimeout(() => resolve("成功"), 2000);
   resolve("成功");
 });
@@ -615,4 +619,399 @@ p.then(
 
 );
 
+```
+
+## 第八版 链式调用支持其他状态，并解决第四版，第五版中的异步问题
+
+```js
+const PENDING = "pending";
+const FULFILLED = "fulfilled";
+const REJECTED = "rejected";
+
+class MyPromise {
+    status = PENDING;
+    value = undefined;
+    reason = undefined;
+    handleSuccess = [];
+    handleFail = [];
+
+    constructor(callback) {
+        try {
+            callback(this.resolve, this.reject);
+        } catch (error) {
+            this.reject(error);
+        }
+    }
+    // 更改状态，保存值供下一次 then 方法使用
+    resolve = value => {
+        if (this.status !== PENDING) return;
+        this.status = FULFILLED;
+        this.value = value;
+        while (this.handleSuccess.length) this.handleSuccess.shift()();
+    };
+    // 更改状态，保存值供下一次 catch 方法使用
+    reject = reason => {
+        if (this.status !== PENDING) return;
+        this.status = REJECTED;
+        this.reason = reason;
+        while (this.handleFail.length) this.handleFail.shift()();
+    };
+    // 查看 promise 状态
+    then(success, fail) {
+        const promise2 = new MyPromise((resolve, reject) => {
+            if (this.status === FULFILLED) {
+                // 通过异步，拿到 promise2
+                setTimeout(() => {
+                    try {
+                        const res = success(this.value);
+                        resolvePromise(promise2, res, resolve, reject);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 0);
+            } else if (this.status === REJECTED) {
+                setTimeout(() => {
+                    try {
+                        const err = fail(this.reason);
+                        resolvePromise(promise2, err, resolve, reject);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 0);
+            } else {
+                this.handleSuccess.push(() => {
+                    setTimeout(() => {
+                        try {
+                            const res = success(this.value);
+                            resolvePromise(promise2, res, resolve, reject);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 0);
+                });
+                this.handleFail.push(() => {
+                    setTimeout(() => {
+                        try {
+                            const err = fail(this.reason);
+                            resolvePromise(promise2, err, resolve, reject);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 0);
+                });
+            }
+        });
+        return promise2;
+    }
+}
+
+const resolvePromise = (otherPromise, res, resolve, reject) => {
+    // 如果是 promise 需要查看其状态，再判断执行 resolve 还是 reject
+    if (res instanceof MyPromise) {
+        if (otherPromise === res) {
+            return reject(
+                new TypeError("死循环, Chaining cycle detected for promise")
+            );
+        }
+        return res.then(resolve, reject);
+    }
+    resolve(res);
+};
+
+const p1 = new MyPromise((resolve, reject) => {
+    setTimeout(() => {
+        resolve("aaa");
+    }, 2000);
+});
+
+const p2 = p1.then(
+    val => {
+        console.log(val);
+        return 10000;
+    },
+    err => {
+        console.log(err);
+        throw new Error("娃哈哈");
+    }
+);
+
+p2.then(
+    value => {
+        console.log(value);
+    },
+    err => console.log(err)
+);
+
+```
+
+## 第九版 then 参数可以为空
+
+```js
+const PENDING = "pending";
+const FULFILLED = "fulfilled";
+const REJECTED = "rejected";
+
+class MyPromise {
+    status = PENDING;
+    value = undefined;
+    reason = undefined;
+    handleSuccess = [];
+    handleFail = [];
+
+    constructor(callback) {
+        try {
+            callback(this.resolve, this.reject);
+        } catch (error) {
+            this.reject(error);
+        }
+    }
+    // 更改状态，保存值供下一次 then 方法使用
+    resolve = value => {
+        if (this.status !== PENDING) return;
+        this.status = FULFILLED;
+        this.value = value;
+        while (this.handleSuccess.length) this.handleSuccess.shift()();
+    };
+    // 更改状态，保存值供下一次 catch 方法使用
+    reject = reason => {
+        if (this.status !== PENDING) return;
+        this.status = REJECTED;
+        this.reason = reason;
+        while (this.handleFail.length) this.handleFail.shift()();
+    };
+    // 查看 promise 状态
+    then(success, fail) {
+        success = isFunc(success) ? success : value => value;
+        fail = isFunc(fail)
+            ? fail
+            : reason => {
+                  throw reason;
+              };
+        const promise2 = new MyPromise((resolve, reject) => {
+            if (this.status === FULFILLED) {
+                // 通过异步，拿到 promise2
+                setTimeout(() => {
+                    try {
+                        const res = success(this.value);
+                        resolvePromise(promise2, res, resolve, reject);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 0);
+            } else if (this.status === REJECTED) {
+                setTimeout(() => {
+                    try {
+                        const err = fail(this.reason);
+                        resolvePromise(promise2, err, resolve, reject);
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 0);
+            } else {
+                this.handleSuccess.push(() => {
+                    setTimeout(() => {
+                        try {
+                            const res = success(this.value);
+                            resolvePromise(promise2, res, resolve, reject);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 0);
+                });
+                this.handleFail.push(() => {
+                    setTimeout(() => {
+                        try {
+                            const err = fail(this.reason);
+                            resolvePromise(promise2, err, resolve, reject);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 0);
+                });
+            }
+        });
+        return promise2;
+    }
+}
+
+const resolvePromise = (otherPromise, res, resolve, reject) => {
+    // 如果是 promise 需要查看其状态，再判断执行 resolve 还是 reject
+    if (res instanceof MyPromise) {
+        if (otherPromise === res) {
+            return reject(
+                new TypeError("死循环, Chaining cycle detected for promise")
+            );
+        }
+        return res.then(resolve, reject);
+    }
+    resolve(res);
+};
+
+const isFunc = func =>
+    Object.prototype.toString.call(func).slice(8, 16) === "Function";
+
+const p1 = new MyPromise((resolve, reject) => {
+    resolve("aaa");
+});
+
+const p2 = p1
+    .then()
+    .then()
+    .then(
+        val => {
+            console.log("val-", val);
+        },
+        err => {
+            console.log("err-", err);
+        }
+    );
+
+```
+
+## 第十版 实现静态 all 方法
+
+```js
+const PENDING = "pending";
+const FULFILLED = "fulfilled";
+const REJECTED = "rejected";
+
+class MyPromise {
+  status = PENDING;
+  value = undefined;
+  reason = undefined;
+  handleSuccess = [];
+  handleFail = [];
+
+  constructor(callback) {
+    try {
+      callback(this.resolve, this.reject);
+    } catch (error) {
+      this.reject(error);
+    }
+  }
+
+  static all(arr) {
+    const res = [];
+    let index = 0;
+    return new MyPromise((resolve, reject) => {
+      const len = arr.length;
+      const addItem = (k, v) => {
+        res[k] = v;
+        index++;
+        if (index === len) {
+          resolve(res);
+        }
+      };
+      for (let i = 0; i < len; i++) {
+        const current = arr[i];
+        if (current instanceof MyPromise) {
+          // promise
+          current.then((value) => addItem(i, value), reject);
+        } else {
+          // 其他类型
+          addItem(i, current);
+        }
+      }
+    });
+  }
+
+  // 更改状态，保存值供下一次 then 方法使用
+  resolve = (value) => {
+    if (this.status !== PENDING) return;
+    this.status = FULFILLED;
+    this.value = value;
+    while (this.handleSuccess.length) this.handleSuccess.shift()();
+  };
+  // 更改状态，保存值供下一次 catch 方法使用
+  reject = (reason) => {
+    if (this.status !== PENDING) return;
+    this.status = REJECTED;
+    this.reason = reason;
+    while (this.handleFail.length) this.handleFail.shift()();
+  };
+  // 查看 promise 状态
+  then(success, fail) {
+    success = isFunc(success) ? success : (value) => value;
+    fail = isFunc(fail)
+      ? fail
+      : (reason) => {
+          throw reason;
+        };
+    const promise2 = new MyPromise((resolve, reject) => {
+      if (this.status === FULFILLED) {
+        // 通过异步，拿到 promise2
+        setTimeout(() => {
+          try {
+            const res = success(this.value);
+            resolvePromise(promise2, res, resolve, reject);
+          } catch (error) {
+            reject(error);
+          }
+        }, 0);
+      } else if (this.status === REJECTED) {
+        setTimeout(() => {
+          try {
+            const err = fail(this.reason);
+            resolvePromise(promise2, err, resolve, reject);
+          } catch (error) {
+            reject(error);
+          }
+        }, 0);
+      } else {
+        this.handleSuccess.push(() => {
+          setTimeout(() => {
+            try {
+              const res = success(this.value);
+              resolvePromise(promise2, res, resolve, reject);
+            } catch (error) {
+              reject(error);
+            }
+          }, 0);
+        });
+        this.handleFail.push(() => {
+          setTimeout(() => {
+            try {
+              const err = fail(this.reason);
+              resolvePromise(promise2, err, resolve, reject);
+            } catch (error) {
+              reject(error);
+            }
+          }, 0);
+        });
+      }
+    });
+    return promise2;
+  }
+}
+
+const resolvePromise = (otherPromise, res, resolve, reject) => {
+  // 如果是 promise 需要查看其状态，再判断执行 resolve 还是 reject
+  if (res instanceof MyPromise) {
+    if (otherPromise === res) {
+      return reject(
+        new TypeError("死循环, Chaining cycle detected for promise")
+      );
+    }
+    return res.then(resolve, reject);
+  }
+  resolve(res);
+};
+
+const isFunc = (func) =>
+  Object.prototype.toString.call(func).slice(8, 16) === "Function";
+
+const p = new MyPromise((resolve, reject) => {
+  setTimeout(() => resolve("成功"), 2000);
+  // setTimeout(() => reject("失败"), 2000);
+});
+const p2 = new MyPromise((resolve, reject) => {
+    resolve('成功222')
+  // reject("失败222");
+});
+
+MyPromise.all([p, 1, 2, p2, 3, 4]).then(
+  (val) => console.log(val),
+  (err) => console.log(err)
+);
+// [ '成功', 1, 2, '成功222', 3, 4 ]
 ```
