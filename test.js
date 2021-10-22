@@ -115,6 +115,10 @@ class MyPromise {
         return promise2;
     }
 
+    catch(fail) {
+        return this.then(undefined, fail);
+    }
+
     finally(callback) {
         // 首先要查看上一个 promise 的状态，查看状态需要用到 then
         // finally 会返回一个 promise，then 也会返回一个 promise
@@ -158,14 +162,14 @@ const resolvePromise = (otherPromise, res, resolve, reject) => {
 const isFunc = func =>
     Object.prototype.toString.call(func).slice(8, 16) === "Function";
 
-const p = new MyPromise((resolve, reject) => {
-    // setTimeout(() => resolve("成功"), 2000);
-    setTimeout(() => reject("失败"), 2000);
-});
-const p2 = new MyPromise((resolve, reject) => {
-    // resolve("成功222");
-    reject("失败222");
-});
+// const p = new MyPromise((resolve, reject) => {
+//     // setTimeout(() => resolve("成功"), 2000);
+//     setTimeout(() => reject("失败"), 2000);
+// });
+// const p2 = new MyPromise((resolve, reject) => {
+//     // resolve("成功222");
+//     reject("失败222");
+// });
 
 // MyPromise.all([p, 1, 2, p2, 3, 4]).then(
 //     val => console.log(val),
@@ -176,40 +180,49 @@ const p2 = new MyPromise((resolve, reject) => {
 //     console.log(val);
 // });
 
-p2.finally(() => {
-    console.log("finally");
-    return p;
-}).then(
-    val => {
-        console.log(val);
-    },
-    err => {
-        console.log(err);
-    }
-);
+// p2.finally(() => {
+//     console.log("finally");
+//     return p;
+// }).then(
+//     val => {
+//         console.log(val);
+//     },
+//     err => {
+//         console.log(err);
+//     }
+// );
 
-const p3 = new Promise((resolve, reject) => {
-    // setTimeout(() => resolve("成功333"), 2000);
-    setTimeout(() => reject("失败333"), 2000);
-});
-const p4 = new Promise((resolve, reject) => {
-    // resolve("成功444");
-    reject("失败444");
-});
+// const p3 = new Promise((resolve, reject) => {
+//     // setTimeout(() => resolve("成功333"), 2000);
+//     setTimeout(() => reject("失败333"), 2000);
+// });
+// const p4 = new Promise((resolve, reject) => {
+//     // resolve("成功444");
+//     reject("失败444");
+// });
 
-p4.finally(() => {
-    console.log("finally");
-    return p3;
-}).then(
-    val => {
-        console.log(val);
-    },
-    err => {
-        console.log(err);
-    }
-);
+// p4.finally(() => {
+//     console.log("finally");
+//     return p3;
+// }).then(
+//     val => {
+//         console.log(val);
+//     },
+//     err => {
+//         console.log(err);
+//     }
+// );
 
 // 前一个成功，finally 返回的 promise 成功：取前的成功状态
 // 前一个成功，finally 返回的 promise 失败：取后的失败状态
 // 前一个失败，finally 返回的 promise 成功：取前的失败状态
 // 前一个失败，finally 返回的 promise 失败：取后的失败状态
+
+const p2 = new MyPromise((resolve, reject) => {
+    // resolve("成功222");
+    reject("失败2233");
+});
+
+p2.catch(err => {
+    console.log(err);
+});

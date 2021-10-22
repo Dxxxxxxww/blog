@@ -867,7 +867,7 @@ const p2 = p1
     );
 ```
 
-## 第十版 实现静态 all 方法，实现 静态 resolve 方法，实现 finally 方法
+## 第十版 实现静态 all 方法，实现 静态 resolve 方法，实现 catch 方法，实现 finally 方法
 
 ```js
 const PENDING = "pending";
@@ -986,6 +986,11 @@ class MyPromise {
         });
         return promise2;
     }
+
+    catch(fail) {
+        return this.then(undefined, fail);
+    }
+
     finally(callback) {
         // 首先要查看上一个 promise 的状态，查看状态需要用到 then
         // finally 会返回一个 promise，then 也会返回一个 promise
@@ -1029,6 +1034,7 @@ const resolvePromise = (otherPromise, res, resolve, reject) => {
 const isFunc = func =>
     Object.prototype.toString.call(func).slice(8, 16) === "Function";
 
+// 测试 all
 const p = new MyPromise((resolve, reject) => {
     setTimeout(() => resolve("成功"), 2000);
     // setTimeout(() => reject("失败"), 2000);
@@ -1043,4 +1049,43 @@ MyPromise.all([p, 1, 2, p2, 3, 4]).then(
     err => console.log(err)
 );
 // [ '成功', 1, 2, '成功222', 3, 4 ]
+
+// 测试 finally
+const p = new MyPromise((resolve, reject) => {
+    // setTimeout(() => resolve("成功"), 2000);
+    setTimeout(() => reject("失败"), 2000);
+});
+const p2 = new MyPromise((resolve, reject) => {
+    // resolve("成功222");
+    reject("失败222");
+});
+
+p2.finally(() => {
+    console.log("finally");
+    return p;
+}).then(
+    val => {
+        console.log(val);
+    },
+    err => {
+        console.log(err);
+    }
+);
+
+// 前一个成功(p2)，finally 返回的 promise(p) 成功：取前的成功状态
+// 前一个成功(p2)，finally 返回的 promise(p) 失败：取后的失败状态
+// 前一个失败(p2)，finally 返回的 promise(p) 成功：取前的失败状态
+// 前一个失败(p2)，finally 返回的 promise(p) 失败：取后的失败状态
+
+// 测试 catch
+const p2 = new MyPromise((resolve, reject) => {
+    // resolve("成功222");
+    reject("失败2233");
+});
+
+p2.catch(err => {
+    console.log(err);
+});
+// 失败2233
+
 ```
