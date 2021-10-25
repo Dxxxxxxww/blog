@@ -1,5 +1,28 @@
 # 手写 Promise
 
+对于 promise 来说，值只有两种情况，是 promise，不是 promise。如果是 promise 会使用 then 进行状态判断，如果不是 promise 就直接 resolve 了(即便是一个 Error 对象)。
+<b>强调一遍，promise 只关心值是不是 promise</b>
+
+```js
+const p2 = new Promise((resolve, reject) => {
+    // resolve("成功222");
+    reject("失败2233");
+});
+
+p2.then("", err => {
+    console.log(err);
+    // throw new Error('456') // 输出 errorLo:::: Error: 456
+    return new Error("456"); // 输出 hahaha Error: 456
+}).then(
+    val => {
+        console.log("hahaha", val);
+    },
+    err => {
+        console.log("errorLo::::", err);
+    }
+);
+```
+
 ## 第一版 建立基本的 Promise
 
 要手写模拟 promise，我们首先需要知道 Promise 的功能特点是什么，所以下面先写一个 Promise 使用 demo。
@@ -955,6 +978,7 @@ class MyPromise {
             } else if (this.status === REJECTED) {
                 setTimeout(() => {
                     try {
+                        // catch 返回的非 promise 值也会 resolve 处理
                         const err = fail(this.reason);
                         resolvePromise(promise2, err, resolve, reject);
                     } catch (error) {
