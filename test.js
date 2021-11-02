@@ -16,7 +16,7 @@ class MyPromise {
             this.reject(error);
         }
     }
-
+    // 不熟练
     static all(arr) {
         const res = [];
         let index = 0;
@@ -63,6 +63,7 @@ class MyPromise {
     };
     // 查看 promise 状态
     then(success, fail) {
+        // 不熟练
         success = isFunc(success) ? success : value => value;
         fail = isFunc(fail)
             ? fail
@@ -84,12 +85,14 @@ class MyPromise {
                 setTimeout(() => {
                     try {
                         const err = fail(this.reason);
+                        debugger;
                         resolvePromise(promise2, err, resolve, reject);
                     } catch (error) {
                         reject(error);
                     }
                 }, 0);
             } else {
+                // 不熟练
                 this.handleSuccess.push(() => {
                     setTimeout(() => {
                         try {
@@ -118,7 +121,7 @@ class MyPromise {
     catch(fail) {
         return this.then(undefined, fail);
     }
-
+    // 不熟练
     finally(callback) {
         // 首先要查看上一个 promise 的状态，查看状态需要用到 then
         // finally 会返回一个 promise，then 也会返回一个 promise
@@ -223,6 +226,28 @@ const p2 = new MyPromise((resolve, reject) => {
     reject("失败2233");
 });
 
-p2.catch(err => {
-    console.log(err);
-});
+// p2.then("", err => {
+//     console.log(err);
+//     // throw new Error("456");
+//     // return new Error("456");
+//     return 456;
+// }).then(
+//     val => {
+//         console.log("hahaha", val);
+//     },
+//     err => {
+//         console.log("errorLo::::", err);
+//     }
+// );
+
+p2.then()
+    .then(1)
+    .then(2)
+    .then(
+        val => {
+            console.log("val==", val);
+        },
+        err => {
+            console.log("err==", err);
+        }
+    );
