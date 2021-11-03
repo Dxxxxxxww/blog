@@ -16,6 +16,8 @@ React 团队从一开始就很注重 React 的代码复用性。
 
 ## HOC
 
+HOC 可以当做是 vue 中的作用域 slot。
+
 HOC 采用了装饰器模式来复用代码。经典案例就是 redux 中的 connect。
 
 优点：
@@ -56,6 +58,8 @@ A(B);
 ```
 
 ## Render props
+
+Render props 可以当做是 vue 中的作用域 slot。
 
 这种模式把 children(其他属性也可以) 当做函数来传递和执行，状态通过参数传递，然后返回一个组件。经典案例就是 react-router。
 
