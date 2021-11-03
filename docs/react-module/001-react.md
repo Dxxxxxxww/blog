@@ -162,7 +162,7 @@ export const useDocumentTitle = (
 
 官方文档：把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。
 
-个人理解：可以理解为特殊版本的 useMemo，专门用于函数的情况。
+个人理解：可以理解为特殊版本的 useMemo，专门用于函数的情况。当自定义 hook 需要向外返回函数的时候，使用 useCallback 包裹。
 
 6. useReducer
 
