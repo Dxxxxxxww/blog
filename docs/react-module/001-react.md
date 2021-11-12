@@ -2,6 +2,13 @@
 
 ## 一、react hooks
 
+react hooks 依赖需要注意的点：
+
+1. 基本数据类型，组件状态可以放入依赖中；
+2. 非基本数据类型非组件状态不可放入依赖中。
+
+---
+
 1. State Hook
 
 不管 state 是否在 jsx 中使用，只要使用了 setCount，就会触发重新渲染。
@@ -169,3 +176,7 @@ export const useDocumentTitle = (
 官方文档：useState 的替代方案。它接收一个形如 (state, action) => newState 的 reducer，并返回当前的 state 以及与其配套的 dispatch 方法。（如果你熟悉 Redux 的话，就已经知道它如何工作了。）在某些场景下，useReducer 会比 useState 更适用，例如 state 逻辑较复杂且包含多个子值，或者下一个 state 依赖于之前的 state 等。
 
 个人理解：从功能上来说，useState 与 useReducer 可以互换的，用其中一个实现的功能，使用另一个也是可以实现的。useState 适合定义单个的状态，useReducer 适合定义一群/多个互相影响的状态。
+
+7. useContext
+
+个人理解：hooks 里的局部全局状态管理
