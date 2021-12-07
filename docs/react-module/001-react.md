@@ -1,6 +1,6 @@
 # react 初识
 
-## 一、react hooks
+## react hooks
 
 react hooks 依赖需要注意的点：
 
@@ -162,7 +162,7 @@ export const useDocumentTitle = (
 可以理解为 vue 中的 computed。
 
 <b>
-如果我们定义了非基本类型想要做依赖，就要用到 useMemo 和 useCallback。
+基本数据类型，组件状态可以放入依赖中。非基本数据类型非组件状态不可放入依赖中。如果我们定义了非基本类型想要做依赖，就要用到 useMemo。
 </b>这样就能限制住非基本类型在每次渲染时的重新创建。
 
 5. useCallback
@@ -170,6 +170,8 @@ export const useDocumentTitle = (
 官方文档：把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。
 
 个人理解：可以理解为特殊版本的 useMemo，专门用于函数的情况。当自定义 hook 需要向外返回函数的时候，使用 useCallback 包裹。
+
+<b>如果使用的是非原生 dom 节点(自定义组件)，那么回调函数都应该用 useCallback 进行封装。</b>
 
 6. useReducer
 
@@ -180,3 +182,24 @@ export const useDocumentTitle = (
 7. useContext
 
 个人理解：hooks 里的局部全局状态管理
+
+## react 事件
+
+react 原生事件原理：合成事件（Synthetic Events）。
+
+实现原理：react 利用浏览器事件冒泡，可以通过事件的 srcElement 属性得知是哪个节点触发的事件。
+
+由于虚拟 dom 存在，在 react 中即便绑定一个事件到原生 dom 节点上，也会被挪到根节点上(在 react17 前是 document。 17 之后是 App，考虑同个应用可能出现多版本 react)，然后由 react 统一监听和管理，获取事件后分发到具体虚拟 dom 节点上。
+
+所以 react 中无法使用 event.stopPropagation()阻止冒泡。事件处理器的执行前提是事件达到 document 被 React 接收到，然后 React 将事件派发到 button 组件。既然在按钮的事件处理器执行之前，事件已经达到 document 了，那当然就无法在按钮的事件处理器进行阻止了。
+
+原因：
+
+1. 虚拟 dom render 的时候， dom 还没有真实的渲染到页面上，无法绑定事件；
+2. react 可以屏蔽底层事件细节，避免浏览器兼容问题，同事对于 rn 这种跨端运行也能提供一致的 api。
+
+react 中想要阻止冒泡的办法：
+
+1. 使用 window.addEventListener 来代替 document.addEventListener (v17 之前)，因为 event.stopPropagation() 可以停止事件传播到 window；
+2. e.nativeEvent.stopImmediatePropagation()。组件中事件处理器接收到的 event 事件对象是 React 包装后的 SyntheticEvent 事件对象。但可通过它的 nativeEvent 属性获取到原生的 DOM 事件对象。通过调用这个原生的事件对象上的 stopImmediatePropagation() 方法可达到阻止冒泡的目的；
+3. 绕开 react 直接在元素上绑定事件。通过 useRef 和 addEventListener 实现。
