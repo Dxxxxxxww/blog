@@ -1,5 +1,7 @@
 # 常见的 webpack5 配置
 
+webpack 是一个模块打包器（bundler），它能将多个 js 文件打包成一个文件。对于其他资源来说，webpack 就需要借助对应的 loader 来进行资源转化及加载。
+
 这里只是记录一下常用的配置，具体配置写法去官方文档里查询。<b>注：带 \* 则表示 webpack5 中的新修改项目</b>
 
 ## \* require
@@ -72,7 +74,7 @@ loader 执行顺序是从右往左，从下往上。所以编写顺序应该是�
 
 -   file-loader
 
-拷贝图片，分开请求。
+拷贝图片，分开请求。可以修改打包后的图片名称。
 
 ```js
 {
@@ -213,6 +215,54 @@ plugins: [
 plugins: [new CopyWebpackPlugin()];
 ```
 
+### \* MiniCssExtractPlugin
+
+文档上说 v5 版本才能使用，但是 v4 也能使用。抽离 css 成单独文件。更低版本可以使用 extract-text-webpack-plugin，v4+版本不推荐使用，会有问题。
+
+### \* CssMinimizerWebpackPlugin
+
+对 css 文件进行压缩。v4 版本下可以使用 optimize-css-assets-webpack-plugin，此插件在 v5 版本无法压缩。
+
+### TerserWebpackPlugin
+
+压缩，丑化 js 代码。v5 版本已内置 TerserWebpackPlugin 插件。之前可能更多的是使用 uglify-js，但是 uglify-es 不再维护了，uglify-js 也不支持 es6+了。
+
+### ModuleConcatenationPlugin
+
+scope hoisting,也可以说是合并模块。会“提升”或将所有模块的作用域连接到一个闭包中，从而让代码在浏览器中有更快的执行时间。生产模式已经默认配置。依赖 ESM 在编译时导出/导入的静态分析，所以在 web 端最好都是用 ESM 而非 CMJ。
+
+### purgecss-webpack-plugin
+
+css tree-shaking 插件
+
+### CompressionWebpackPlugin
+
+开启压缩，默认 gzip 算法。把资源压缩好给服务器，当浏览器支持 gzip 时，就可以使用已经压缩过的代码。
+
+#### CompressionWebpackPlugin.minRatio
+
+压缩比，默认 0.8。如果设置太小，压缩算法没办法做到的话就不会去压缩。一般使用默认值 0.8 就行了。
+
+### inline-chunk-html-plugin
+
+将 js 代码注入 index.html 文件中。对于一些代码量少的文件，如果通过 script 外链的形式发请求来载入的话有点浪费，通过这个插件可以将代码量少的文件直接注入到 index.html 文件中。减少请求。
+
+### speed-measure-webpack-plugin
+
+分析 webpack-plugin，webpack-loader 的耗时。与 MiniCssExtractPlugin 有兼容问题，需要将 MiniCssExtractPlugin 降到 1.x 版本。
+
+### webpack-bundle-analyzer
+
+打包文件大小分析。
+
+### HotModuleReplacementPlugin
+
+HMR 的插件
+
+### CommonsChunkPlugin
+
+通过将公共模块从 bundle 中分离出来，得到的块文件可以在最初加载一次，并存储在缓存中供以后使用。这将导致页面速度优化，因为浏览器可以快速地从缓存提供共享代码，而不是在访问新页面时强制加载更大的包。
+
 ## babel
 
 对 js 做兼容处理
@@ -292,7 +342,11 @@ vue cli2 生成的 vue 项目 的 dev-server.js 就是这个。
 
 ## HMR
 
-模块热更新，只更新改变的模块，而不会使整个页面都刷新。
+开启配置：设置 hot: true, hotOnly: true，再配上 HotModuleReplacementPlugin
+
+模块热更新，只更新改变的模块，而不会使整个页面都刷新。开启 HMR 之后，css 会直接启动模块热更新，因为 loader 已经做了这方面工作。为什么 js 不行，因为 js 模块是没有任何规律的，可能导出对象/变量/常量/函数，并且对于这些导出的东西的使用也各不相同。对于 css 而言，只需要把新的样式替换上去就行了。
+
+使用 vue/react 为什么可以呢？因为这两者的框架对于导出有着规则限制，是有一定规律的。框架内部已经提供好了通用 HMR 解决方案，vue-loader 内置了 hmr 的代码，react 则是通过 babel-preset，详细可以查看 webpack 文档 guides 中的 hmr 模块。
 
 hot 是 webpack-dev-server 的 hmr 配置。 webpack-hot-middleware 是 webpack-dev-middleware 设置的自定义服务的 hmr 配置。
 
@@ -300,7 +354,7 @@ hot 是 webpack-dev-server 的 hmr 配置。 webpack-hot-middleware 是 webpack-
 
 webpack-dev-server 的配置选项
 
-### publicPath
+### devServer.publicPath
 
 指定本地服务所在的目录。
 
@@ -313,31 +367,35 @@ https://localhost:8080/lg
 
 大部分情况下，output.publicPath 与 devServer.publicPath 需要设置为相同的值。
 
-### \* contentBase
+### \* devServer.contentBase
 
 webpack5 文档中已不存在
 
 规定一些不被 webpack 打包的文件，但是在 index.html 中引用的资源去哪查找。绝对路径。
 
-### proxy
+### devServer.proxy
 
 跨域代理，转发请求。
 
+### devServer.compress
+
+开发服务启用 gzip 压缩。
+
 ## resolve
 
-### alias
+### resolve.alias
 
 别名
 
-### extensions
+### resolve.extensions
 
 文件引入时自动补全后缀
 
-### mainFiles
+### resolve.mainFiles
 
 引入文件夹时默认查找目录下的指定文件，默认值是 index。这也是为什么我们在文件夹下写 index 文件就能成功引入的原因。
 
-### modules
+### resolve.modules
 
 引入模块时默认查找指定目录，默认值时 node_modules。
 
@@ -415,9 +473,13 @@ cacheGroups: {
 
 把一些与文件源码无关的，webpack 打包生成的代码单独抽离成一个文件。
 
+### optimization.minimize
+
+告诉 webpack 使用 TerserPlugin 或在 optimization.minimizer 中指定的插件来最小化 bundle。
+
 ### optimization.minimizer
 
-最小化代码。一般使用 TerserWebpackPlugin 插件来进行操作。 v5 版本已内置 TerserWebpackPlugin 插件。
+压缩模块，对文件进行压缩。对于 js 文件来说可以使用 TerserWebpackPlugin，css 文件可以使用 CssMinimizerWebpackPlugin。
 
 ## 动态 import
 
@@ -451,6 +513,40 @@ preload：会与父块并行加载。
 仅做了解，在 webpackv4 起已经不需要通过 dll 来优化打包速度了。vue/react 中已移除 dll 打包操作。
 
 与 externals 排除包然后放在 cdn 上有点类似。将一些不常改变的包移动到单独的编译中，进行单独的打包操作(单独起一个项目，引入包进行打包操作)，生成 dll 库，后续可以直接引入。减少项目打包时间。
+
+## tree-shaking
+
+基于 ESM 的静态分析实现，将一些不用的代码（导出了，但是没有地方有导入使用，dead-code）从打包流程中剔除。它是一组搭配使用后的优化效果，不是某个配置选项，在生产模式下自动启用。
+
+#### usedExports
+
+optimization.usedExports，标记出哪些代码没有被使用，清理还需要通过设置 optimization.minimize，通过 TerserWebpackPlugin 插件压缩代码。
+
+#### sideEffects
+
+optimization.sideEffects 开启。 package.json sideEffects 标记保留文件。
+
+使用 sideEffects 的前提是确保文件中没有副作用代码。因为如果有副作用代码，而被删除了的话，就会导致程序出错。这里的副作用代码指除了导出成员外所做的事情(比如在 window 上挂载)。
+
+false 为删除副作用代码，true 为保留。数组中配置路径，可以有选择的保留哪些副作用，可以通过这种方式来选择保留一些需要的 js 和 css 代码。不过 一般而言，可以在 配置 css 相关 loader 的地方，跟 test, use 同级下增加 sideEffects: true，来保留 css。
+
+这两种不是替代的关系。
+
+tree-shaking 的前提是必须使用 ESM。但是 babel 中的 preset-env 会将 ESM 转换成 CMJ。webpack 拿到 转换后的代码，就不能执行 tree-shaking 了(最新版 babel 已经支持 ESM，它会禁用 ESM->CMJ 的转换，所以 webpack 能使用 tree-shaking)。
+
+## webpack 打包库
+
+```js
+output: {
+    filename: 'xx.js',
+    // js 通用模块定义规范，能让 js 在所有环境下工作
+    libraryTarget: 'umd',
+    // 全局变量名，类似于 JQuery 的 $，库的变量方法都通过这里的设置来访问
+    library: 'xx',
+    // 一般都写 this，在 web 端指向 window
+    globalObject: 'this',
+}
+```
 
 ## 其他 tips
 
