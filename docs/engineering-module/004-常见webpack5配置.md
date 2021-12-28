@@ -160,6 +160,8 @@ scriptes: {
 
 ## browserslist
 
+[browsers-use](https://caniuse.com/usage-table)
+
 ```js
 // 选择需要兼容的浏览器范围
 // package.json
@@ -428,7 +430,7 @@ code splitting，代码分割，可以将业务代码和第三方包分离。这
 
 ```js
 splitChunks: {
-     chunks: 'all',
+      chunks: 'all', // 'async'， 默认值为 'initial'
 }
 ```
 
@@ -442,6 +444,10 @@ splitChunks: {
 ```
 
 vue 中会使用 cacheGroups 将第三方包改名为 vender
+
+#### 动态 import
+
+动态 import 可以实现懒加载。动态 import 的文件会自动拆包(splitChunks)，因为动态请求时，文件不一定已经加载完成，所以不能与其他代码打包在一起。
 
 #### splitChunks.miniSize
 
@@ -521,10 +527,6 @@ false 为删除副作用代码，true 为保留。数组中配置路径，可以
 这两种不是替代的关系。
 
 tree-shaking 的前提是必须使用 ESM。但是 babel 中的 preset-env 会将 ESM 转换成 CMJ。webpack 拿到 转换后的代码，就不能执行 tree-shaking 了(最新版 babel 已经支持 ESM，它会禁用 ESM->CMJ 的转换，所以 webpack 能使用 tree-shaking)。
-
-## 动态 import
-
-动态 import 可以实现懒加载。动态 import 的文件会自动拆包，因为动态请求时，文件不一定已经加载完成，所以不能与其他代码打包在一起。
 
 ### prefetch preload
 
