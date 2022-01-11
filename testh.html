@@ -7,9 +7,27 @@
     <title>Document</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div>{{ count }}</div>
+      <div v-text="msg"></div>
+      <div>
+        <input v-model="count" />
+      </div>
+    </div>
     <!-- <script src="./test.js"></script> -->
-    <!-- <script src="./test2.js"></script> -->
-    <script src="./write.js"></script>
+    <script src="./test2.js"></script>
+    <!-- <script src="./write.js"></script> -->
+    <script>
+      window.vm = new Vue({
+        el: '#app',
+        data: {
+          msg: 'hello vue',
+          count: 100
+        }
+      })
+      // console.log(vm)
+      // vm.count = { a: 'a' }
+      // console.log(vm)
+    </script>
   </body>
 </html>
