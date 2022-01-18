@@ -1,6 +1,90 @@
 # 手写 router
 
-## hash 模式
+## 第二版，不需要 mixin
+
+```js
+export default class VueRouter {
+  // install 的 options 就不模拟了
+  static install(Vue) {
+    // 查看是否注册了，如果注册了就不重复注册
+    if (VueRouter.install.installed) {
+      return
+    }
+    VueRouter.install.installed = true
+    // 将 Vue 保存在全局变量
+    _Vue = Vue
+  }
+  constructor(options) {
+    // 保存 options
+    this.options = options
+    // 路由组件映射
+    this.routeMap = {}
+    // 响应式 path 对象
+    this.data = _Vue.observable({
+      current: '/'
+    })
+    // 初始化
+    this.init()
+    // 将 router 实例保存在 Vue 全局，这样也可以，并不需要用 mixin
+    if (_Vue.prototype.$router) {
+      return
+    }
+    _Vue.prototype.$router = this
+  }
+  init() {
+    this.initRouteMap()
+    this.initComponent()
+    this.initEvent()
+  }
+  initRouteMap() {
+    this.options.routes.forEach((route) => {
+      this.routeMap[route.path] = route.component
+    })
+  }
+  initComponent() {
+    _Vue.component('router-link', {
+      props: {
+        to: String
+      },
+      methods: {
+        handleClick(e) {
+          e.preventDefault()
+          // 改变浏览器的地址栏
+          history.pushState({}, '', this.to)
+          // 通过Vue上的全局路有实例进行路由跳转
+          this.$router.data.current = this.to
+        }
+      },
+      render(h) {
+        return h(
+          'a',
+          {
+            attrs: {
+              href: this.to
+            },
+            on: {
+              click: this.handleClick
+            }
+          },
+          [this.$slots.default]
+        )
+      }
+    })
+
+    _Vue.component('router-view', {
+      render: (h) => {
+        const component = this.routeMap[this.data.current]
+        return h(component)
+      }
+    })
+  }
+  initEvent() {
+    window.addEventListener('popstate', () => {
+      this.data.current = window.location.pathname
+    })
+  }
+}
+```
 
 ## history 模式
 
@@ -27,6 +111,7 @@ export default class MyVueRouter {
         // 只有跟实例才会传入 router
         if (this.$options.router) {
           _Vue.prototype.$router = this.$options.router
+          // init 在 install 里或者是在 constructor 调用无所谓
           this.$options.router.init()
         }
       }
@@ -38,6 +123,7 @@ export default class MyVueRouter {
     // 路由地址与组件映射
     this.routerMap = {}
     // data 是响应式的，在地址改变时要切换对应组件
+    // 将当前路径处理成响应式对象，vue 内部会监听到 data 的变化从而使用对应的组件
     this.data = _Vue.observable({
       current: '/'
     })
@@ -104,6 +190,104 @@ export default class MyVueRouter {
     window.addEventListener('popstate', () => {
       this.data.current = window.location.pathname
     })
+  }
+}
+```
+
+## hash 模式
+
+```js
+let _Vue
+
+export default class VueRouter {
+  static install(Vue) {
+    // 判断是否已经注册
+    if (VueRouter.install.installed) {
+      return
+    }
+    VueRouter.install.installed = true
+    // 保存 Vue 到全局变量
+    _Vue = Vue
+    // 将 router 实例挂载到 prototype 上
+    // 需要获取this实例，所以通过全局混入拿到根实例上的 $router
+    Vue.mixin({
+      beforeCreate() {
+        // 根实例
+        if (this.$options.router) {
+          Vue.prototype.$router = this.$options.router
+        }
+      }
+    })
+  }
+  constructor(options) {
+    this.options = options
+    this.routeMap = {}
+    // 将当前路径处理成响应式对象，vue 内部会监听到 data 的变化从而使用对应的组件
+    this.data = _Vue.observable({ current: '#/' })
+    // init 在 install 里或者是在 constructor 调用无所谓
+    this.init()
+  }
+  init() {
+    this.initRouteMap()
+    this.initComponent()
+    this.initEventListener()
+  }
+  initRouteMap() {
+    this.options.routes.forEach((route) => {
+      this.routeMap[this.getHashPath(route.path)] = route.component
+      console.log(this.routeMap)
+    })
+  }
+  initComponent() {
+    const that = this
+
+    _Vue.component('router-link', {
+      props: {
+        to: String
+      },
+      methods: {
+        handleClick(e) {
+          e.preventDefault()
+          // 改变地址栏地址
+          history.pushState({}, '', that.getHashPath(this.to))
+          // 改变响应式的 data 使 vue 更改组件
+          this.$router.data.current = that.getHashPath(this.to)
+          console.log(this.$router.data.current)
+        }
+      },
+      render(h) {
+        return h(
+          'a',
+          {
+            attrs: {
+              href: that.getHashPath(this.to)
+            },
+            on: {
+              click: this.handleClick
+            }
+          },
+          [this.$slots.default]
+        )
+      }
+    })
+
+    _Vue.component('router-view', {
+      render(h) {
+        const component = that.routeMap[that.getHashPath(that.data.current)]
+        return h(component)
+      }
+    })
+  }
+  initEventListener() {
+    window.addEventListener('popstate', () => {
+      this.data.current = window.location.hash
+    })
+  }
+  getHashPath(path) {
+    if (path.startsWith('#')) {
+      return path
+    }
+    return '#' + path
   }
 }
 ```
