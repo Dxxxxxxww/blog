@@ -3,31 +3,33 @@ class Vue {
     // 保存数据
     this.$options = options
     this.$data = options.data
+    this.$methods = options.methods
     this.$el =
       typeof options.el === 'string'
         ? document.querySelector(options.el)
         : options.el
     // 代理到 this 上
-    this.proxyData()
+    this.proxyData(this.$data)
+    this.proxyData(this.$methods)
     // 响应式处理，响应式要配合模板编译才是真正的数据驱动
     new Observable(this.$data)
     // 模板编译
     new Compiler(this)
   }
 
-  proxyData() {
-    Object.keys(this.$data).forEach((key) => {
+  proxyData(data) {
+    Object.keys(data).forEach((key) => {
       Object.defineProperty(this, key, {
         enumerable: true,
         configurable: true,
         get() {
-          return this.$data[key]
+          return data[key]
         },
         set(newVal) {
-          if (newVal === this.$data[key]) {
+          if (newVal === data[key]) {
             return
           }
-          this.$data[key] = newVal
+          data[key] = newVal
         }
       })
     })
@@ -114,6 +116,11 @@ class Compiler {
   update(node, attr, key) {
     const fn = this[attr + 'Update']
     // 确保 this 指向
+    if (attr.includes(':')) {
+      const event = attr.split(':')[1]
+      this.onUpdate(node, key, event, this.vm[key].bind(this.vm))
+      return
+    }
     fn && fn.call(this, node, key, this.vm[key])
   }
   // v-text
@@ -121,6 +128,22 @@ class Compiler {
     node.textContent = text
     new Watcher(this.vm, key, (newVal) => {
       node.textContent = newVal
+    })
+  }
+  // v-html
+  htmlUpdate(node, key, html) {
+    node.innerHTML = html
+    // 只是这里增加了数据改变时响应式的处理，上面原本的代码是不能删除的
+    const watcher = new Watcher(this.vm, key, (newVal) => {
+      node.innerHTML = newVal
+    })
+  }
+  // v-on
+  onUpdate(node, key, event, cb) {
+    console.log(event)
+    node.addEventListener(event, cb)
+    const watcher = new Watcher(this.vm, key, (newVal) => {
+      node.addEventListener(event, cb)
     })
   }
   // v-model
