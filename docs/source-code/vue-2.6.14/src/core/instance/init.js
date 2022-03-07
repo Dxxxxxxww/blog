@@ -50,6 +50,7 @@ export function initMixin (Vue: Class<Component>) {
       initInternalComponent(vm, options)
     } else {
       // new Vue 创建实例会进入到这里
+      // mixins 的合并会在 mergeOptions 中进行
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},

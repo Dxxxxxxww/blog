@@ -440,6 +440,7 @@ export function mergeOptions (
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
+    // 合并 mixins
     if (child.mixins) {
       for (let i = 0, l = child.mixins.length; i < l; i++) {
         parent = mergeOptions(parent, child.mixins[i], vm)

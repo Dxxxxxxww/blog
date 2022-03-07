@@ -187,7 +187,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 /**
  * Observer 与 defineReactive 联合进行的依赖收集是一种深度优先遍历。
  * Define a reactive property on an Object.
- * 响应式处理 设置 getter setter。
+ * 设置响应式对象 设置 getter setter。
  * 在 getter 中收集观察者，在 setter 中 触发观察者相应函数。
  * 需要注意的是 defineReactive 是对对象的 key 进行拦截的，所以这里生成的 dep 也是针对 key 的。
  * 也就是说如果定义了一个数据 data.arr = [1,2,3]，
