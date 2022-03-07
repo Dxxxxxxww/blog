@@ -1,0 +1,30 @@
+import { initMixin } from './init'
+import { stateMixin } from './state'
+import { renderMixin } from './render'
+import { eventsMixin } from './events'
+import { lifecycleMixin } from './lifecycle'
+import { warn } from '../util/index'
+
+function Vue (options) {
+  if (process.env.NODE_ENV !== 'production' &&
+    // 判断是否是通过 new 来调用。可以作为一种 js 里限制函数只能通过 new 来调用的手段
+    !(this instanceof Vue)
+  ) {
+    warn('Vue is a constructor and should be called with the `new` keyword')
+  }
+  this._init(options)
+}
+// 以下函数均将结果在 Vue.prototype 上挂载
+// 初始化 _init 函数，挂载到 Vue.prototype 上 这个函数不是初始化 Vue.mixin 的 initMixin 函数。需要区分开来
+initMixin(Vue)
+// 初始化状态相关函数 $data,$props,$set(),$delete(),$watch() 全部都是和响应式相关的
+stateMixin(Vue)
+// 初始化事件相关函数 $on(),$once(),$off(),$emit()
+// $on/$off 可以传入事件数组，为多个事件绑定/解绑相同的事件处理函数
+eventsMixin(Vue)
+// 初始化生命周期相关函数_update(),$forceUpdate(),$destroy()
+lifecycleMixin(Vue)
+// 初始化渲染相关函数 $nextTick(),_render()
+renderMixin(Vue)
+
+export default Vue

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>initVue</title>
+</head>
+<body>
+  <div id="app">
+    <div>
+      <h1 @click="say">
+        {{ chi.study }}
+      </h1>
+    </div>
+<!--    {{ wsmsg }}-->
+  </div>
+
+  <script src="../../dist/vue.js"></script>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        msg: [1,2,3],
+        chi: {
+          study: 'study hard'
+        }
+        /**
+         * dep.id = 2 是 data.__ob__.dep
+         * dep.id = 3 是 data.msg 这个 key
+         * dep.id = 4 是 data.msg 这个数组上的 __ob__.dep
+         * dep.id = 5 是 data.chi 这个 key
+         * dep.id = 6 是 data.chi 对应的对象上的 __ob__.dep
+         * dep.id = 7 是 data.chi.study 这个 key
+         */
+      },
+      // computed: {
+      //   wsmsg() {
+      //     return this.msg.toString()
+      //   }
+      // },
+      methods: {
+        say() {
+          const s = this.msg
+          console.log(s)
+        }
+      }
+    })
+    console.log(vm)
+  </script>
+</body>
+</html>

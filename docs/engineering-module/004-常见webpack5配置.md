@@ -34,10 +34,10 @@ entry 的相对路径就是相对于 context 而言的。
 
 css 相关的 loader 有以下几种：
 
--   css-loader
--   style-loader
--   less-loader
--   postcss-loader
+- css-loader
+- style-loader
+- less-loader
+- postcss-loader
 
 loader 执行顺序是从右往左，从下往上。所以编写顺序应该是：
 
@@ -73,7 +73,7 @@ loader 执行顺序是从右往左，从下往上。所以编写顺序应该是�
 
 ### 图片，字体相关 loader
 
--   file-loader
+- file-loader
 
 拷贝图片，分开请求。可以修改打包后的图片名称。
 
@@ -91,7 +91,7 @@ loader 执行顺序是从右往左，从下往上。所以编写顺序应该是�
 }
 ```
 
--   url-loader
+- url-loader
 
 将图片以 base64 的方式放入代码中，减少请求次数。
 
@@ -146,8 +146,8 @@ output: {
 
 ### ts 相关 loader
 
--   ts-loader: ts 有语法错误时可以在编译期间报错。做语法校验。
--   babel-loader: ts 语法错误不会在编译期间报错，但是可以将一些 js 高阶语法做兼容处理。需要在 preset 中加上@babel/preset-typescript
+- ts-loader: ts 有语法错误时可以在编译期间报错。做语法校验。
+- babel-loader: ts 语法错误不会在编译期间报错，但是可以将一些 js 高阶语法做兼容处理。需要在 preset 中加上@babel/preset-typescript
 
 解决办法: 使用 babel-loader 并在 npm 中添加脚本
 
@@ -187,7 +187,7 @@ not ie <= 8
 用来删除/清理你的构建文件夹。
 
 ```js
-plugins: [new CleanWebpackPlugin()];
+plugins: [new CleanWebpackPlugin()]
 ```
 
 ### html-webpack-plugin
@@ -195,7 +195,7 @@ plugins: [new CleanWebpackPlugin()];
 简化了 HTML 文件的创建，为 webpack 打包服务。可自定 html 模板文件。
 
 ```js
-plugins: [new HtmlWebpackPlugin()];
+plugins: [new HtmlWebpackPlugin()]
 ```
 
 ### webpack.DefinePlugin
@@ -204,10 +204,10 @@ plugins: [new HtmlWebpackPlugin()];
 
 ```js
 plugins: [
-    new webpack.DefinePlugin({
-        BASE_SRC: '"./"' // DefinePlugin 这里需要注意字符串要带上引号
-    })
-];
+  new webpack.DefinePlugin({
+    BASE_SRC: '"./"' // DefinePlugin 这里需要注意字符串要带上引号
+  })
+]
 ```
 
 ### copy-webpack-plugin
@@ -215,7 +215,7 @@ plugins: [
 拷贝文件，用来拷贝静态文件
 
 ```js
-plugins: [new CopyWebpackPlugin()];
+plugins: [new CopyWebpackPlugin()]
 ```
 
 ### \* MiniCssExtractPlugin
@@ -268,6 +268,10 @@ HMR 的插件
 
 通过将公共模块从 bundle 中分离出来，得到的块文件可以在最初加载一次，并存储在缓存中供以后使用。这将导致页面速度优化，因为浏览器可以快速地从缓存提供共享代码，而不是在访问新页面时强制加载更大的包。
 
+### mini-css-extract-plugin
+
+webpack 4 中 css 以 link 标签形式加载到 head 中。分离 css 并单独打包。
+
 ## babel
 
 对 js 做兼容处理
@@ -293,18 +297,18 @@ babel7 之后只需要添加 core-js regenerator-runtime 即可。
 
 ```js
 module.exports = {
-    presets: [
-        "@babel/preset-env",
-        {
-            // false: 不对当前的 js 做 polyfill 处理
-            // usage：依据代码中所使用到的代码做兼容处理
-            // entry：依据 browserslist 选择的浏览器范围做处理
-            useBuiltIns: "usage",
-            // 安装的 corejs 版本
-            corejs: 3
-        }
-    ]
-};
+  presets: [
+    '@babel/preset-env',
+    {
+      // false: 不对当前的 js 做 polyfill 处理
+      // usage：依据代码中所使用到的代码做兼容处理
+      // entry：依据 browserslist 选择的浏览器范围做处理
+      useBuiltIns: 'usage',
+      // 安装的 corejs 版本
+      corejs: 3
+    }
+  ]
+}
 ```
 
 如果一些第三方包已经使用了 @babel/polyfill，再在配置中使用 usage 做处理会有问题，这时候需要在 webpack 配置中给 babel-loader 添加 exclude: /node_modules/
@@ -508,12 +512,12 @@ optimization.usedExports，标记出哪些代码没有被使用，清理还需�
 
 ```js
 module.exports = {
-    //...
-    optimization: {
-        usedExports: true,
-        minimizer: [new TerserPlugin()]
-    }
-};
+  //...
+  optimization: {
+    usedExports: true,
+    minimizer: [new TerserPlugin()]
+  }
+}
 ```
 
 #### sideEffects
@@ -533,7 +537,7 @@ tree-shaking 的前提是必须使用 ESM。但是 babel 中的 preset-env 会�
 prefetch：预加载，在浏览器空闲时间加载文件。
 
 ```js
-import(/* webpackPrefetch: true */ "./path/to/LoginModal.js");
+import(/* webpackPrefetch: true */ './path/to/LoginModal.js')
 ```
 
 preload：会与父块并行加载。
@@ -598,8 +602,8 @@ vue inspect > output.js
 
 ## 其他 tips
 
--   \_\_dirname: 指向当前执行 js 文件的绝对路径，到文件夹为止。
--   path.join: 将传入的参数拼接成一个路径。会自动使用平台特定的分隔符把参数连接(自动加'/')，并规范化生成的路径。
--   path.resolve: 根据参数解析出一个绝对路径。根据参数从右往左，直到解析出一个绝对路径。
--   process.cwd: 当前执行 node 命令时候的文件夹地址。
--   如果 webpack 配置导出的是函数，其形参 env 的值可以就是 npm script 中的 --env 传入的值。
+- \_\_dirname: 指向当前执行 js 文件的绝对路径，到文件夹为止。
+- path.join: 将传入的参数拼接成一个路径。会自动使用平台特定的分隔符把参数连接(自动加'/')，并规范化生成的路径。
+- path.resolve: 根据参数解析出一个绝对路径。根据参数从右往左，直到解析出一个绝对路径。
+- process.cwd: 当前执行 node 命令时候的文件夹地址。
+- 如果 webpack 配置导出的是函数，其形参 env 的值可以就是 npm script 中的 --env 传入的值。

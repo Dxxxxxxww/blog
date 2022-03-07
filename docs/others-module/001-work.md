@@ -23,3 +23,31 @@ cordova 项目打包后会在包下生成一个 chcp.json 的文件，
 ### 浏览器环境
 
 如果在浏览器环境下我们打包了一个项目，部署到服务器后，浏览器访问到的直接是包下的资源。
+
+## 配置保存通过 mixin 全局代理问题
+
+由于项目中的用户配置比较杂乱，且嵌套太深，所以想通过使用 mixin 的方式，在一个统一的地方进行命名约定，以及 created 时进行代理，用来解决：1。比较杂乱；2.嵌套太深。两个问题。以下是代码：
+
+```js
+import { mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
+
+export const configMixin = {
+  computed: {
+    ...mapGetters(['staffInfo'])
+  },
+  methods: {
+    ...mapActions(['get_staff_info']),
+    setStaffInfo(key, params) {
+      const staffInfo = this.staffInfo
+      staffInfo.extConfig[key] = params
+      return this.get_staff_info({ ...staffInfo, type: 1 })
+    },
+    proxyStaffInfoTarget(key) {
+      this[key + 'Mixin'] = this.staffInfo.extConfig[key]
+    }
+  }
+}
+```
+
+然而后续发现，以这种方式进行代理，this.xxMixin 是不具备响应式的，当我们配置保存后，vuex 的数据更新，this.xxMixin 不会自动更新。并且如果在组件中，在 computed 中使用 this.xxMixin.xx 的话，会在组件初始化时报错（不能从 undefined 上获取 xx）。这是因为 initComputed 执行在 created 之前。所以最后放弃了这种办法。
