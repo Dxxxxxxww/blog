@@ -36,6 +36,7 @@ const bailRE = new RegExp(`[^${unicodeRegExp.source}.$_\\d]`)
  * 通过字符串路径来获取函数。
  * 这里就是返回一个函数，函数作用是获取 watcher 监听的 data。
  * 获取的过程中会执行到 data 的 getter 触发依赖收集，收集当前的 user watcher。
+ * path: expOrFn
  */
 export function parsePath (path: string): any {
   if (bailRE.test(path)) {
@@ -44,8 +45,13 @@ export function parsePath (path: string): any {
   const segments = path.split('.')
   // obj 值为 vm
   return function (obj) {
-    // 所以这里的遍历就是 vm.parentProp.sonProp
     // 一层一层的遍历拿到 user watcher 的最终的函数
+    // data: {
+    //   a: {
+    //     b: 'msg'
+    //   }
+    // }
+    // this.data.a.b 访问时触发依赖收集
     for (let i = 0; i < segments.length; i++) {
       if (!obj) return
       obj = obj[segments[i]]

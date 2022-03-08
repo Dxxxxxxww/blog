@@ -141,8 +141,10 @@ export default class Watcher {
     try {
       // 调用构造函数中存储的 getter 也就是 expOrFn，以 vm 作为 this 调用
       // 对于 渲染watcher 来说就是调用 updateComponent, 调用 _update -> _render() 获取到新的 data
-      // 对于 计算watcher 来说就是调用 getter，也就是用户定义的函数，在函数中会对 data 进行访问，获取数据，就会触发 data 的依赖收集，收集计算watcher
+      // 对于 计算watcher 来说就是调用 getter，也就是用户定义的函数，
+      //    在函数中会对 data 进行访问，获取数据，就会触发 data 的依赖收集，收集计算watcher
       // 对于 user watcher 来说就是调用 获取 data 的函数，拿到了监听的 data。
+      //    在函数中会对 data 进行访问，获取数据，就会触发 data 的依赖收集，收集 user watcher
       // 不管是初始化，还是数据更新，数据的获取都是通过调用 getter() 来获取的，
       value = this.getter.call(vm, vm)
     } catch (e) {
@@ -174,6 +176,12 @@ export default class Watcher {
     const id = dep.id
     // 判断当前watcher 是否已经存储了 dep 对象
     if (!this.newDepIds.has(id)) {
+      // 当数据更新导致派发更新时，newDeps/newDepIds 在上一次的 watcher.get 调用完就均已清空，
+      // 所以会重新收集 dep（这里的 dep 其实还是原来的，dep 是不会清空和重新生成的），
+      // 但是 depIds 依旧保持着旧的id，所以这里不会重复添加 watcher，
+      // 这里也就是说明，每一次的依赖收集派发更新的过程中，依赖(dep) 是需要实时更新的，总是要拿到新的依赖，
+      // 而观察者则不需要变。
+
       // 如果没有的话就把 dep 存储到当前的watcher 中
       // set存储id
       this.newDepIds.add(id)
@@ -183,12 +191,10 @@ export default class Watcher {
       // 然而一个组件会有多个数据，每一个对象数据就会有一个 dep
       // watcher 需要和多条数据建立关系，所以是多对多
       this.newDeps.push(dep)
-      // 当数据更新导致派发更新时，newDeps/newDepIds 在上一次的 watcher.get 调用完就均已清空，所以会重新收集 dep，
-      // 但是 depIds 依旧保持着旧的id，所以这里不会重复添加 watcher
-      // 这里也就是说明，每一次的依赖收集派发更新的过程中，依赖(dep) 是需要实时更新的，总是要拿到新的依赖
-      // 而订阅者则不需要变。
+      // 如果旧依赖中不包含新依赖的id，则需要将当前 watcher 添加到 依赖的观察者池 中
+      // 这样新依赖派发更新也能更新到此 watcher
       if (!this.depIds.has(id)) {
-        // 然后把当前watcher 添加到 当前dep的subs 订阅者池中
+        // 然后把当前watcher 添加到 当前dep的subs 观察者池中
         dep.addSub(this)
       }
     }

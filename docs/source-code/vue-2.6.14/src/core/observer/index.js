@@ -232,9 +232,10 @@ export function defineReactive (
     get: function reactiveGetter () {
       // 如果用户定义的 getter 存在，则通过 getter 获取 value，否则直接获取
       const value = getter ? getter.call(obj) : val
-      // 如果存在当前依赖目标，即 watcher，则收集依赖
-      // Dep.target 会使用 dep.js 中的 pushTarget 赋值
-      // 而 pushTarget 在 watcher 执行 get() 的时候才会真正传入 watcher
+      // 如果存在当前依赖目标，即 watcher，则收集依赖。
+      // Dep.target 会使用 dep.js 中的 pushTarget 赋值，
+      // 而 pushTarget 在 watcher 执行 get() 的时候才会真正传入 watcher。
+      // 只要栈顶有watcher，只要访问数据就会进行依赖收集
       if (Dep.target) {
         // 将数据与 watcher 建立依赖关系
         // 内部调用 watcher 的 addDep 方法
@@ -292,6 +293,7 @@ export function defineReactive (
  * Set a property on an object. Adds the new property and
  * triggers change notification if the property doesn't
  * already exist.
+ * 设置对象的属性。添加新属性并当该属性原本不存在时触发更改通知。
  */
 export function set (target: Array<any> | Object, key: any, val: any): any {
   // 如果是 undefined 或者是 原始值的话，则报警
@@ -317,7 +319,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   }
   // 获取 target 的 observe 对象
   const ob = (target: any).__ob__
-  // 如果对象是 Vue 实例或者 是 $data 根数据 则报错，不允许对 vm 和 $data 上
+  // 如果对象是 Vue 实例或者 是 $data 根数据 则报错，不允许对 vm 和 $data 做 $set 操作
   // $data 根数据的 ob 对象上的 vmCount 为 1，其他都是0
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -341,18 +343,26 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
 
 /**
  * Delete a property and trigger change if necessary.
+ * 删除属性并触发更改。
  */
 export function del (target: Array<any> | Object, key: any) {
+  // 如果是 undefined 或者是 原始值的话，则报警
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 给数组删除成员时，使用升级版 splice
+  // 如果是数组，且 key 是合法的数组索引
   if (Array.isArray(target) && isValidArrayIndex(key)) {
+    // 这里删除后直接 return 是因为 升级版的数组 api 中已经会去做 notify 操作
     target.splice(key, 1)
     return
   }
+  // 获取 target 的 observe 对象
   const ob = (target: any).__ob__
+  // 如果对象是 Vue 实例或者 是 $data 根数据 则报错，不允许对 vm 和 $data 做 $del 操作
+  // $data 根数据的 ob 对象上的 vmCount 为 1，其他都是0
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid deleting properties on a Vue instance or its root $data ' +
@@ -360,13 +370,18 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  // 如果当前对象上没有对应的 key 属性（继承的也不算，只能是自身的）直接返回
   if (!hasOwn(target, key)) {
     return
   }
+  // 删除属性
   delete target[key]
+  // 如果没有 ob，则说明不是响应式对象，就不需要响应式处理，直接返回
   if (!ob) {
     return
   }
+  // 派发更新
+  // 这里的 dep 就是 new Observe 实例时创建的 ob
   ob.dep.notify()
 }
 

@@ -25,7 +25,7 @@ export default class Dep {
     this.id = uid++
     this.subs = []
   }
-  // 把 watcher 添加到 订阅者池 中
+  // 把 watcher 添加到 观察者池 中
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
