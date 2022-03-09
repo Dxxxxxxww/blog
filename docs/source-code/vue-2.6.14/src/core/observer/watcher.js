@@ -143,7 +143,7 @@ export default class Watcher {
       // 对于 渲染watcher 来说就是调用 updateComponent, 调用 _update -> _render() 获取到新的 data
       // 对于 计算watcher 来说就是调用 getter，也就是用户定义的函数，
       //    在函数中会对 data 进行访问，获取数据，就会触发 data 的依赖收集，收集计算watcher
-      // 对于 user watcher 来说就是调用 获取 data 的函数，拿到了监听的 data。
+      // 对于 user watcher 来说就是调用 获取 data 的函数，拿到了 监听的data值。
       //    在函数中会对 data 进行访问，获取数据，就会触发 data 的依赖收集，收集 user watcher
       // 不管是初始化，还是数据更新，数据的获取都是通过调用 getter() 来获取的，
       value = this.getter.call(vm, vm)
@@ -274,6 +274,7 @@ export default class Watcher {
         // 如果是 user watcher 则在 invokeWithErrorHandling 中调用 cb 回调
         if (this.user) {
           const info = `callback for watcher "${this.expression}"`
+          // 将新值，旧值传给 cb
           invokeWithErrorHandling(this.cb, this.vm, [value, oldValue], this.vm, info)
         } else {
           // 如果不是 user watcher 则直接执行

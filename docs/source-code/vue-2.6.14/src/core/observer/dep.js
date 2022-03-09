@@ -31,6 +31,7 @@ export default class Dep {
   }
 
   removeSub (sub: Watcher) {
+    // 相同watcher引用，可以删除  shared/util.js
     remove(this.subs, sub)
   }
   // 内部调用 watcher 的 addDep 方法
@@ -51,7 +52,7 @@ export default class Dep {
       // we need to sort them now to make sure they fire in correct
       // 我们需要现在排序，以确保他们在正确的执行
       // order
-      // 开发环境下按id排序
+      // 开发环境下按 id 排序
       subs.sort((a, b) => a.id - b.id)
     }
     // 遍历调用 watcher 的 update 方法

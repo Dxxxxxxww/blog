@@ -210,7 +210,7 @@ export function queueWatcher (watcher: Watcher) {
       while (i > index && queue[i].id > watcher.id) {
         i--
       }
-      // 在 id 相同的位置后移一位，就获得了合适插入的位置
+      // 在找到的位置后移一位，就获得了合适插入的位置
       queue.splice(i + 1, 0, watcher)
     }
     // queue the flush

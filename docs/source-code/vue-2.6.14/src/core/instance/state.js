@@ -359,7 +359,7 @@ function initMethods (vm: Component, methods: Object) {
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
-    // 如果 watch 值是数组的话，则遍历创建
+    // 如果 watch 值是数组的话，则遍历创建。在文档 https://cn.vuejs.org/v2/api/#watch 中有用法介绍
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
@@ -379,10 +379,12 @@ function createWatcher (
   handler: any,
   options?: Object
 ) {
+  // 判断是否是对象
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler
   }
+  // 如果是字符串则去实例上查找对应的函数，也就是 methods 中定义的方法
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
@@ -442,6 +444,7 @@ export function stateMixin (Vue: Class<Component>) {
       // user watcher 有 immediate 时 让 Dep.target = undefined 让 watcher 栈顶传入 undefined
       // 在不触发依赖收集的情况下执行 cb
       pushTarget()
+      // 这里的 watcher.value 就是创建 user watcher 时，执行 get() 获取到的 监听的data值
       invokeWithErrorHandling(cb, vm, [watcher.value], vm, info)
       // 执行完后将 watcher 栈复原
       popTarget()
