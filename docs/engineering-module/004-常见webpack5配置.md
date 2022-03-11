@@ -34,10 +34,10 @@ entry 的相对路径就是相对于 context 而言的。
 
 css 相关的 loader 有以下几种：
 
--   css-loader
--   style-loader
--   less-loader
--   postcss-loader
+- css-loader
+- style-loader
+- less-loader
+- postcss-loader
 
 loader 执行顺序是从右往左，从下往上。所以编写顺序应该是：
 
@@ -56,6 +56,7 @@ loader 执行顺序是从右往左，从下往上。所以编写顺序应该是�
         {
             loader: 'css-loader',
             options: {
+                // css 中又导入了其他css文件就需要这样处理
                 // 遇到需要被之前的 loader 再处理的文件的话，就修改这个步进值
                 // 1 就表示 只需要前面一个 -> postcss-loader。 2 表示前面两个，以此类推
                 importLoaders: 1,
@@ -72,7 +73,7 @@ loader 执行顺序是从右往左，从下往上。所以编写顺序应该是�
 
 ### 图片，字体相关 loader
 
--   file-loader
+- file-loader
 
 拷贝图片，分开请求。可以修改打包后的图片名称。
 
@@ -90,7 +91,7 @@ loader 执行顺序是从右往左，从下往上。所以编写顺序应该是�
 }
 ```
 
--   url-loader
+- url-loader
 
 将图片以 base64 的方式放入代码中，减少请求次数。
 
@@ -145,8 +146,8 @@ output: {
 
 ### ts 相关 loader
 
--   ts-loader: ts 有语法错误时可以在编译期间报错。做语法校验。
--   babel-loader: ts 语法错误不会在编译期间报错，但是可以将一些 js 高阶语法做兼容处理。需要在 preset 中加上@babel/preset-typescript
+- ts-loader: ts 有语法错误时可以在编译期间报错。做语法校验。
+- babel-loader: ts 语法错误不会在编译期间报错，但是可以将一些 js 高阶语法做兼容处理。需要在 preset 中加上@babel/preset-typescript
 
 解决办法: 使用 babel-loader 并在 npm 中添加脚本
 
@@ -158,6 +159,8 @@ scriptes: {
 ```
 
 ## browserslist
+
+[browsers-use](https://caniuse.com/usage-table)
 
 ```js
 // 选择需要兼容的浏览器范围
@@ -184,7 +187,7 @@ not ie <= 8
 用来删除/清理你的构建文件夹。
 
 ```js
-plugins: [new CleanWebpackPlugin()];
+plugins: [new CleanWebpackPlugin()]
 ```
 
 ### html-webpack-plugin
@@ -192,7 +195,7 @@ plugins: [new CleanWebpackPlugin()];
 简化了 HTML 文件的创建，为 webpack 打包服务。可自定 html 模板文件。
 
 ```js
-plugins: [new HtmlWebpackPlugin()];
+plugins: [new HtmlWebpackPlugin()]
 ```
 
 ### webpack.DefinePlugin
@@ -201,10 +204,10 @@ plugins: [new HtmlWebpackPlugin()];
 
 ```js
 plugins: [
-    new webpack.DefinePlugin({
-        BASE_SRC: '"./"' // DefinePlugin 这里需要注意字符串要带上引号
-    })
-];
+  new webpack.DefinePlugin({
+    BASE_SRC: '"./"' // DefinePlugin 这里需要注意字符串要带上引号
+  })
+]
 ```
 
 ### copy-webpack-plugin
@@ -212,7 +215,7 @@ plugins: [
 拷贝文件，用来拷贝静态文件
 
 ```js
-plugins: [new CopyWebpackPlugin()];
+plugins: [new CopyWebpackPlugin()]
 ```
 
 ### \* MiniCssExtractPlugin
@@ -236,6 +239,8 @@ scope hoisting,也可以说是合并模块。会“提升”或将所有模块�
 css tree-shaking 插件
 
 ### CompressionWebpackPlugin
+
+优化手段。
 
 开启压缩，默认 gzip 算法。把资源压缩好给服务器，当浏览器支持 gzip 时，就可以使用已经压缩过的代码。
 
@@ -263,6 +268,10 @@ HMR 的插件
 
 通过将公共模块从 bundle 中分离出来，得到的块文件可以在最初加载一次，并存储在缓存中供以后使用。这将导致页面速度优化，因为浏览器可以快速地从缓存提供共享代码，而不是在访问新页面时强制加载更大的包。
 
+### mini-css-extract-plugin
+
+webpack 4 中 css 以 link 标签形式加载到 head 中。分离 css 并单独打包。
+
 ## babel
 
 对 js 做兼容处理
@@ -288,25 +297,25 @@ babel7 之后只需要添加 core-js regenerator-runtime 即可。
 
 ```js
 module.exports = {
-    presets: [
-        "@babel/preset-env",
-        {
-            // false: 不对当前的 js 做 polyfill 处理
-            // usage：依据代码中所使用到的代码做兼容处理
-            // entry：依据 browserslist 选择的浏览器范围做处理
-            useBuiltIns: "usage",
-            // 安装的 corejs 版本
-            corejs: 3
-        }
-    ]
-};
+  presets: [
+    '@babel/preset-env',
+    {
+      // false: 不对当前的 js 做 polyfill 处理
+      // usage：依据代码中所使用到的代码做兼容处理
+      // entry：依据 browserslist 选择的浏览器范围做处理
+      useBuiltIns: 'usage',
+      // 安装的 corejs 版本
+      corejs: 3
+    }
+  ]
+}
 ```
 
 如果一些第三方包已经使用了 @babel/polyfill，再在配置中使用 usage 做处理会有问题，这时候需要在 webpack 配置中给 babel-loader 添加 exclude: /node_modules/
 
 ### 如何根据模式有选择的使用 babel 插件
 
-可以在 webpack 中给 process.env 手动挂载值，然后在 babelrc 中通过 process.env. 获取。如果单纯的通过 webpack.mode 设置的 process.env.NODE_ENV，在诸如 babelrc 这样的非模块文件中无法获取到。
+可以在 webpack 配置文件中给 process.env 手动挂载值，然后在 babelrc 中通过 process.env. 获取。如果单纯的通过 webpack.mode 设置的 process.env.NODE_ENV，在诸如 babelrc 这样的非模块文件中无法获取到。
 
 #### why？
 
@@ -409,17 +418,23 @@ webpack5 文档中已不存在
 
 source-map：加密代码与源代码的映射关系，方便调试定位源代码。
 
+hidden-source-map：生产环境可以配置成这个。与 source-map 相同，但不向 bundle 添加引用注释。可以通过 SourceMaps 从错误报告映射错误堆栈跟踪，并且浏览器开发工具查看不到源代码。
+
+nosources-source-map：生产环境可以配置成这个。生成的 map 文件不包含源码，但是会正确提示错误的行数。但是项目的目录结构和文件名称会暴露在 Sources 面板
+
 ## optimization
 
 优化
 
 ### optimization.splitChunks
 
-代码分割，可以将业务代码和第三方包分离。这样做的好处是，基本不变动的第三方包在用户端会有缓存，当我们软件更新时，用户端只需要下载更新业务代码。
+优化手段。
+
+code splitting，代码分割，可以将业务代码和第三方包分离。这样做的好处是，基本不变动的第三方包在用户端会有缓存，当我们软件更新时，用户端只需要下载更新业务代码。
 
 ```js
 splitChunks: {
-     chunks: 'all',
+      chunks: 'all', // 'async'， 默认值为 'initial'
 }
 ```
 
@@ -433,6 +448,10 @@ splitChunks: {
 ```
 
 vue 中会使用 cacheGroups 将第三方包改名为 vender
+
+#### 动态 import
+
+动态 import 可以实现懒加载。动态 import 的文件会自动拆包(splitChunks)，因为动态请求时，文件不一定已经加载完成，所以不能与其他代码打包在一起。
 
 #### splitChunks.miniSize
 
@@ -481,16 +500,44 @@ cacheGroups: {
 
 压缩模块，对文件进行压缩。对于 js 文件来说可以使用 TerserWebpackPlugin，css 文件可以使用 CssMinimizerWebpackPlugin。
 
-## 动态 import
+## tree-shaking
 
-动态 import 可以实现懒加载。
+优化手段。
+
+基于 ESM 的静态分析实现，将一些不用的代码（导出了，但是没有地方有导入使用，dead-code）从打包流程中剔除。它是一组搭配使用后的优化效果，不是某个配置选项，在生产模式下自动启用。
+
+#### usedExports
+
+optimization.usedExports，标记出哪些代码没有被使用，清理还需要通过设置 optimization.minimize，通过 TerserWebpackPlugin 插件压缩代码。
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    usedExports: true,
+    minimizer: [new TerserPlugin()]
+  }
+}
+```
+
+#### sideEffects
+
+optimization.sideEffects 开启。 package.json sideEffects 标记保留文件。
+
+使用 sideEffects 的前提是确保文件中没有副作用代码。因为如果有副作用代码，而被删除了的话，就会导致程序出错。这里的副作用代码指除了导出成员外所做的事情(比如在 window 上挂载)。
+
+false 为删除副作用代码，true 为保留。数组中配置路径，可以有选择的保留哪些副作用，可以通过这种方式来选择保留一些需要的 js 和 css 代码。不过 一般而言，可以在 配置 css 相关 loader 的地方，跟 test, use 同级下增加 sideEffects: true，来保留 css。
+
+这两种不是替代的关系。
+
+tree-shaking 的前提是必须使用 ESM。但是 babel 中的 preset-env 会将 ESM 转换成 CMJ。webpack 拿到 转换后的代码，就不能执行 tree-shaking 了(最新版 babel 已经支持 ESM，它会禁用 ESM->CMJ 的转换，所以 webpack 能使用 tree-shaking)。
 
 ### prefetch preload
 
 prefetch：预加载，在浏览器空闲时间加载文件。
 
 ```js
-import(/* webpackPrefetch: true */ "./path/to/LoginModal.js");
+import(/* webpackPrefetch: true */ './path/to/LoginModal.js')
 ```
 
 preload：会与父块并行加载。
@@ -504,35 +551,21 @@ preload：会与父块并行加载。
 
 ## externals
 
+优化手段。
+
 可以将一些基本不变的包排除在打包范围外，放在服务器上请求，常与 CDN 配合使用。排除在外的文件，需要在 public/index.html 模板文件中添加资源在 cdn 上的地址。
 
 这样做可以优化打包速度。对于部署在 cdn 上的包来说，一般也都是基本不变的资源，用户在请求一次之后后续都会有缓存的。
 
+cdn 优点：通过中心平台的负载均衡、内容分发、调度等功能模块，使用户就近获取所需内容，降低网络拥塞，提高用户访问响应速度和命中率。
+
 ## dll
+
+优化手段。
 
 仅做了解，在 webpackv4 起已经不需要通过 dll 来优化打包速度了。vue/react 中已移除 dll 打包操作。
 
 与 externals 排除包然后放在 cdn 上有点类似。将一些不常改变的包移动到单独的编译中，进行单独的打包操作(单独起一个项目，引入包进行打包操作)，生成 dll 库，后续可以直接引入。减少项目打包时间。
-
-## tree-shaking
-
-基于 ESM 的静态分析实现，将一些不用的代码（导出了，但是没有地方有导入使用，dead-code）从打包流程中剔除。它是一组搭配使用后的优化效果，不是某个配置选项，在生产模式下自动启用。
-
-#### usedExports
-
-optimization.usedExports，标记出哪些代码没有被使用，清理还需要通过设置 optimization.minimize，通过 TerserWebpackPlugin 插件压缩代码。
-
-#### sideEffects
-
-optimization.sideEffects 开启。 package.json sideEffects 标记保留文件。
-
-使用 sideEffects 的前提是确保文件中没有副作用代码。因为如果有副作用代码，而被删除了的话，就会导致程序出错。这里的副作用代码指除了导出成员外所做的事情(比如在 window 上挂载)。
-
-false 为删除副作用代码，true 为保留。数组中配置路径，可以有选择的保留哪些副作用，可以通过这种方式来选择保留一些需要的 js 和 css 代码。不过 一般而言，可以在 配置 css 相关 loader 的地方，跟 test, use 同级下增加 sideEffects: true，来保留 css。
-
-这两种不是替代的关系。
-
-tree-shaking 的前提是必须使用 ESM。但是 babel 中的 preset-env 会将 ESM 转换成 CMJ。webpack 拿到 转换后的代码，就不能执行 tree-shaking 了(最新版 babel 已经支持 ESM，它会禁用 ESM->CMJ 的转换，所以 webpack 能使用 tree-shaking)。
 
 ## webpack 打包库
 
@@ -548,10 +581,29 @@ output: {
 }
 ```
 
+## 暴露 react 的 webpack 配置
+
+npm run eject
+
+```js
+// package.json
+script: {
+    eject: react-scripts eject
+}
+```
+
+## 暴露 vue 的 webpack 配置
+
+https://cli.vuejs.org/zh/guide/webpack.html#%E5%AE%A1%E6%9F%A5%E9%A1%B9%E7%9B%AE%E7%9A%84-webpack-%E9%85%8D%E7%BD%AE
+
+```js
+vue inspect > output.js
+```
+
 ## 其他 tips
 
--   \_\_dirname: 指向当前执行 js 文件的绝对路径，到文件夹为止。
--   path.join: 将传入的参数拼接成一个路径。会自动使用平台特定的分隔符把参数连接(自动加'/')，并规范化生成的路径。
--   path.resolve: 根据参数解析出一个绝对路径。根据参数从右往左，直到解析出一个绝对路径。
--   process.cwd: 当前执行 node 命令时候的文件夹地址。
--   如果 webpack 配置导出的是函数，其形参 env 的值可以就是 npm script 中的 --env 传入的值。
+- \_\_dirname: 指向当前执行 js 文件的绝对路径，到文件夹为止。
+- path.join: 将传入的参数拼接成一个路径。会自动使用平台特定的分隔符把参数连接(自动加'/')，并规范化生成的路径。
+- path.resolve: 根据参数解析出一个绝对路径。根据参数从右往左，直到解析出一个绝对路径。
+- process.cwd: 当前执行 node 命令时候的文件夹地址。
+- 如果 webpack 配置导出的是函数，其形参 env 的值可以就是 npm script 中的 --env 传入的值。

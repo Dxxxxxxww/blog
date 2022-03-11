@@ -7,7 +7,35 @@
     <title>Document</title>
   </head>
   <body>
-    <script src="./test.js"></script>
+    <div id="app">
+      <div>{{ count }}</div>
+      <div v-text="msg"></div>
+      <div v-html="ht"></div>
+      <div v-on:click="handleClick">click here</div>
+      <div>
+        <input v-model="count" />
+      </div>
+    </div>
+    <!-- <script src="./test.js"></script> -->
     <script src="./test2.js"></script>
+    <!-- <script src="./write.js"></script> -->
+    <script>
+      window.vm = new Vue({
+        el: '#app',
+        data: {
+          msg: 'hello vue',
+          ht: '<span>this is a span</span>',
+          count: 100
+        },
+        methods: {
+          handleClick(e) {
+            console.log('click', this)
+          }
+        }
+      })
+      // console.log(vm)
+      // vm.count = { a: 'a' }
+      // console.log(vm)
+    </script>
   </body>
 </html>

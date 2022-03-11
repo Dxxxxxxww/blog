@@ -16,7 +16,7 @@ react hooks 依赖需要注意的点：
 [sandbox](https://codesandbox.io/s/usecallback1-yu1sp?file=/src/App.js)
 
 ```js
-const [count, setCount] = useState(0);
+const [count, setCount] = useState(0)
 // 等同于 vue3 的 const count = ref(0)
 // 只不过针对 count 的修改操作，需要使用 useState 返回的操作函数—— setCount。
 ```
@@ -27,21 +27,18 @@ const [count, setCount] = useState(0);
 
 ```js
 // 需要传入一个返回函数的函数
-const [cb, setCb] = useState(() => () => {});
+const [cb, setCb] = useState(() => () => {})
 ```
 
 2. Effect Hook
 
 ```js
 useEffect(() => {
-    ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
-    return () => {
-        ChatAPI.unsubscribeFromFriendStatus(
-            props.friend.id,
-            handleStatusChange
-        );
-    };
-});
+  ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange)
+  return () => {
+    ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange)
+  }
+})
 ```
 
 按照 react 官方文档的解释：
@@ -83,38 +80,35 @@ useEffect 还可以传递第二个参数，旨在通过跳过 Effect 进行性�
 
 ```js
 useEffect(() => {
-    document.title = `You clicked ${count} times`;
-}, [count]); // 仅在 count 更改时更新
+  document.title = `You clicked ${count} times`
+}, [count]) // 仅在 count 更改时更新
 ```
 
 ```js
 function FriendStatus(props) {
+  // ...
+  useEffect(() => {
     // ...
-    useEffect(() => {
-        // ...
-        ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
-        return () => {
-            ChatAPI.unsubscribeFromFriendStatus(
-                props.friend.id,
-                handleStatusChange
-            );
-        };
-    });
+    ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange)
+    return () => {
+      ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange)
+    }
+  })
 }
 
 // Mount with { friend: { id: 100 } } props
-ChatAPI.subscribeToFriendStatus(100, handleStatusChange); // 运行第一个 effect
+ChatAPI.subscribeToFriendStatus(100, handleStatusChange) // 运行第一个 effect
 
 // Update with { friend: { id: 200 } } props
-ChatAPI.unsubscribeFromFriendStatus(100, handleStatusChange); // 清除上一个 effect
-ChatAPI.subscribeToFriendStatus(200, handleStatusChange); // 运行下一个 effect
+ChatAPI.unsubscribeFromFriendStatus(100, handleStatusChange) // 清除上一个 effect
+ChatAPI.subscribeToFriendStatus(200, handleStatusChange) // 运行下一个 effect
 
 // Update with { friend: { id: 300 } } props
-ChatAPI.unsubscribeFromFriendStatus(200, handleStatusChange); // 清除上一个 effect
-ChatAPI.subscribeToFriendStatus(300, handleStatusChange); // 运行下一个 effect
+ChatAPI.unsubscribeFromFriendStatus(200, handleStatusChange) // 清除上一个 effect
+ChatAPI.subscribeToFriendStatus(300, handleStatusChange) // 运行下一个 effect
 
 // Unmount
-ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange); // 清除最后一个 effect
+ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange) // 清除最后一个 effect
 ```
 
 3. useRef
@@ -127,28 +121,28 @@ ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange); // 清除最后一
 
 ```js
 export const useDocumentTitle = (
-    title: string,
-    keepOnUnmount: boolean = false
+  title: string,
+  keepOnUnmount: boolean = false
 ) => {
-    // useRef 创建一个在整个 hook 生命周期中不会改变的值
-    // 使用 useRef 而非闭包来保存，是为了解决 react 对没有收集 oldTitle 作为依赖的警告
-    // 如果使用闭包变量并且还添加了依赖的话，那么 oldTitle 的值在每次渲染后都会变为新的 title，
-    // 就失去了保存原来旧 title 的目的
-    const oldTitle = useRef(document.title).current;
-    // const oldTitle = document.title;
-    // useEffect 中如果使用了外部的变量或者状态，而没有在第二个参数中加入依赖的话，就会产生闭包的问题
-    useEffect(() => {
-        document.title = title;
-    }, [title]);
+  // useRef 创建一个在整个 hook 生命周期中不会改变的值
+  // 使用 useRef 而非闭包来保存，是为了解决 react 对没有收集 oldTitle 作为依赖的警告
+  // 如果使用闭包变量并且还添加了依赖的话，那么 oldTitle 的值在每次渲染后都会变为新的 title，
+  // 就失去了保存原来旧 title 的目的
+  const oldTitle = useRef(document.title).current
+  // const oldTitle = document.title;
+  // useEffect 中如果使用了外部的变量或者状态，而没有在第二个参数中加入依赖的话，就会产生闭包的问题
+  useEffect(() => {
+    document.title = title
+  }, [title])
 
-    useEffect(() => {
-        return () => {
-            if (!keepOnUnmount) {
-                document.title = oldTitle;
-            }
-        };
-    }, [keepOnUnmount, oldTitle]);
-};
+  useEffect(() => {
+    return () => {
+      if (!keepOnUnmount) {
+        document.title = oldTitle
+      }
+    }
+  }, [keepOnUnmount, oldTitle])
+}
 ```
 
 4. useMemo
@@ -203,3 +197,36 @@ react 中想要阻止冒泡的办法：
 1. 使用 window.addEventListener 来代替 document.addEventListener (v17 之前)，因为 event.stopPropagation() 可以停止事件传播到 window；
 2. e.nativeEvent.stopImmediatePropagation()。组件中事件处理器接收到的 event 事件对象是 React 包装后的 SyntheticEvent 事件对象。但可通过它的 nativeEvent 属性获取到原生的 DOM 事件对象。通过调用这个原生的事件对象上的 stopImmediatePropagation() 方法可达到阻止冒泡的目的；
 3. 绕开 react 直接在元素上绑定事件。通过 useRef 和 addEventListener 实现。
+
+## react 受控/非受控组件
+
+受控组件统一了表单元素的处理，但是容易有性能问题，因为每次输入字符触发 onChange，react 状态都会变化，进而重新渲染整个组件。这个时候就可以使用非受控组件去实现一些表单元素。
+
+受控组件：指状态都由 react 接管的组件。
+
+```js
+const form = () => {
+  const [value, setValue] = useState('')
+  const handleChange = (evt) => {
+    setValue(evt.target.value)
+  }
+  return <input value={value} onChange={handleChange} />
+}
+```
+
+非受控组件：状态由 html 标签内部保存。缺点就是无法动态的去更改 UI。
+
+```js
+const form = () => {
+  const iptRef = useRef()
+  const handleSubmit = (evt) => {
+    evt.preventDefault()
+    alert(iptRef.current.value)
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+      <input ref={iptRef} />
+    </form>
+  )
+}
+```

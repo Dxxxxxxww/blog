@@ -29,7 +29,7 @@ function requireSidebar() {
   return folderList.reduce(
     (result, folder) => (
       result.push({
-        title: getSidebarName(folder),
+        title: getSidebarName(`${folder[0].toUpperCase()}${folder.slice(1)}`),
         children: requireChildren(folder),
       }),
       result

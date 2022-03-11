@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>initVue</title>
+</head>
+<body>
+<div id="app">
+  <div>
+  </div>
+</div>
+
+<script src="../../dist/vue.js"></script>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    data: {
+      a: 0,
+      b: 1
+    },
+    computed: {
+      c() {
+        if (this.a === 0) return 'hello'
+        if (this.a === 1) return 'world' + this.b
+      }
+    },
+    created() {
+      console.log('created, c:', this.c)
+    },
+    mounted() {
+      this.b = 2
+      console.log('mounted, c:', this.c)
+    }
+  })
+  console.log(vm)
+</script>
+</body>
+</html>

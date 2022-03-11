@@ -11,6 +11,7 @@
   "author": "dxx",
   "license": "MIT",
   "devDependencies": {
+    "prettier": "^2.5.1",
     "vuepress": "^1.2.0"
   }
 }

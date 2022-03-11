@@ -1,6 +1,29 @@
 # 手写之三 instanceof
 
-## 一、instanceof
+## instanceof
+
+### 使用 Object.getPrototypeOf()
+
+```js
+function myInstanceOf(l, r) {
+  // 如果是基本类型直接返回 false
+  if (typeof l !== 'object') {
+    return false
+  }
+  while (true) {
+    if (l === null) {
+      return false
+    }
+    if (l === r.prototype) {
+      return true
+    }
+    l = Object.getPrototypeOf(l)
+  }
+}
+```
+
+### 使用 \_\_proto\_\_
+
 ```js
 function instanceofMock(l, r) {
   // 如果是基本类型直接返回 false
