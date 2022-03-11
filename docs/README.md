@@ -4,7 +4,7 @@ heroImage: /vue.jpg
 heroText: Dxx's Personal Blog
 tagline: Dxx's 的个人站点
 actionText: 这里进来 ~
-actionLink: /js-module/001-深拷贝
+actionLink: /js/javascript/js-write
 features:
   - title: 好好学习
     details: (躺平)
