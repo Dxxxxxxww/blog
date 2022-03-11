@@ -4,7 +4,7 @@
 
 ## 配置
 
-<b>推荐使用这种配置。</b>
+**推荐使用这种配置。**
 
 [prettier](https://www.prettier.cn/docs//install.html)
 
@@ -191,13 +191,13 @@ lint-staged: {
 rules: [
   {
     test: /\.js$/,
-    use: 'babel-loader',
+    use: 'babel-loader'
   },
   {
     test: /\.js$/,
     use: 'eslint-loader',
-    enfore: 'pre',
-  },
+    enfore: 'pre'
+  }
 ]
 ```
 

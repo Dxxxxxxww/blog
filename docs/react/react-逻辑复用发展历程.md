@@ -1,3 +1,7 @@
+---
+sidebar: auto
+---
+
 # react 逻辑复用发展历程
 
 React 团队从一开始就很注重 React 的代码复用性。

@@ -1,8 +1,12 @@
-# react 初识
+---
+sidebar: auto
+---
 
-## react hooks
+# react hooks
 
-react hooks 依赖需要注意的点：
+记录对官方 hooks 的理解，以及记录一些 hooks 的奇技淫巧
+
+**react hooks 依赖需要注意的点：**
 
 1. 基本数据类型，组件状态可以放入依赖中；
 2. 非基本数据类型非组件状态不可放入依赖中。
@@ -230,3 +234,5 @@ const form = () => {
   )
 }
 ```
+
+# hooks 记录

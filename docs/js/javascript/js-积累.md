@@ -1,8 +1,12 @@
+---
+sidebar: auto
+---
+
 # 异步
 
 [可以查看 eventloop 过程](https://www.jsv9000.app/)
 
-<b>注意：代码中不能有中文</b>
+**注意：代码中不能有中文**
 
 ## JS 单线程
 
@@ -22,15 +26,15 @@ const p2 = new Promise((resolve, reject) => {
   reject('失败2233')
 })
 
-p2.then('', (err) => {
+p2.then('', err => {
   console.log(err)
   // throw new Error('456') // 输出 errorLo:::: Error: 456
   return new Error('456') // 输出 hahaha Error: 456
 }).then(
-  (val) => {
+  val => {
     console.log('hahaha', val)
   },
-  (err) => {
+  err => {
     console.log('errorLo::::', err)
   }
 )
@@ -38,11 +42,11 @@ p2.then('', (err) => {
 
 ```js
 axios('/api').then(
-  (res) => {
+  res => {
     throw new Error('异常A')
     // return axios('/api/error') // 这个新的 promise 所产生的异常，then 的第二个参数是捕获不到的
   },
-  (err) => {
+  err => {
     // then 的第二个参数 => catch函数，只能捕获到当前 promise 出现的异常
     // 如果在当前的 promise 中返回了一个新的 promise，并且这个 promise 报错了，这里是无法捕获到的
   }
@@ -50,7 +54,7 @@ axios('/api').then(
 
 axios('/api')
   .then()
-  .catch((err) => {
+  .catch(err => {
     // 而使用这种方法是全都可以捕获到(当然 catch 中又报错了的话那自然是捕获不到的)
   })
 ```
@@ -63,7 +67,7 @@ axios('/api')
 const urls = ['/api/getInfo', '/api/getUser']
 
 // 返回一个 promise 数组
-Promise.all(urls.map((item) => axios(item))).then((valList) => {
+Promise.all(urls.map(item => axios(item))).then(valList => {
   console.log(valList)
 })
 ```
@@ -77,10 +81,10 @@ const timeout = new Promise((_, reject) => {
 })
 
 Promise.race([getInfo, timeout])
-  .then((val) => {
+  .then(val => {
     console.log(val)
   })
-  .catch((err) => {
+  .catch(err => {
     console.log(err)
   })
 ```
@@ -91,11 +95,11 @@ Promise.race([getInfo, timeout])
 
 [Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
 
-<b>在不同的浏览器下，甚至是同一种浏览器的不同版本中，异步任务的执行顺序都会有差异，也就是说他们的优先级并不是完全固定的。
+\*\*在不同的浏览器下，甚至是同一种浏览器的不同版本中，异步任务的执行顺序都会有差异，也就是说他们的优先级并不是完全固定的。
 
 注意，只是异步任务的优先级会有所不同，这主要还是各个浏览器的问题。
 
-所以 winter 也说了这种题作为面试题极为不合适。</b>
+所以 winter 也说了这种题作为面试题极为不合适。\*\*
 
 [学习资料 1](https://juejin.cn/post/6844903827611598862#heading-19)
 
@@ -110,36 +114,36 @@ var p1 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then((val) => {
+  .then(val => {
     console.log('then11', val)
     new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then((val) => {
+      .then(val => {
         console.log('then21', val)
         return 'c'
       })
-      .then((val) => {
+      .then(val => {
         console.log('then23', val)
         Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then((val) => {
+          .then(val => {
             console.log('then24', val)
             return 'e'
           })
         return 'f'
       })
-      .then((val) => {
+      .then(val => {
         console.log('then25', val)
         return 'g'
       })
     return 'z'
   })
-  .then((val) => {
+  .then(val => {
     console.log('then12', val)
   })
 
@@ -162,39 +166,39 @@ var p2 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then((val) => {
+  .then(val => {
     console.log('then11', val)
     new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then((val) => {
+      .then(val => {
         console.log('then21', val)
         return 'c'
       })
-      .then((val) => {
+      .then(val => {
         console.log('then23', val)
         return Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then((val) => {
+          .then(val => {
             console.log('then24', val)
             return 'e'
           })
       })
-      .then((val) => {
+      .then(val => {
         console.log('then25', val)
         return 'f'
       })
-      .then((val) => {
+      .then(val => {
         console.log('then26', val)
         return 'g'
       })
     return 'z'
   })
-  .then((val) => {
+  .then(val => {
     console.log('then12', val)
   })
 
@@ -214,45 +218,45 @@ var p2 = new Promise((resolve, reject) => {
 // then25 由于 return 新的 promise 的原因变为 下下轮
 ```
 
-上面两段代码的唯一区别是 <code>then23 里的 then</code> 这一个 <code>promise</code> 是否 <code>return</code>。这里其实是 <code>promise</code> 的特性：<b>如果在 '当前 then' 中手动返回一个新的 promise 则会使紧跟着 '当前 then' 之后的 '后 then' 拼接到 '新 Promise 的 then' 末尾（在本代码中指 then25 拼接到 then24 之后）。（个人理解）进入到下一轮 微任务中，而不是本轮。</b>
+上面两段代码的唯一区别是 <code>then23 里的 then</code> 这一个 <code>promise</code> 是否 <code>return</code>。这里其实是 <code>promise</code> 的特性：**如果在 '当前 then' 中手动返回一个新的 promise 则会使紧跟着 '当前 then' 之后的 '后 then' 拼接到 '新 Promise 的 then' 末尾（在本代码中指 then25 拼接到 then24 之后）。（个人理解）进入到下一轮 微任务中，而不是本轮。**
 
 ```js
 var p2 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then((val) => {
+  .then(val => {
     console.log('then11', val)
     return new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then((val) => {
+      .then(val => {
         console.log('then21', val)
         return 'c'
       })
-      .then((val) => {
+      .then(val => {
         console.log('then23', val)
         return Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then((val) => {
+          .then(val => {
             console.log('then24', val)
             return 'e'
           })
       })
-      .then((val) => {
+      .then(val => {
         console.log('then25', val)
         return 'f'
       })
-      .then((val) => {
+      .then(val => {
         console.log('then26', val)
         return 'g'
       })
   })
-  .then((val) => {
+  .then(val => {
     console.log('then12', val)
   })
 
