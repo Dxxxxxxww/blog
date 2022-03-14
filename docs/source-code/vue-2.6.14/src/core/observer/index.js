@@ -45,10 +45,11 @@ export function toggleObserving (value: boolean) {
 export class Observer {
   // 观测对象
   value: any;
+  // 起名：observer dep
   // 依赖池，用于对对象/数组本身上进行依赖收集
   // 1.解决循环对象 2. 解决新增属性的问题
-  // 对于数组来说，这里的 dep 就是其在 升级版api 中进行派发更新的关键了
-  // 对于对象来说，这里的 dep 就是在 $set $delete 时派发更新的关键了
+  // 这里的 dep 用来在数组使用 升级版 api 时派发更新
+  // 这里的 dep 用来在对象使用 $set $delete 时派发更新
   dep: Dep;
   // 实例计数器  如果是根数据，则需要将 vmCount 计数自增
   vmCount: number; // number of vms that have this object as root $data
@@ -201,6 +202,7 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  // 闭包 dep
   // 创建依赖池，用于对 key 进行依赖收集
   // 这是因为 key 对应的值可以改变赋值
   const dep = new Dep()

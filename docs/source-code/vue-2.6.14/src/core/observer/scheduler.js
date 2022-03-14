@@ -14,13 +14,19 @@ import {
 
 export const MAX_UPDATE_COUNT = 100
 
+// 各种Watcher执行队列，无论是render watcher、user watcher还是computed watcher，
+// 只要不是重复的Watcher，最终都会被推入到queue队列数组中。
 const queue: Array<Watcher> = []
 const activatedChildren: Array<Component> = []
+// 用来防止重复添加Watcher的标志对象
 let has: { [key: number]: ?true } = {}
+// 标记了每一个Watcher被遍历的次数，防止死循环导致浏览器崩溃
 let circular: { [key: number]: number } = {}
 let waiting = false
-// 表示正在刷新
+// 表示是否在刷新的状态
 let flushing = false
+// 当前遍历的Watcher实例索引，
+// 它就是flushSchedulerQueue方法中使用for循环遍历queue队列数组的index。
 let index = 0
 
 /**
@@ -74,6 +80,7 @@ if (inBrowser && !isIE) {
 function flushSchedulerQueue () {
   currentFlushTimestamp = getNow()
   // 标记当前正在刷新 queue
+  // 后续还有 watcher 进入的话，就需要通过 splice 进行 "插队" 了
   flushing = true
   let watcher, id
 
@@ -84,12 +91,17 @@ function flushSchedulerQueue () {
   // 1. Components are updated from parent to child. (because parent is always
   //    created before the child)
   // 组件的更新顺序是从父组件到子组件。(因为父组件总是在子组件之前创建)
+  //    在组件渲染的时候，会从父组件开始渲染，这时候会创建父组件的render watcher，
+  //    假设此时的parent render watcher自增id为1，接着渲染子组件，
+  //    实例化子组件的render watcher，假设此时的child render watcher自增id为2。
+  //    进行queue.sort()排序后，id值小的排序到数组前面，这样在queue进行遍历的时候，
+  //    就能保证首先处理parent render watcher，然后再处理child render watcher。
   // 2. A component's user watchers are run before its render watcher (because
   //    user watchers are created before the render watcher)
   // 组件的 user watchers 在 渲染watcher 之前运行(因为 user watchers 在 渲染watcher 之前创建)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
-  // 如果一个组件在父组件的 watcher 运行期间被销毁，它的 watcher 可以被跳过
+  // 如果一个子组件在父组件的 watcher 运行期间被销毁，它的 watcher 可以被跳过
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
@@ -111,6 +123,9 @@ function flushSchedulerQueue () {
     // 执行 watcher
     watcher.run()
     // in dev build, check and stop circular updates.
+    // 开发环境每一次 watcher 遍历时计数+1
+    // 由于上面在执行 watcher 的时候，把 has 中对应 watcher 置为 null 了。所以在死循环的情况下，
+    // 相同的watcher总是可以进入 queue，就会导致死循环发生。这里的计数限制就会起作用
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
       circular[id] = (circular[id] || 0) + 1
       if (circular[id] > MAX_UPDATE_COUNT) {
@@ -132,6 +147,7 @@ function flushSchedulerQueue () {
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
   // 重置 scheduler 的状态
+  // 当queue队列都执行完毕时，把所有相关状态还原为初始状态，这其中包括queue、has和index等
   resetSchedulerState()
 
   // call component updated and activated hooks
@@ -192,6 +208,7 @@ export function queueWatcher (watcher: Watcher) {
     has[id] = true
     // flushing 表示正在刷新
     // 如果当前队列没有在被处理
+    // 如果是 false，则代表我们可以正常的把当前Watcher推入到queue队列数组中。
     if (!flushing) {
       // 则将当前的watcher 推入队尾
       queue.push(watcher)
@@ -215,6 +232,7 @@ export function queueWatcher (watcher: Watcher) {
     }
     // queue the flush
     // 判断当前队列是否在被执行，false 表示没有被执行
+    // 如果是 false，则代表可以执行queue队列数组
     if (!waiting) {
       waiting = true
 

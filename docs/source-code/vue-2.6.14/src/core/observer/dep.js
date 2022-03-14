@@ -69,6 +69,15 @@ export default class Dep {
 // can be evaluated at a time.
 // Dep.target 用来存放目前正在使用的 watcher 全局唯一，
 // 并且一次也只能有一个 watcher 被使用
+// vue 中渲染父子组件是
+// parent beforeMount()
+// child beforeMount()
+// child mounted()
+// parent mounted()
+// 也就是后进先出，所以需要用栈的形式
+// 这样做的目的是因为组件是可以嵌套的，使用栈数组进行压栈/出栈的操作是为了在组件渲染的过程中，保持正确的依赖。
+// 这里可以查看三汪的父子组件demo
+// https://wangtunan.github.io/blog/vueAnalysis/reactive/dep.html#dep-target%E5%92%8Cwatcher
 Dep.target = null
 const targetStack = []
 

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>死循环测试 queueWatcher</title>
+</head>
+<body>
+<div id="app">
+  <p>{{msg}}</p>
+  <button @click="change">Add</button>
+</div>
+
+<script src="../../dist/vue.js"></script>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    data: {
+      msg: 'msg'
+    },
+    watch: {
+      msg () {
+        this.msg = Math.random()
+      }
+    },
+    methods: {
+      change () {
+        this.msg = Math.random()
+      }
+    },
+  })
+</script>
+</body>
+</html>

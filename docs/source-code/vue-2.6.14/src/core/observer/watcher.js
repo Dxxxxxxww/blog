@@ -202,6 +202,9 @@ export default class Watcher {
 
   /**
    * Clean up for dependency collection.
+   * https://wangtunan.github.io/blog/vueAnalysis/reactive/dep.html#adddep%E5%92%8Ccleanupdeps
+   * 比如说通过 v-if v-else 控制显隐的两个组件，切换组件显隐时，不再需要的 dep 就需要被清除，
+   * 避免无关的依赖进行组件的重复渲染、watch 回调等。
    */
   cleanupDeps () {
     let i = this.deps.length
