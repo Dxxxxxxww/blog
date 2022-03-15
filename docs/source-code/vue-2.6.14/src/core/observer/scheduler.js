@@ -1,5 +1,5 @@
 /* @flow */
-
+// 调度中心
 import type Watcher from './watcher'
 import config from '../config'
 import { callHook, activateChildComponent } from '../instance/lifecycle'

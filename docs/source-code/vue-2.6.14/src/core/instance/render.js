@@ -79,6 +79,7 @@ export function renderMixin (Vue: Class<Component>) {
 
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
+    // 用户自己写的和编译生成的 render 都会放到 options 上，所以这里直接从 options 中获取
     const { render, _parentVnode } = vm.$options
 
     if (_parentVnode) {
@@ -96,9 +97,12 @@ export function renderMixin (Vue: Class<Component>) {
     let vnode
     try {
       // There's no need to maintain a stack because all render fns are called
+      // 没有必要维护一个堆栈，因为所有的渲染 fns 都是相互独立调用的
       // separately from one another. Nested component's render fns are called
       // when parent component is patched.
+      // 当父组件被 patched ，嵌套组件的渲染 fns 被调用
       currentRenderingInstance = vm
+      // h 函数 -> vm.$createElement
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)

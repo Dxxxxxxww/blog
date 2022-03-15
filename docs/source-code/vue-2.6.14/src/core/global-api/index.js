@@ -55,6 +55,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
 
   // 2.6 explicit observable API
   // 增加响应式方法，让一个对象变成可相响应的
+  // 核心就是调用 observe 去生成 observe 对象
   Vue.observable = <T>(obj: T): T => {
     observe(obj);
     return obj;

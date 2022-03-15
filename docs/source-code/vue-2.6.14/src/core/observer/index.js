@@ -309,6 +309,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     // 将 数组长度 与 索引 比较，取大值赋给数组长度
     target.length = Math.max(target.length, key)
+    // 这里的 target 是在 data 上的，已经在 new Observer() 中修改过原型链了，所以可以使用升级版api
     // 通过 splice 对 索引位置的元素进行替换（新增）
     // 这里的 splice 是升级版api，不是数组原生的
     target.splice(key, 1, val)

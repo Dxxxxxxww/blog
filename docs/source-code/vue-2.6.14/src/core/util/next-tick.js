@@ -13,7 +13,9 @@ const callbacks = []
 let pending = false
 
 function flushCallbacks () {
-  // 重置状态
+  // 异步执行时，重置状态
+  // 这里先重置状态，再执行。也不会导致进入 nextTick 中 pending 为 false 执行 timerFunc() 的分支
+  // 因为当 flushCallbacks() 异步执行时，主程序栈已经执行完了。要注意这是异步！
   pending = false
   const copies = callbacks.slice(0)
   callbacks.length = 0
@@ -54,6 +56,7 @@ let timerFunc
 // 它会在触发几次后完全停止工作。因此，如果 promise 可以，将优先使用 promise。
 // Promise is available, we will use it:
 /* istanbul ignore next, $flow-disable-line */
+// 异步降级过程
 // 微任务形式优先-------------------------
 // 使用 promise
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
@@ -98,6 +101,7 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   isUsingMicroTask = true
 // 下面是宏任务--------------------------
 } else if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
+  // setImmediate 只存在于高版本IE浏览器和低版本Edge浏览器中，其它浏览器不支持
   // setImmediate 性能比 setTimeout 好。
   // setTimeout 设置 0 时也会延迟 4ms 才执行。
   // Fallback to setImmediate.
