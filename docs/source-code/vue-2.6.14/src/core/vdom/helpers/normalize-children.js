@@ -11,26 +11,40 @@ import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util'
 // two cases where extra normalization is needed:
 
 // 1. When the children contains components - because a functional component
+// 当 children 包含组件，——因为函数式组件可能返回Array而不是单个根。
 // may return an Array instead of a single root. In this case, just a simple
+// 这种情况下，一种简单的 normalization 是需要的
 // normalization is needed - if any child is an Array, we flatten the whole
+// 如果任何子对象是Array，则使用Array.prototype.concat将其整平
 // thing with Array.prototype.concat. It is guaranteed to be only 1-level deep
 // because functional components already normalize their own children.
+// 它保证只有1级的深度，因为函数式组件早就规范化了他们的子组件。
+// 二维数组转为一维数组
 export function simpleNormalizeChildren (children: any) {
   for (let i = 0; i < children.length; i++) {
     if (Array.isArray(children[i])) {
+      // 骚操作，用 concat 来拍平数组
       return Array.prototype.concat.apply([], children)
     }
   }
   return children
 }
 
-// 2. When the children contains constructs that always generated nested Arrays,
+// 2. When the children contains constructs that always generated nested(内嵌的) Arrays,
+// 当子元素包含总是生成嵌套数组的结构时
 // e.g. <template>, <slot>, v-for, or when the children is provided by user
-// with hand-written render functions / JSX. In such cases a full normalization
-// is needed to cater to all possible types of children values.
+// with hand-written render functions / JSX.
+// 例如 <template>, <slot>, v-for，或者用户自己手写的 render函数 / jsx
+// In such cases a full normalization is needed to cater(满足，迎合) to all possible types of children values.
+// 在这种情况下，需要对所有可能类型的子项值进行全面的规范化。
+// 用户传入的 render，children 有可能是 数组/原始值。
+// 不管用户传入什么，最终返回一维数组
 export function normalizeChildren (children: any): ?Array<VNode> {
+  // 判断 children 是否是原始值
   return isPrimitive(children)
+    // 是原始值，创建文本vnode，再用数组包裹
     ? [createTextVNode(children)]
+    // 是数组，通过递归，把多维数组拍平成一维数组
     : Array.isArray(children)
       ? normalizeArrayChildren(children)
       : undefined

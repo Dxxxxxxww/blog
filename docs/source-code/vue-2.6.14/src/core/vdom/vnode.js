@@ -39,17 +39,21 @@ export default class VNode {
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {
+    // 关键属性-------------------
     this.tag = tag
     this.data = data
     this.children = children
     this.text = text
     this.elm = elm
+    // 关键属性-------------------
     this.ns = undefined
     this.context = context
     this.fnContext = undefined
     this.fnOptions = undefined
     this.fnScopeId = undefined
+    // 关键属性-------------------
     this.key = data && data.key
+    // 关键属性-------------------
     this.componentOptions = componentOptions
     this.componentInstance = undefined
     this.parent = undefined
@@ -71,14 +75,14 @@ export default class VNode {
   }
 }
 
-// 创建一个空的虚拟dom对象
+// 创建一个空的vnode节点-注释节点
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
   node.text = text
   node.isComment = true
   return node
 }
-
+// 创建一个文本vnode节点
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }
