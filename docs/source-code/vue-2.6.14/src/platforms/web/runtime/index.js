@@ -40,7 +40,7 @@ extend(Vue.options.directives, platformDirectives)
 extend(Vue.options.components, platformComponents)
 
 // install platform patch function
-// 注册 patch 函数，patch：将虚拟dom -> 真实dom
+// 浏览器环境下注册 patch 函数，patch：将虚拟dom -> 真实dom
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method

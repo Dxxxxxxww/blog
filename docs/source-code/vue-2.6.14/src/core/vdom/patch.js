@@ -74,17 +74,22 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
   }
   return map
 }
-
+// 返回 patch 函数
 export function createPatchFunction (backend) {
   let i, j;
+  // 存储模块中的钩子函数， create, update
   const cbs = {};
-
+  // modules：节点的属性、样式、事件的操作
+  // nodeOps：dom 操作
   const { modules, nodeOps } = backend;
 
   for (i = 0; i < hooks.length; ++i) {
+    // cbs['create'] = []
     cbs[hooks[i]] = [];
     for (j = 0; j < modules.length; ++j) {
+      // 如果 modules 中定义了对应的钩子函数，则存储
       if (isDef(modules[j][hooks[i]])) {
+        // cbs['create'] = [updateAttrs, updateClass, update...]
         cbs[hooks[i]].push(modules[j][hooks[i]]);
       }
     }
@@ -910,6 +915,8 @@ export function createPatchFunction (backend) {
       return node.nodeType === (vnode.isComment ? 8 : 3);
     }
   }
+
+  // createPatchFunction 是一个科里化的函数，先处理平台相关参数，这样返回的 patch 只需要处理自身的参数
 
   return function patch(oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {

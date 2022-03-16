@@ -4,10 +4,12 @@ import { namespaceMap } from 'web/util/index'
 
 export function createElement (tagName: string, vnode: VNode): Element {
   const elm = document.createElement(tagName)
+  // 不是 select 标签直接返回
   if (tagName !== 'select') {
     return elm
   }
   // false or null will remove the attribute but undefined will not
+  // 如果是 select 标签，并且设置了 multiple 属性，则设置下 multiple
   if (vnode.data && vnode.data.attrs && vnode.data.attrs.multiple !== undefined) {
     elm.setAttribute('multiple', 'multiple')
   }

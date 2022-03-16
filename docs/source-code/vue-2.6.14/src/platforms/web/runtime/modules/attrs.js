@@ -114,6 +114,7 @@ function baseSetAttr (el, key, value) {
 }
 
 export default {
+  // 钩子函数
   create: updateAttrs,
   update: updateAttrs
 }
