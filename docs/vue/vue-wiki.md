@@ -52,21 +52,11 @@ module.exports = {
 }
 ```
 
----
-
-1. diff 算法只比较同层节点，这是因为 dom 的特性，一般而言，我们很少会将父节点移动到子层，也很少会把子节点移动到父层，所以之比较同层节点减少运算。
-
-2. 官网响应式原理图的 computed watcher 和 data props 与 Dep 的关联的为什么是 depend 而不是 addDep?
-
-3. key 的意义，在 diff 中比较 vnode 是否是相同节点
-
-
 ## vue 中实现 HOC 的三种方式
 
 1. jsx
 2. slots
 3. <component v-bind:is="currentTabComponent"></component> 内置组件
-
 
 ## vue 声明周期执行顺序
 
@@ -95,3 +85,8 @@ son beforeUpdate
 son updated
 parent updated
 ```
+
+## what's this...
+1. diff 算法只比较同层节点，这是因为 dom 的特性，一般而言，我们很少会将父节点移动到子层，也很少会把子节点移动到父层，所以之比较同层节点减少运算。
+
+2. key 的意义，在 diff 中比较 vnode 是否是相同节点

@@ -197,97 +197,82 @@ export default class MyVueRouter {
 ## hash 模式
 
 ```js
-let _Vue
-
+let _Vue;
 export default class VueRouter {
-  static install(Vue) {
-    // 判断是否已经注册
-    if (VueRouter.install.installed) {
-      return
+    constructor(opts) {
+        // 路由组件映射
+        this.routeMap = {};
+        // 路由
+        this.routes = opts.routes;
+        // 当前路由
+        this.data = _Vue.observable({
+            current: "#/",
+        });
+        this.init();
     }
-    VueRouter.install.installed = true
-    // 保存 Vue 到全局变量
-    _Vue = Vue
-    // 将 router 实例挂载到 prototype 上
-    // 需要获取this实例，所以通过全局混入拿到根实例上的 $router
-    Vue.mixin({
-      beforeCreate() {
-        // 根实例
-        if (this.$options.router) {
-          Vue.prototype.$router = this.$options.router
-        }
-      }
-    })
-  }
-  constructor(options) {
-    this.options = options
-    this.routeMap = {}
-    // 将当前路径处理成响应式对象，vue 内部会监听到 data 的变化从而使用对应的组件
-    this.data = _Vue.observable({ current: '#/' })
-    // init 在 install 里或者是在 constructor 调用无所谓
-    this.init()
-  }
-  init() {
-    this.initRouteMap()
-    this.initComponent()
-    this.initEventListener()
-  }
-  initRouteMap() {
-    this.options.routes.forEach((route) => {
-      this.routeMap[this.getHashPath(route.path)] = route.component
-      console.log(this.routeMap)
-    })
-  }
-  initComponent() {
-    const that = this
 
-    _Vue.component('router-link', {
-      props: {
-        to: String
-      },
-      methods: {
-        handleClick(e) {
-          e.preventDefault()
-          // 改变地址栏地址
-          history.pushState({}, '', that.getHashPath(this.to))
-          // 改变响应式的 data 使 vue 更改组件
-          this.$router.data.current = that.getHashPath(this.to)
-          console.log(this.$router.data.current)
+    static install(Vue) {
+        if (VueRouter.install.installed) {
+            return;
         }
-      },
-      render(h) {
-        return h(
-          'a',
-          {
-            attrs: {
-              href: that.getHashPath(this.to)
+        VueRouter.install.installed = true;
+        _Vue = Vue;
+    }
+    init() {
+        this.initRouteMap();
+        this.initComponent();
+        this.initEvent();
+    }
+    initRouteMap() {
+        let path;
+        this.routes.forEach((route) => {
+            path = this.getHashPath(route.path);
+            this.routeMap[path] = route.component;
+        });
+    }
+    initComponent() {
+        const that = this;
+        _Vue.component("router-link", {
+            props: {
+                to: String,
             },
-            on: {
-              click: this.handleClick
-            }
-          },
-          [this.$slots.default]
-        )
-      }
-    })
+            methods: {
+                handleClick(e) {
+                    e.preventDefault();
+                    const path = that.getHashPath(this.to);
+                    location.hash = path;
+                    that.data.current = path;
+                },
+            },
+            render(h) {
+                return h(
+                    "a",
+                    {
+                        href: this.to,
+                        on: {
+                            click: this.handleClick,
+                        },
+                    },
+                    [this.$slots.default]
+                );
+            },
+        });
 
-    _Vue.component('router-view', {
-      render(h) {
-        const component = that.routeMap[that.getHashPath(that.data.current)]
-        return h(component)
-      }
-    })
-  }
-  initEventListener() {
-    window.addEventListener('popstate', () => {
-      this.data.current = window.location.hash
-    })
-  }
-  getHashPath(path) {
-    if (path.startsWith('#')) {
-      return path
+        _Vue.component("router-view", {
+            render(h) {
+                const component = that.routeMap[that.data.current];
+                return h(component);
+            },
+        });
     }
-    return '#' + path
-  }
+    initEvent() {
+        window.addEventListener("hashchange", (e) => {
+            console.log(location.hash);
+            this.data.current = location.hash;
+        });
+    }
+    getHashPath(path) {
+        return "#" + path;
+    }
 }
 ```

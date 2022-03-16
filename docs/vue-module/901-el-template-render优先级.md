@@ -61,7 +61,7 @@ Vue.prototype.$mount = function(
           shouldDecodeNewlines,
           shouldDecodeNewlinesForHref,
           delimiters: options.delimiters,
-          comments: options.comments,
+          comments: options.comments
         },
         this
       )
@@ -116,8 +116,6 @@ if (!options.render) {
 
 从上面代码可以看出，当在调用 '带编译的 mount' 函数时， <code>render</code> 的优先级是最高的，其次是 <code>template</code> ，最后才是 <code>el</code> 。
 
-这里也印证了 <b>官网-API-选项/DOM-el</b> 中的一段话：<b>如果 render 函数和 template property 都不存在，挂载 DOM 元素的 HTML 会被提取出来用作模板，此时，必须使用 Runtime + Compiler 构建的 Vue 库。</b>
+这里也印证了 **官网-API-选项/DOM-el** 中的一段话：**如果 render 函数和 template property 都不存在，挂载 DOM 元素的 HTML 会被提取出来用作模板，此时，必须使用 Runtime + Compiler 构建的 Vue 库。**
 
 对于不需要编译的版本而言，也就是 <code>entry-runtime.js</code> 中，<code>el</code> 或者说 <code>template</code> 已经被编译成 <code>render</code> 了，所以不存在优先级这个概念，关于编译这块我们放到下一章节来了解。
-
-

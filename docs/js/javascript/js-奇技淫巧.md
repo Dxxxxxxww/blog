@@ -1,14 +1,31 @@
-# 格式化金额
+---
+sidebar: auto
+---
 
-## 一、JS 原生就支持格式化金额
-21/04/02 更新
+# JavaScript 奇技淫巧
+
+## 无限 debugger
+
+```js
+;(function() {
+  var a = new Date()
+  debugger
+  return new Date() - a > 100
+})()
+```
+
+## 格式化金额
+
+### JS 原生就支持格式化金额
+
 ```js
 Number.prototype.toLocaleString()
 
 let number = 123456.789
 number.toLocaleString('en-us') // "123,456.789"
 ```
-## 二、以 ',' 分割
+
+### 以 ',' 分割
 
 ```js
 function a(str) {
