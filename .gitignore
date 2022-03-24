@@ -66,3 +66,5 @@ typings/
 
 .vscode/
 .idea/
+
+/docs/source-code/vue-test/node_modules/
