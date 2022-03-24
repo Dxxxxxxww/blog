@@ -62,18 +62,30 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
+    // 上一次处理的 vnode
     const prevVnode = vm._vnode
+    // 保存当前激活的实例
+    // 我们知道组件渲染是一个递归的过程，渲染顺序是先子后父。
+    // 那么在这种递归渲染的过程中，
+    // 我们必须正确保证一对引用关系：当前渲染的组件实例以及其父级组件实例。
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
+    // __patch__ 在入口(src/platforms/runtime/index.js)被注入。
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
+      // 首次渲染
+      // vm.$el 真实dom节点
+      // 把 $el 转为 vnode 与 新的vnode 比较，将比较的结果生成真实dom返回给 vm.$el
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
+      // 更新
+      // 新旧 vnode 对比
       vm.$el = vm.__patch__(prevVnode, vnode)
     }
+    // 还原成上一次激活的实例
     restoreActiveInstance()
     // update __vue__ reference
     if (prevEl) {

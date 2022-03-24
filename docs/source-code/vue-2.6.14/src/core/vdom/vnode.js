@@ -1,15 +1,23 @@
 /* @flow */
 
+// 文本节点，只有 text
+// 注释节点，text + isComment === true
+// 元素节点，tag、data、children、context
+// 组件节点，tag、data、children、context、componentOptions、componentInstance
+// 克隆节点 isCloned === true
 export default class VNode {
   tag: string | void;
   data: VNodeData | void;
   children: ?Array<VNode>;
   text: string | void;
+  // 保存当前vnode 的 dom元素
   elm: Node | void;
   ns: string | void;
   context: Component | void; // rendered in this component's scope
   key: string | number | void;
+  // 表示组件的options选项
   componentOptions: VNodeComponentOptions | void;
+  // 表示当前组件的实例
   componentInstance: Component | void; // component instance
   parent: VNode | void; // component placeholder node
 
@@ -20,7 +28,7 @@ export default class VNode {
   isComment: boolean; // empty comment placeholder?
   isCloned: boolean; // is a cloned node?
   isOnce: boolean; // is a v-once node?
-  asyncFactory: Function | void; // async component factory function
+  asyncFactory: Function | void; // async component factory function 异步组件工厂函数
   asyncMeta: Object | void;
   isAsyncPlaceholder: boolean;
   ssrContext: Object | void;

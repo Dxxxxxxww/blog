@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>死循环测试 queueWatcher</title>
+</head>
+<body>
+<div id="app">
+  <p>{{arr}}</p>
+  <button @click="change">Add</button>
+</div>
+
+<script src="../../dist/vue.js"></script>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    data: {
+      arr: [1,2,3]
+    },
+    methods: {
+      change () {
+        // 函数内对同一个数组/对象多次操作不会多次进行渲染，在同一个 tick 中，watcher id 相同就不会被记录到 queue中。
+        // queueWatcher 会进行去重
+        this.arr.splice(0,1,10)
+        this.arr.push(100)
+      }
+    },
+  })
+</script>
+</body>
+</html>

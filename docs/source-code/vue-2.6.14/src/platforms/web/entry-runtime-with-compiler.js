@@ -48,6 +48,7 @@ Vue.prototype.$mount = function (
     let template = options.template
     // 判断是否有 template
     if (template) {
+      // template 取 innerHTML
       // 如果 template 是字符串
       if (typeof template === 'string') {
         // 如果 template 是 id 选择器
@@ -76,6 +77,11 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // el 取 outerHTML 这是因为 el 是挂载的地方，即div#app。
+      // 更新：调试完 template / render 之后，我发现应该不是为了保证挂载点不会被去除，因为挂载点本来就是要去除的
+      // 这应该是为了保证根节点是唯一的，el 作为模板时，el本身肯定是唯一的根节点。
+      // 如果用 el 来生成 template，则必须使用 outerHTML，[来保证挂载的地方不会被去除(保证 #app 的元素存在)]
+      // 可以去 examples/10-virtualdom 中的 1. 使用 el 来生成 render 的调试 来调试查看
       // 如果没有 template 则使用 el 的 outerHTML 作为 template
       /*
         <div id="d">

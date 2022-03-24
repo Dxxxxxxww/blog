@@ -133,7 +133,12 @@ export function _createElement (
         undefined, undefined, context
       )
     // tag 不是保留标签，并且 data 不存在 && 对组件名称做处理，查找自定义组件
-    // 问题？？
+    // !data 这种情况就是没有给组件传递 props/event ，仅使用了组件。 <SonComponent />
+    // !data.pre 这种情况是使用组件并传递了 props/event ，并且没有使用 v-pre 指令。 <SonComponent :text="text" @click="handleClick" />
+    // 也就是说不管有没有传递 data，组件都会进入这里。
+    // 而这里的分支则是 template 中使用组件，编译生成的 render
+    // pre -> vue 自带指令 v-pre https://cn.vuejs.org/v2/api/#v-pre
+    // 跳过这个元素和它的子元素的编译过程。可以用来显示原始 Mustache 标签（显示插值表达式）。跳过大量没有指令的节点会加快编译。
     } else if (
       (!data || !data.pre)
       && isDef(Ctor = resolveAsset(context.$options, 'components', tag))
@@ -156,7 +161,10 @@ export function _createElement (
       )
     }
   } else {
-    // tag 不是字符串
+    // tag 不是字符串，直接给 h函数(createElement) 传递了组件，用户手写 render 并传递组件对象
+    // new Vue({
+    //     render: h => h(App)
+    // }).$mount("#app");
     // direct component options / constructor
     // 创建组件
     vnode = createComponent(tag, data, context, children)

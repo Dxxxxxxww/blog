@@ -15,8 +15,10 @@ export function createElement (tagName: string, vnode: VNode): Element {
   }
   return elm
 }
-
+// 创建 svg
 export function createElementNS (namespace: string, tagName: string): Element {
+  // 创建一个具有指定的命名空间URI和限定名称的元素
+  // 有效的命名空间URI：HTML SVG XBL XUL
   return document.createElementNS(namespaceMap[namespace], tagName)
 }
 
@@ -29,6 +31,7 @@ export function createComment (text: string): Comment {
 }
 
 export function insertBefore (parentNode: Node, newNode: Node, referenceNode: Node) {
+  // 方法用于将某个节点插入父节点内部的指定位置。
   parentNode.insertBefore(newNode, referenceNode)
 }
 

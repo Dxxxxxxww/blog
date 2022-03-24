@@ -6,28 +6,36 @@
   <title>virtualdom</title>
 </head>
 <body>
+<!-- 有空节点作为兄弟节点-->
+<!--  <div id="app">-->
+<!--  </div>-->
+<!--  -->
+<!-- 这样还是会有兄弟节点，因为 div 与 下面的 script 之间有换行，即使没有换行，兄弟节点就会是 script -->
   <div id="app">
   </div>
-
   <script src="../../dist/vue.js"></script>
   <script>
     const vm = new Vue({
+      // 1. 使用 el 来生成 render 的调试
       el: '#app',
-      render (h) {
-        // h(tag, data, children)
-        // return h('h1', this.msg)
-        // return h('h1', { domProps: { innerHTML: this.msg } })
-        // return h('h1', { attrs: { id: 'title' } }, this.msg)
-        const vnode = h(
-          'h1', 
-          { 
-            attrs: { id: 'title' } 
-          },
-          this.msg
-        )
-        console.log(vnode)
-        return null
-      },
+      // 2. 使用用户手写的 render 的调试
+      // render (h) {
+      //   // h(tag, data, children)
+      //   // return h('h1', this.msg)
+      //   // return h('h1', { domProps: { innerHTML: this.msg } })
+      //   // return h('h1', { attrs: { id: 'title' } }, this.msg)
+      //   const vnode = h(
+      //     'h1',
+      //     {
+      //       attrs: { id: 'title' }
+      //     },
+      //     this.msg
+      //   )
+      //   console.log(vnode)
+      //   return null
+      // },
+      // 3. tenplate 的调试
+      template: `<h1 style="font-size: 12px;">{{ msg }}</h1>`,
       data: {
         msg: 'Hello Vue'
       }

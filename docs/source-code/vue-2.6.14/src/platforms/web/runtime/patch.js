@@ -4,8 +4,8 @@ import * as nodeOps from 'web/runtime/node-ops'
 import { createPatchFunction } from 'core/vdom/patch'
 // 处理指令和 ref的
 /**
- * ref,
- * directives
+ * ref, 钩子函数，create，update，destroy
+ * directives 钩子函数，create，update，destroy
  */
 import baseModules from 'core/vdom/modules/index'
 // web 平台相关模块
