@@ -129,7 +129,7 @@ this 指向的深层原因还是直接看冴羽大佬的博客吧，笔记感觉
 var a = 1
 var obj = {
   a: 2,
-  b: function() {
+  b: function () {
     function fun() {
       return this.a
     }
@@ -145,7 +145,7 @@ obj.b() // 1
 var a = 1
 var obj = {
   a: 2,
-  b: function() {
+  b: function () {
     return this.a
   }
 }
@@ -154,7 +154,7 @@ console.log(obj.b()) // 2
 var a = 1
 var obj = {
   a: 2,
-  b: function() {
+  b: function () {
     return this.a
   }
 }
@@ -198,6 +198,12 @@ function Parent() {
 var p = new Parent()
 console.log(p.a) // 20
 ```
+
+5. 箭头函数：箭头函数 this 在其定义时就已确认
+
+### 深入挖掘 this
+
+[从 ECMAScript 规范层面解读 this](https://github.com/mqyqingfeng/Blog/issues/7)
 
 ## 七、执行上下文过程
 
@@ -294,15 +300,15 @@ const p2 = new Promise((resolve, reject) => {
   reject('失败2233')
 })
 
-p2.then('', err => {
+p2.then('', (err) => {
   console.log(err)
   // throw new Error('456') // 输出 errorLo:::: Error: 456
   return new Error('456') // 输出 hahaha Error: 456
 }).then(
-  val => {
+  (val) => {
     console.log('hahaha', val)
   },
-  err => {
+  (err) => {
     console.log('errorLo::::', err)
   }
 )
@@ -310,11 +316,11 @@ p2.then('', err => {
 
 ```js
 axios('/api').then(
-  res => {
+  (res) => {
     throw new Error('异常A')
     // return axios('/api/error') // 这个新的 promise 所产生的异常，then 的第二个参数是捕获不到的
   },
-  err => {
+  (err) => {
     // then 的第二个参数 => catch函数，只能捕获到当前 promise 出现的异常
     // 如果在当前的 promise 中返回了一个新的 promise，并且这个 promise 报错了，这里是无法捕获到的
   }
@@ -322,7 +328,7 @@ axios('/api').then(
 
 axios('/api')
   .then()
-  .catch(err => {
+  .catch((err) => {
     // 而使用这种方法是全都可以捕获到(当然 catch 中又报错了的话那自然是捕获不到的)
   })
 ```
@@ -335,7 +341,7 @@ axios('/api')
 const urls = ['/api/getInfo', '/api/getUser']
 
 // 返回一个 promise 数组
-Promise.all(urls.map(item => axios(item))).then(valList => {
+Promise.all(urls.map((item) => axios(item))).then((valList) => {
   console.log(valList)
 })
 ```
@@ -349,10 +355,10 @@ const timeout = new Promise((_, reject) => {
 })
 
 Promise.race([getInfo, timeout])
-  .then(val => {
+  .then((val) => {
     console.log(val)
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err)
   })
 ```
@@ -386,36 +392,36 @@ var p1 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then(val => {
+  .then((val) => {
     console.log('then11', val)
     new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then(val => {
+      .then((val) => {
         console.log('then21', val)
         return 'c'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then23', val)
         Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then(val => {
+          .then((val) => {
             console.log('then24', val)
             return 'e'
           })
         return 'f'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then25', val)
         return 'g'
       })
     return 'z'
   })
-  .then(val => {
+  .then((val) => {
     console.log('then12', val)
   })
 
@@ -438,39 +444,39 @@ var p2 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then(val => {
+  .then((val) => {
     console.log('then11', val)
     new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then(val => {
+      .then((val) => {
         console.log('then21', val)
         return 'c'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then23', val)
         return Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then(val => {
+          .then((val) => {
             console.log('then24', val)
             return 'e'
           })
       })
-      .then(val => {
+      .then((val) => {
         console.log('then25', val)
         return 'f'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then26', val)
         return 'g'
       })
     return 'z'
   })
-  .then(val => {
+  .then((val) => {
     console.log('then12', val)
   })
 
@@ -497,38 +503,38 @@ var p2 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then(val => {
+  .then((val) => {
     console.log('then11', val)
     return new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then(val => {
+      .then((val) => {
         console.log('then21', val)
         return 'c'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then23', val)
         return Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then(val => {
+          .then((val) => {
             console.log('then24', val)
             return 'e'
           })
       })
-      .then(val => {
+      .then((val) => {
         console.log('then25', val)
         return 'f'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then26', val)
         return 'g'
       })
   })
-  .then(val => {
+  .then((val) => {
     console.log('then12', val)
   })
 

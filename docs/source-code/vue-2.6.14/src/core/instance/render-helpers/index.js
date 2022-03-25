@@ -30,7 +30,7 @@ export function installRenderHelpers (target: any) {
   target._f = resolveFilter
   target._k = checkKeyCodes
   target._b = bindObjectProps
-  // 创建文本虚拟节点
+  // 创建文本虚拟节点vnode
   target._v = createTextVNode
   target._e = createEmptyVNode
   target._u = resolveScopedSlots

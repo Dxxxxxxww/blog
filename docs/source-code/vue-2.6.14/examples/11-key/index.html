@@ -9,19 +9,30 @@
   <div id="app">
     <button @click="handler">按钮</button>
     <ul>
+<!--   差值表达式会在 _c 中 通过 _v(createTextVNode) 编译成文本vnode
+      _c('li',{key:value},[_v(_s(value))])}),0)])
+-->
       <li v-for="value in arr" :key="value">{{value}}</li>
+<!--     :key="value" -->
     </ul>
   </div>
   <script src="../../dist/vue.js"></script>
   <script>
+    // sameVnode 不会去判断子节点和文本节点。
+    // 如果不设置 key，在 updateChildren sameVnode() 新老节点的判断中，就会因为 key 都是 undefined
+    // 导致判断起始节点相同，就会走 patchVnode，更新子节点/文本节点。而又因为正序遍历文本节点都不同，所以都会重新创建。非常浪费性能。
+    // 而如果设置了 key 就会辨别出起始节点不同，就会去逆序遍历判断(后面还有新旧头尾遍历判断是否相同)，发现有可复用的节点，就可以复用。优化性能。
+
     const vm = new Vue({
       el: '#app',
       data: {
-        arr: ['a', 'b', 'c', 'd']
+        // arr: ['a', 'b', 'c', 'd']
+        arr: ['a', 'b']
       },
       methods: {
         handler () {
-          this.arr.splice(1, 0, 'x')
+          // this.arr.splice(1, 0, 'x')
+          this.arr.splice(1, 1, 'x')
           // this.arr = ['a', 'x', 'b', 'c', 'd']
         }
       }

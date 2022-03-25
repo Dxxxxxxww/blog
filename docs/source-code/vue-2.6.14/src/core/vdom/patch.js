@@ -690,7 +690,9 @@ export function createPatchFunction (backend) {
                 oldStartVnode.elm
               );
           } else {
-            // key 相同，但是节点不同，创建新的元素
+            // 不同节点的情况
+            // key 相同，但是节点不同的情况
+            // 创建新的元素
             // same key but different element. treat as new element
             createElm(
               newStartVnode,
@@ -708,6 +710,8 @@ export function createPatchFunction (backend) {
     }
     // 老节点已经遍历完了，而新节点还没遍历完。新子节点更多的情况
     if (oldStartIdx > oldEndIdx) {
+      // 如果当前末尾节点的兄弟节点不存在，就返回 null
+      // 如果存在，则返回该兄弟节点的 elm
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm;
       // 批量将剩余的新节点插入到末尾
       addVnodes(
@@ -718,7 +722,7 @@ export function createPatchFunction (backend) {
         newEndIdx,
         insertedVnodeQueue
       );
-      // 新节点已经遍历完了，而旧节点还没遍历完。旧子节点更多的情况
+      // 新节点已经遍历完了，而旧节点还没遍历完。旧子节点更多的情况 新旧节点一样多的情况
     } else if (newStartIdx > newEndIdx) {
       // 将多余的老节点批量删除
       removeVnodes(oldCh, oldStartIdx, oldEndIdx);

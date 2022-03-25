@@ -295,6 +295,8 @@ module.exports = {
 
 babel7 之后只需要添加 core-js regenerator-runtime 即可。
 
+babel7 之前是 polyfill，babel 7 之后是 core js。babel7 是 core2，babel8 是 core 3。
+
 ```js
 module.exports = {
   presets: [
