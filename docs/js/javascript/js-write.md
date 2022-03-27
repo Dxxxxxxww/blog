@@ -314,9 +314,13 @@ Function.prototype.apply6 = function(context, args) {
 }
 
 Function.prototype.bind5 = function(context) {
+  if (typeof this !== "function") {
+    throw new Error("error");
+  }
+  
   const args = [].slice.apply6(arguments, [1]),
     self = this
-
+    
   const Fc = function() {}
   Fc.prototype = self.prototype
 
@@ -350,9 +354,9 @@ const foo = {
 
 function bar(name, age) {
   this.habit = 'shopping'
-  console.log(this.value)
-  console.log(name)
-  console.log(age)
+  console.log('value', this.value)
+  console.log('name: ', name)
+  console.log('age: ', age)
 }
 console.log(test.bind5(obj, 1, 2)('c')) // 1 + ccc + 1 + 2 + c
 const f = bar.bind5(foo, 1, 2)
@@ -649,7 +653,7 @@ new 做了哪些工作：
 4. 返回对象。
 
 ```js
-function objectFactory(constructor) {
+function myNew(constructor) {
   const obj = myOc(constructor.prototype)
   // 绑定属性，处理 this 指向
   const res = constructor.apply(obj, Array.prototype.slice.call(arguments, 1))
@@ -659,7 +663,7 @@ function objectFactory(constructor) {
   return obj
 }
 // Object.create 传入一个对象，作为返回结果的 __proto__
-// Object.create 的实现
+// Object.create 的实现 1
 function myOc(p) {
   // 建立中间函数
   const temp = function() {}
@@ -675,19 +679,20 @@ function Foo(a) {
 }
 
 console.log(new Foo('123'))
-console.log(objectFactory(Foo, '123'))
+console.log(myNew(Foo, '123'))
 
 // Foo { a: '123' }
 // Foo { a: '123' }
 ```
 
 ```js
-// Object.create 的实现
+// Object.create 的实现 2
 function myOc(o, p) {
   Object.setPrototypeOf(o, p)
   return o
 }
 
+// new 的实现2
 function myNew(constructor) {
   const o = {}
   myOc(o, constructor.prototype)
