@@ -13,6 +13,7 @@
 <!-- 这样还是会有兄弟节点，因为 div 与 下面的 script 之间有换行，即使没有换行，兄弟节点就会是 script -->
   <div id="app">
   </div>
+  <h1 id="h1" style="font-size: 12px;">{{ msg }}</h1>
   <script src="../../dist/vue.js"></script>
   <script>
     const vm = new Vue({
@@ -36,6 +37,8 @@
       // },
       // 3. tenplate 的调试
       template: `<h1 style="font-size: 12px;">{{ msg }}</h1>`,
+      // template: document.querySelector('#h1'), 这样的方式，取到的只有字符串，在 parser 阶段会报错
+      // template: '#h1', 与上面一种相同
       data: {
         msg: 'Hello Vue'
       }

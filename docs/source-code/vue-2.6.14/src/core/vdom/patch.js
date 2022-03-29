@@ -653,7 +653,7 @@ export function createPatchFunction (backend) {
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
-        // 旧节点列表中找不到对应的新节点，说明是新增的，直接创建对应的dom，并插入到 oldStartVnode.elm 之前
+        // 旧节点列表中找不到对应的新节点，说明是新增的，直接创建对应的dom，并插入到 旧开始节点 oldStartVnode.elm 之前
         if (isUndef(idxInOld)) {
           // New element
           createElm(
@@ -683,6 +683,11 @@ export function createPatchFunction (backend) {
             // 将旧节点列表对应的节点删除，此时该节点不会被回收，因为还有vnodeToMove保持引用
             oldCh[idxInOld] = undefined;
             // 将对应的节点移动到旧开始节点前
+            // 这里其实不用纠结为什么是移动到旧开始节点之前，因为整个 else 分支里的操作都是移动到旧开始节点之前。
+            // 一开始我觉得可能是方便 removeVnodes()，但是想想，removeVnodes 是可以按照 oldVnodes 来的，
+            // 挂载是真正的 dom，跟 oldVnodes 也没啥关系。这里一定要区分好 oldVnodes dom newVnodes 的关系。
+            // oldVnodes 和 newVnodes 的 elm 属性是真正的dom，移除的时候取这个属性就好了。
+            // 反正总要有地方挂载的。那为什么不放后面呢？可能尤大比较喜欢 insertBefore，这种问题没必要了。
             canMove &&
               nodeOps.insertBefore(
                 parentElm,
@@ -694,6 +699,7 @@ export function createPatchFunction (backend) {
             // key 相同，但是节点不同的情况
             // 创建新的元素
             // same key but different element. treat as new element
+            // 创建对应的dom，并插入到 旧开始节点 oldStartVnode.elm 之前
             createElm(
               newStartVnode,
               insertedVnodeQueue,

@@ -116,30 +116,26 @@ AO = {
 
 ## 六、this
 
-普通函数的 this 是在调用时（创建执行上下文）确定的，而箭头函数的 this 是捕获函数所在的上下文的 this，在定义时就确定了。
+普通函数的 `this` 是在调用时（创建执行上下文）确定的，而箭头函数的 `this` 是捕获函数所在的上下文的 `this`，在定义时就确定了。
 
-this 指向的深层原因还是直接看冴羽大佬的博客吧，笔记感觉也做不了啥。
+`this` 指向的深层原因还是直接看冴羽大佬的博客吧，笔记感觉也做不了啥。
 [戳这里](https://github.com/mqyqingfeng/Blog/issues/7)
 
-### 日常使用时 this 的指向
+### 日常使用时 `this` 的指向
 
-1. 在全局环境或是普通函数中直接调用：**当函数独立调用的时候，在严格模式下它的 this 指向 undefined，在非严格模式下，当 this 指向 undefined 的时候，自动指向全局对象(浏览器中就是 window)。**
+js 中调用函数一般会有以下 4 中情况：
+
+1. 函数独立调用，在非严格模式下，`this` 指向 window，严格模式下指向 undefined。
 
 ```js
 var a = 1
-var obj = {
-  a: 2,
-  b: function () {
-    function fun() {
-      return this.a
-    }
-    console.log(fun())
-  }
+function fun() {
+  return this.a
 }
-obj.b() // 1
+console.log(fun()) // 1
 ```
 
-2. 作为对象的方法：**指向对象。**
+2. 作为对象的方法调用，`this` 指向对象。
 
 ```js
 var a = 1
@@ -150,31 +146,9 @@ var obj = {
   }
 }
 console.log(obj.b()) // 2
-
-var a = 1
-var obj = {
-  a: 2,
-  b: function () {
-    return this.a
-  }
-}
-var t = obj.b
-console.log(t()) // 1
-// 上面代码等于下面
-
-var a = 1
-function fun() {
-  return this.a
-}
-var obj = {
-  a: 2,
-  b: fun //b指向fun函数
-}
-var t = fun //变量t指向fun函数
-console.log(t()) // 1
 ```
 
-3. 使用 apply 和 call：**指向传入的 ctx**
+3. `call/apply/bind` 调用，指向传入的对象。注意：当入参是 `null/undefined` 时，`this` 仍然指向 `window`。当入参是基本类型值时，会隐式转换成对应类型的对象。
 
 ```js
 var obj = {
@@ -188,7 +162,7 @@ console.log(b()) // 10
 console.log(b.call(obj)) // 2
 ```
 
-4. 作为构造函数：**指向 new 出来的对象。**
+4. 作为构造函数调用，指向 `new` 出来的对象。注意：如果构造函数中返回了其他对象，`this` 会指向其他对象。如果 `return null/undefined/基本类型值` ，`this` 还是会指向新建的对象。
 
 ```js
 var a = 10
@@ -199,11 +173,69 @@ var p = new Parent()
 console.log(p.a) // 20
 ```
 
-5. 箭头函数：箭头函数 this 在其定义时就已确认
+函数的 `this` 指向还有一种额外情况，那就是箭头函数。对于箭头函数来说，它的 `this` 是在它定义的时候就决定了的。它的 `this` 指向它的父级执行上下文环境的 `this`。
 
-### 深入挖掘 this
+```js
+function fun() {
+  let a = 1
+  const b = () => {
+    console.log(this)
+  }
+  b()
+}
+fun() // window
+```
 
-[从 ECMAScript 规范层面解读 this](https://github.com/mqyqingfeng/Blog/issues/7)
+这里应该会有个问题就是，箭头函数的 `this` 在定义的时候确定，普通函数的 `this` 在调用时确认，那函数里的箭头函数的 `this`，如果外层函数不调用，岂不是一直不确认了？
+
+其实不是的，也会是在定义的时候确认，只不过 `this` 指向是一种类似内存存储对象(栈存地址，对象本身存堆)的引用关系。
+
+```js
+const obj = {
+  hello: 'hello'
+}
+
+function fun() {
+  let a = 1
+  const b = () => {
+    console.log(this)
+  }
+  b()
+}
+fun.call(obj) // { hello: 'hello' }
+```
+
+———
+
+至于更加复杂的情况，就需要看[冴羽大佬的博客](https://github.com/mqyqingfeng/Blog/issues/7)了，比如说：
+
+```js
+var value = 1
+
+var foo = {
+  value: 2,
+  bar: function () {
+    return this.value
+  }
+}
+
+console.log((foo.bar = foo.bar)()) // 1
+console.log((false || foo.bar)()) // 1
+console.log((foo.bar, foo.bar)()) // 1
+```
+
+### `bind` 的注意事项
+
+多次 bind
+
+需要注意的是 `bind` 多次调用无效，是因为闭包保存了首次的入参。
+
+这也是因为 bind 实际上是给原始函数封装了一层，原函数是以 首次入参为 `this` 来调用的。
+
+多次 `bind` 只是多次封装，最终调用的函数还是原来的那个函数。
+
+![image](/js/bind-1.jpg)
+![image](/js/bind-2.jpg)
 
 ## 七、执行上下文过程
 

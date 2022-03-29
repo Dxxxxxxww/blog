@@ -69,6 +69,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // 那么在这种递归渲染的过程中，
     // 我们必须正确保证一对引用关系：当前渲染的组件实例以及其父级组件实例。
     const restoreActiveInstance = setActiveInstance(vm)
+    // 将当前的 vnode 保存到 vm._vnode 上，用于下次更新
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // __patch__ 在入口(src/platforms/runtime/index.js)被注入。

@@ -24,6 +24,9 @@ const mount = Vue.prototype.$mount
  * 注册包含编译的$mount方法
  * 模板编译相关处理
  * 最终结果是将 template 转换为 render，再进行 mount
+ * 
+ * 总结下：template 会有两种情况使用 innerHTML 获取模板，一个是传入 id选择器时，一个是传入标签时。如果以字符串形式传入标签，不会调用 innerHTML
+ *        如果是以 el 来获取标签，会使用 outerHTML
  */
 Vue.prototype.$mount = function (
   el?: string | Element,
@@ -48,8 +51,9 @@ Vue.prototype.$mount = function (
     let template = options.template
     // 判断是否有 template
     if (template) {
-      // template 取 innerHTML
+      // template 取 innerHTML。 template 取 innerHTML 应该是为了组件中的根标签 都是 template
       // 如果 template 是字符串
+      // 如果 template 是字符串形式，并且不是 id 选择器，就不做处理  `<h1 style="font-size: 12px;">{{ msg }}</h1>`
       if (typeof template === 'string') {
         // 如果 template 是 id 选择器
         if (template.charAt(0) === '#') {
@@ -68,6 +72,7 @@ Vue.prototype.$mount = function (
         // 如果 template 是 dom 节点，直接取其 innerHTML
         // 如果是非元素节点的 dom 节点，例如文本节点，则其 innerHTML 为 undefined
         // 所以下面会额外再去判断一下 template
+        // template 取 innerHTML 毋庸置疑，因为组件形式都是先写 template，然后在里面写单根节点，这才是组件的真正内容。这也应该是为什么 template 这个 vue 自带的组件是不会被渲染到页面上的原因。不带编译版本的就会在这里修改成 render。
         template = template.innerHTML
       } else {
         // 都不满足则报错且返回 Vue 实例
@@ -79,7 +84,7 @@ Vue.prototype.$mount = function (
     } else if (el) {
       // el 取 outerHTML 这是因为 el 是挂载的地方，即div#app。
       // 更新：调试完 template / render 之后，我发现应该不是为了保证挂载点不会被去除，因为挂载点本来就是要去除的
-      // 这应该是为了保证根节点是唯一的，el 作为模板时，el本身肯定是唯一的根节点。
+      // 这应该是为了保证比如说以前的老项目里想要使用 vue 了，给一个标签节点做根节点，这时候如果我们对 el 使用 innerHTML 的话，这个节点就会被替代掉，就会很奇怪。
       // 如果用 el 来生成 template，则必须使用 outerHTML，[来保证挂载的地方不会被去除(保证 #app 的元素存在)]
       // 可以去 examples/10-virtualdom 中的 1. 使用 el 来生成 render 的调试 来调试查看
       // 如果没有 template 则使用 el 的 outerHTML 作为 template
