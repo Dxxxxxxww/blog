@@ -23,7 +23,7 @@ import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util'
 export function simpleNormalizeChildren (children: any) {
   for (let i = 0; i < children.length; i++) {
     if (Array.isArray(children[i])) {
-      // 骚操作，用 concat 来拍平数组
+      // 骚操作，用 concat + apply 来拍平数组
       return Array.prototype.concat.apply([], children)
     }
   }
@@ -63,17 +63,21 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
     lastIndex = res.length - 1
     last = res[lastIndex]
     //  nested
+    // 遍历项为数组：多见于v-for或者slot的时候，会出现嵌套VNode数组的情况
     if (Array.isArray(c)) {
       if (c.length > 0) {
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)
         // merge adjacent text nodes
+        // 如果存在两个连续的文本节点，则将其合并成一个文本节点。
         if (isTextNode(c[0]) && isTextNode(last)) {
           res[lastIndex] = createTextVNode(last.text + (c[0]: any).text)
           c.shift()
         }
         res.push.apply(res, c)
       }
+    //  遍历项为基础类型：当为基础类型的时候，调用封装的createTextVNode方法来创建一个文本节点，然后push到结果数组中。
     } else if (isPrimitive(c)) {
+        // 如果存在两个连续的文本节点，则将其合并成一个文本节点。
       if (isTextNode(last)) {
         // merge adjacent text nodes
         // this is necessary for SSR hydration because text nodes are
@@ -83,7 +87,9 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
         // convert primitive to vnode
         res.push(createTextVNode(c))
       }
+    //  遍历项已经是VNode类型：这种情况最简单，如果不属于以上两种情况，那么代表本身已经是VNode类型了，这时候我们什么都不需要做，直接push到结果数组中即可。
     } else {
+      // 如果存在两个连续的文本节点，则将其合并成一个文本节点。
       if (isTextNode(c) && isTextNode(last)) {
         // merge adjacent text nodes
         res[lastIndex] = createTextVNode(last.text + c.text)

@@ -470,8 +470,8 @@ export function createPatchFunction (backend) {
   }
 
   /**
-   * 将dom元素 从 dom 上移除，并触发模块和用户自定的 remove 的钩子函数
-   * 触发模块和用户自定的 destroy 钩子函数
+   * 将dom元素 从 dom 上移除，并触发模块和snabbdom的 remove 的钩子函数
+   * 触发模块和snabbdom的 destroy 钩子函数
    */
   function removeVnodes(vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
@@ -480,7 +480,7 @@ export function createPatchFunction (backend) {
       if (isDef(ch)) {
         // 判断是否是 页面标签
         if (isDef(ch.tag)) {
-          // 将dom元素 从 dom 上移除，并触发模块和用户自定的 remove 的钩子函数
+          // 将dom元素 从 dom 上移除，并触发模块和snabbdom的 remove 的钩子函数
           removeAndInvokeRemoveHook(ch);
           // 触发 destroy 钩子函数
           invokeDestroyHook(ch);
@@ -492,7 +492,7 @@ export function createPatchFunction (backend) {
       }
     }
   }
-  // 将标签从 dom 上移除，并触发模块和用户自定的 remove 的钩子函数
+  // 将标签从 dom 上移除，并触发模块和snabbdom的 remove 的钩子函数
   function removeAndInvokeRemoveHook(vnode, rm) {
     if (isDef(rm) || isDef(vnode.data)) {
       let i;
@@ -858,7 +858,7 @@ export function createPatchFunction (backend) {
       nodeOps.setTextContent(elm, vnode.text);
     }
     if (isDef(data)) {
-      // diff 完成后，获取 vnode.data.hook 中的用户自定 postpatch 钩子函数，存在则执行
+      // diff 完成后，获取 vnode.data.hook 中的snabbdom postpatch 钩子函数，存在则执行
       if (isDef((i = data.hook)) && isDef((i = i.postpatch)))
         i(oldVnode, vnode);
     }
@@ -1040,10 +1040,10 @@ export function createPatchFunction (backend) {
       // 如果是真实的 dom 元素，则说明是首次渲染。
       // 因为如果是更新过程的话，oldVnode 就会是一个 vnode 节点
       const isRealElement = isDef(oldVnode.nodeType);
-      // 如果 oldVnode 是一个 vnode 节点
+      // 如果 oldVnode 是一个 vnode 节点，并且新旧vnode 相同
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
-        // 如果新旧节点相同，则执行 patchVnode 去查看子节点
+        // 执行 patchVnode 去查看子节点
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly);
       } else {
         // 如果 oldVnode 是真实dom节点

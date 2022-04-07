@@ -59,8 +59,10 @@ export function initMixin (Vue: Class<Component>) {
     }
     /* istanbul ignore else */
     // render 代理，在render函数上访问相关数据，函数会进入这里，比如说_c _v _s template中所用到的数据
+    // vm._renderProxy 在 render 调用的时候会使用。render.call(vm._renderProxy, vm.$createElement)
     if (process.env.NODE_ENV !== 'production') {
       // 开发模式下调用 new Proxy() 获取实例 作为 vm._renderProxy
+      // 在渲染阶段对不合法的数据做判断和处理。
       initProxy(vm)
     } else {
       // 生产模式设置渲染代理对象为本身，Vue 实例

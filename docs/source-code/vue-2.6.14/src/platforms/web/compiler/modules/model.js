@@ -1,6 +1,7 @@
 /* @flow */
 
 /**
+ * 处理与 v-if 一起使用的 v-model
  * Expand input[v-model] with dynamic type bindings into v-if-else chains
  * Turn this:
  *   <input v-model="data[type]" :type="type">

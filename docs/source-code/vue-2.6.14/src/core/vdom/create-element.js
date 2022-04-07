@@ -28,12 +28,17 @@ const ALWAYS_NORMALIZE = 2
 // without getting yelled at by flow
 // 处理参数，最终调用 _createElement 返回 vnode
 export function createElement (
-  // vm 实例
+  // vm 实例，开发环境下是 vm_renderProxy
   context: Component,
+  // 标签，可以是正常的HTML元素标签，也可以是Component组件。
   tag: any,
+  // VNode的数据，其类型为VNodeData，可以在根目录flow/vnode.js文件中看到其具体定义。undefined。
   data: any,
+  // VNode的子节点。
   children: any,
+  // children子节点规范化类型。
   normalizationType: any,
+  // 是否总是规范化，_c false, h true
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
   // 如果 data 是数组(子节点)/原始值(标签内容)，说明此时的 data 是 children
@@ -51,12 +56,18 @@ export function createElement (
   // 返回 vnode
   return _createElement(context, tag, data, children, normalizationType)
 }
-// 通过条件判断来产生不同的 vnode 节点，封装 vnode 的创建
+// 通过条件判断来产生不同的 vnode 节点，封装 vnode 的创建。
+// 主要做两件事情：规范化子节点和创建VNode节点。
 export function _createElement (
+  // vm 实例，开发环境下是 vm_renderProxy
   context: Component,
+  // 标签，可以是正常的HTML元素标签，也可以是Component组件。
   tag?: string | Class<Component> | Function | Object,
+  // VNode的数据，其类型为VNodeData，可以在根目录flow/vnode.js文件中看到其具体定义。
   data?: VNodeData,
+  // VNode的子节点。
   children?: any,
+  // children子节点规范化类型。
   normalizationType?: number
 ): VNode | Array<VNode> {
   // 如果 data 是响应式数据，则报警
@@ -96,7 +107,7 @@ export function _createElement (
     }
   }
   // support single function children as default scoped slot
-  // 处理作用域插槽，先跳过
+  // 处理作用域插槽
   if (Array.isArray(children) &&
     typeof children[0] === 'function'
   ) {
@@ -104,13 +115,18 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
-  // 相等说明是用户传递的 render
+  // 规范化 children 子节点。
+  // 因为虚拟DOM是一个树形结构，每一个节点都应该是VNode类型，
+  // 但是children参数又是任意类型的，
+  // 所以如果有子节点，我们需要把它进行规范化成VNode类型
+  // 相等说明是用户传递的 render 始终规范化
   if (normalizationType === ALWAYS_NORMALIZE) {
     // 处理children，不管用户传入数组/原始值，最终返回一维数组
     children = normalizeChildren(children)
-    // 编译生成的 render
+    // 编译生成的 render，简单规范化
   } else if (normalizationType === SIMPLE_NORMALIZE) {
-    // 处理children，把二维数组转换为一维数组
+    // 多维数组降低一个维度
+    // 处理children，把二维数组转换为一维数组 用 concat + apply 来拍平数组
     children = simpleNormalizeChildren(children)
   }
   let vnode, ns
@@ -144,16 +160,17 @@ export function _createElement (
       && isDef(Ctor = resolveAsset(context.$options, 'components', tag))
     ) {
       // component
-      // 创建自定义组件
+      // tag 是字符串，但不是保留标签，是组件名，创建自定义组件
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {
-      // tag 不是 保留标签
+      // 既不是保留标签，也不是组件
       // unknown or unlisted namespaced elements
       // check at runtime because it may get assigned a namespace when its
       // parent normalizes children
-      // 未知或未列出名称空间的元素会在运行时进行检查，
-      // 因为当它的父元素规范化子元素时，
-      // 它可能会被分配一个名称空间
+      // 这里之所以直接创建未知标签的 VNode 而不是报错，
+      // 这是因为子节点在 createElement 的过程中，
+      // 有可能父节点会为其提供一个 namespace，
+      // 真正做未知标签校验的过程发生在 patch 阶段。
       // 创建 vnode
       vnode = new VNode(
         tag, data, children,

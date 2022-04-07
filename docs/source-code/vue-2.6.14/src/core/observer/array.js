@@ -46,6 +46,9 @@ methodsToPatch.forEach(function (method) {
         inserted = args.slice(2)
         break
     }
+    // 数组不做值对比我感觉是因为几乎没有这样的场景，
+    // 如果是基础值，那根本不需要改变数组值，如果是对象，那指针不同，也不需要对比，必须要重新渲染。
+    // 只判断对象指针相同，而不是真正的判断对象值相同，应该也是这种原因，收益低，如果对象很复杂，对比更消耗性能。
     // inserted 必定是数组，因为 args 是数组。。。。
     if (inserted) ob.observeArray(inserted)
     // notify change

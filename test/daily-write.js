@@ -1,3 +1,49 @@
+// day 9 手写科里化3
+function add() {
+  const _args = [...arguments]
+  function fn() {
+    _args.push(...arguments)
+    return fn
+  }
+  fn.valueOf = function () {
+    return _args.reduce((sum, cur) => sum + cur)
+  }
+  return fn
+}
+
+// day 8 手写科里化2
+function curry(fn) {
+  return function curriedFn(...args) {
+    if (args.length < fn.length) {
+      return function () {
+        // 这里一定要注意还需要递归调用 curriedFn，而不是 fn
+        // 因为后续传参也不一定全部传完了
+        return curriedFn.apply(this, args.concat(Array.from(arguments)))
+      }
+    }
+    return fn.apply(this, args)
+  }
+}
+
+// day 7 手写科里化1
+function curry(func) {
+  return function curriedFn(...args) {
+    if (args.length < func.length) {
+      return function () {
+        return curriedFn(...args.concat(Array.from(arguments)))
+      }
+    }
+    return func(...args)
+  }
+}
+
+// day 6 手写 new
+function myNew(ctor) {
+  const obj = Object.create(ctor.prototype)
+  const res = ctor.apply(obj, Array.prototype.slice.call(arguments, 1))
+  return typeof res === 'object' || typeof res === 'function' ? res : obj
+}
+
 // day 5
 const PENDING = 'pending'
 const FULFILLED = 'fulfilled'

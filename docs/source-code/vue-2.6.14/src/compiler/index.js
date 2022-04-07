@@ -13,10 +13,13 @@ export const createCompiler = createCompilerCreator(
     template: string,
     options: CompilerOptions
   ): CompiledResult {
+    // 把模板编译成 ast
     const ast = parse(template.trim(), options)
     if (options.optimize !== false) {
+      // 优化 ast
       optimize(ast, options)
     }
+    // 将 ast 转换成字符串形式的 js 代码
     const code = generate(ast, options)
     return {
       ast,

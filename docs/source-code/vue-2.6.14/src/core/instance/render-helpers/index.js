@@ -20,17 +20,18 @@ export function installRenderHelpers (target: any) {
   target._o = markOnce
   // toNumber
   target._n = toNumber
-  // toString
+  // toString 如果是插值表达式，即变量，会转为字符串类型
   target._s = toString
   target._l = renderList
   target._t = renderSlot
   target._q = looseEqual
   target._i = looseIndexOf
+  // 处理静态内容
   target._m = renderStatic
   target._f = resolveFilter
   target._k = checkKeyCodes
   target._b = bindObjectProps
-  // 创建文本虚拟节点vnode
+  // 创建文本vnode 纯文本会被创建成文本vnode
   target._v = createTextVNode
   target._e = createEmptyVNode
   target._u = resolveScopedSlots

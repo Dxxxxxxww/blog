@@ -70,7 +70,8 @@ export function setCurrentRenderingInstance (vm: Component) {
 
 export function renderMixin (Vue: Class<Component>) {
   // install runtime convenience helpers
-  // 注册一些编译时使用的工具函数，在 render 中使用
+  // render-helpers/index.js
+  // installRenderHelpers 注册一些编译时使用的工具函数，在 render 中使用
   installRenderHelpers(Vue.prototype)
 
   Vue.prototype.$nextTick = function (fn: Function) {

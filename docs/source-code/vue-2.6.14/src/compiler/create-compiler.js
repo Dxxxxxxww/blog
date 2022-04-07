@@ -5,7 +5,11 @@ import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
 export function createCompilerCreator (baseCompile: Function): Function {
+  // baseOptions：平台相关的 options
+  // src/platforms/web/compiler/options.js 中定义
   return function createCompiler (baseOptions: CompilerOptions) {
+    // 接受两个参数：模板，用户传递的选项。
+    // 用户传递的选项 会与平台相关的 options 合并，最终传给 baseCompile
     function compile (
       template: string,
       options?: CompilerOptions
@@ -69,6 +73,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
 
     return {
       compile,
+      // 模板编译的入口
       compileToFunctions: createCompileToFunctionFn(compile)
     }
   }

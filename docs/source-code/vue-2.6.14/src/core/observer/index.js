@@ -264,6 +264,9 @@ export function defineReactive (
       /* eslint-disable no-self-compare */
       // 核心就是判断新值与旧值是否相等，如果相等则直接返回，不触发更新
       // newVal !== newVal && value !== value 是判断 NaN 的情况，因为 NaN 不等于自身
+      // 数组不做值对比我感觉是因为几乎没有这样的场景，
+      // 如果是基础值，那根本不需要改变数组值，如果是对象，那指针不同，也不需要对比，必须要重新渲染。
+      // 只判断对象指针相同，而不是真正的判断对象值相同，应该也是这种原因，收益低，如果对象很复杂，对比更消耗性能。
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return
       }

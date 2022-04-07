@@ -267,7 +267,7 @@ export function defineComputed (
   } else {
     sharedPropertyDefinition.get = userDef.get
       ? shouldCache && userDef.cache !== false
-        // template 中使用 computed 时，就会从这里获取
+        // template/js 中使用 computed 时，就会从这里获取
         ? createComputedGetter(key)
         : createGetterInvoker(userDef.get)
       : noop

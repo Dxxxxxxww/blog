@@ -7,6 +7,8 @@
 <body>
 <div id="app">
   <p>{{arr}}</p>
+<!--  <p>{{a}}</p>-->
+<!--  <p>{{obj.b}}</p>-->
   <button @click="change">Add</button>
 </div>
 
@@ -15,14 +17,39 @@
   const vm = new Vue({
     el: '#app',
     data: {
-      arr: [1,2,3]
+      arr: [1,2,3],
+      a: 'a',
+      obj: {
+        b: 'b'
+      }
     },
     methods: {
       change () {
-        // 函数内对同一个数组/对象多次操作不会多次进行渲染，在同一个 tick 中，watcher id 相同就不会被记录到 queue中。
+        // 函数内对同一个数组多次操作（数组的升级版api）不会多次进行渲染，在同一个 tick 中，watcher id 相同就不会被记录到 queue中。
         // queueWatcher 会进行去重
+        // this.arr.splice(0,1,10)
         this.arr.splice(0,1,10)
         this.arr.push(100)
+        // 而对 key 的操作（defineReactive.set），如果值相同，则不会触发 notify
+        // this.a = 'zzz'
+        // this.a = 'zzz'
+        // this.obj.b = 'zzz'
+        // this.obj.b = 'zzz'
+        // 这样是会触发更新的，因为对象的指针不同
+        // this.obj = { b: 'b'}
+        // 这样就不会了，重新赋值对象，也是对 key 的操作，data[key]
+        // const obj = { b: 'b'}
+        // this.obj = obj
+        // this.obj = obj
+        // $set 对已有的参数赋值，对对象来说，最终会调用 defineReactive.set。
+        // 对数组来说，最终会调用 splice 。结果与上述相同
+        // this.$set(this.obj, 'b', 'b')
+        // 总结：如果值相同，不会触发更新。数组例外，因为数组的升级版api 没有对值进行对比，只要使用就会触发 notify。
+        // 如果值不同，在同一个 tick 中，不会进行多次渲染。
+        // 在真正渲染时会取数据的最新值(异步渲染时，此时 js 中同步多次赋值早已经改变了数据，所以渲染时获取的值是最新的)。
+        // 数组不做值对比我感觉是因为几乎没有这样的场景，
+        // 如果是基础值，那根本不需要改变数组值，如果是对象，那指针不同，也不需要对比，必须要重新渲染。
+        // 只判断对象指针相同，而不是真正的判断对象值相同，应该也是这种原因，收益低，如果对象很复杂，对比更消耗性能。
       }
     },
   })
