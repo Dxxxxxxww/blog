@@ -6,6 +6,7 @@
  * HTML Parser By John Resig (ejohn.org)
  * Modified by Juriy "kangax" Zaytsev
  * Original code by Erik Arvidsson (MPL-1.1 OR Apache-2.0 OR GPL-2.0-or-later)
+ * parseHTML 借鉴了该开源库
  * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
  */
 
@@ -14,16 +15,24 @@ import { isNonPhrasingTag } from 'web/compiler/util'
 import { unicodeRegExp } from 'core/util/lang'
 
 // Regular Expressions for parsing tags and attributes
+// 定义正则去匹配 html 中的内容
+// 匹配标签中的属性，指令
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
+// 匹配开始标签
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
+// 匹配开始标签
 const startTagClose = /^\s*(\/?)>/
+// 匹配结束标签
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+// 匹配文档声明
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
+// 匹配注释
 const comment = /^<!\--/
+// 匹配注释
 const conditionalComment = /^<!\[/
 
 // Special Elements (can contain anything)
@@ -58,26 +67,30 @@ export function parseHTML (html, options) {
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0
   let last, lastTag
+  // 遍历 html(也就是 template)，它会把处理完的部分截取掉，继续去处理剩余部分
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
-        // Comment:
+        // Comment: 注释
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->')
 
           if (commentEnd >= 0) {
             if (options.shouldKeepComment) {
+              // comment 是传入的方法
               options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3)
             }
+            // 记录位置，截取模板
             advance(commentEnd + 3)
             continue
           }
         }
 
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        // 条件注释
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
 
@@ -87,14 +100,14 @@ export function parseHTML (html, options) {
           }
         }
 
-        // Doctype:
+        // Doctype: 文档声明
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
           continue
         }
 
-        // End tag:
+        // End tag: 结束标签
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
@@ -103,7 +116,7 @@ export function parseHTML (html, options) {
           continue
         }
 
-        // Start tag:
+        // Start tag: 开始标签
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch)
@@ -178,7 +191,7 @@ export function parseHTML (html, options) {
 
   // Clean up any remaining tags
   parseEndTag()
-
+  // 记录位置，截取模板
   function advance (n) {
     index += n
     html = html.substring(n)
@@ -208,7 +221,7 @@ export function parseHTML (html, options) {
       }
     }
   }
-
+  // 处理起始标签
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
@@ -246,7 +259,8 @@ export function parseHTML (html, options) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
       lastTag = tagName
     }
-
+    // 解析完开始标签后，调用对应的 start 回调，
+    // 传入 标签名，属性，是否是一元标签(自闭合标签)，起始位置，结束位置
     if (options.start) {
       options.start(tagName, attrs, unary, match.start, match.end)
     }

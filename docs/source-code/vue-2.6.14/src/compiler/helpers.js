@@ -178,8 +178,11 @@ export function getBindingAttr (
 
 // note: this only removes the attr from the Array (attrsList) so that it
 // doesn't get processed by processAttrs.
+// 只会从 attrsList 中移除，这样它就不会被 processAttrs 处理。
 // By default it does NOT remove it from the map (attrsMap) because the map is
 // needed during codegen.
+// 默认情况下，它不会从地图(attrsMap)中删除它，因为在codegen期间需要 map。
+// 获取指令的值，并从 attrsList 移除 指令，这样它就不会被 processAttrs 处理
 export function getAndRemoveAttr (
   el: ASTElement,
   name: string,

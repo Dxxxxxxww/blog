@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      // 题目1
+      // debugger
+      // 微任务队列一直有微任务，导致页面不会渲染
+      // function a() {
+      //   debugger
+      //   Promise.resolve().then(() => {
+      //     debugger
+      //     a()
+      //   })
+      // }
+      // a()
+      // setTimeout(() => {
+      //   console.log(111)
+      // }, 3000)
+
+      //  变体 1
+      // debugger
+      // function a() {
+      //   console.log('a')
+      //   debugger
+      //   Promise.resolve().then(() => {
+      //     console.log('promise')
+      //     debugger
+      //     a()
+      //   })
+      // }
+      // a()
+      // setTimeout(() => {
+      //   console.log(111)
+      // }, 3000)
+      // document.body.innerHTML = 123
+
+      //  变体 2
+      // debugger
+      // function a() {
+      //   console.log('a')
+      //   debugger
+      //   Promise.resolve().then(() => {
+      //     console.log('promise')
+      //     debugger
+      //     a()
+      //   })
+      // }
+      // a()
+      // setTimeout(() => {
+      //   console.log(111)
+      // }, 3000)
+      // document.body.style.backgroundColor = '#f00'
+
+      // 变体3
+      debugger
+      function a() {
+        console.log('a')
+        debugger
+        Promise.resolve().then(() => {
+          console.log('promise')
+          debugger
+          a()
+        })
+      }
+      a()
+      setTimeout(() => {
+        console.log(111)
+      }, 3000)
+      document.body.innerHTML = 123
+
+      // 题目2
+      debugger
+      function a() {
+        a()
+      }
+      a()
+      // 堆栈溢出报错，下面的代码不会执行
+      setTimeout(() => {
+        console.log(111)
+      }, 3000)
+    </script>
+  </head>
+  <body>
+    123123
+  </body>
+</html>

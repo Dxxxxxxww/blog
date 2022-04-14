@@ -1,3 +1,9 @@
+// day 10 手写科里化4
+function add(...args) {
+  const func = add.bind(null, ...args)
+  func.toString = () => args.reduce((prev, next) => (prev += next), 0)
+  return func
+}
 // day 9 手写科里化3
 function add() {
   const _args = [...arguments]

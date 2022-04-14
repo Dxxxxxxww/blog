@@ -417,7 +417,7 @@ Promise.race([getInfo, timeout])
 
 ### 一、promise
 
-#### 2021/11/06 更新：详细的执行过程可以用[链接](https://www.jsv9000.app/)查看。
+#### 2021/11/06 更新：详细的执行过程可以用[链接](https://www.jsv9000.app/)查看
 
 ```js
 var p1 = new Promise((resolve, reject) => {
@@ -583,3 +583,42 @@ var p2 = new Promise((resolve, reject) => {
 // then12 g
 // 同理，then12 变为最后一轮
 ```
+
+## 闭包中的变量存储在哪里？
+
+先说结论：闭包所引用的变量会存到堆中。
+
+原因：栈中的变量在函数调用结束后，就会消失。而堆中的内存会被 GC 统一回收，如果变量一直有引用，则不会回收。
+
+闭包产生后，会将闭包引用的变量放在堆中一个叫 Closure(闭包) 的对象中。而这个 Closure 也会插入到作用域链的顶层。
+
+```js
+function makeStevenFunc() {
+  var stevenx911_name = new Array(1000000).join('x') //这里通过数组构造一个1MB大小字符串
+
+  function displayStevenName() {
+    // 这里定义一个具名函数，方便我们查找
+    console.log(stevenx911_name)
+  }
+  return displayStevenName
+}
+
+var myFunc = makeStevenFunc()
+myFunc()
+```
+
+在浏览器的 memory 中可以查看到堆内存的使用情况，如图：
+
+![image](/js/heep-memory.png)
+
+var 声明的函数(引用类型)也在堆中。这是正常的，因为 window 是一个对象，自然在堆里。
+
+![image](/js/heep-memory2.png)
+
+作用域链如图：
+
+![image](/js/heep-scope.png)
+
+[资料 1](https://juejin.cn/post/6887054571080777735)
+
+[资料 2](https://juejin.cn/post/6844903997615128583#comment)

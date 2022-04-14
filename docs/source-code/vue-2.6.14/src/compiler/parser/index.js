@@ -57,15 +57,20 @@ let platformMustUseProp
 let platformGetTagNamespace
 let maybeComponent
 
+// 简单的返回一个对象，所以ast抽象语法树，就是一个对象而已
 export function createASTElement (
   tag: string,
   attrs: Array<ASTAttr>,
   parent: ASTElement | void
 ): ASTElement {
   return {
+    // type 在 优化ast，生成代码 时会有用处
     type: 1,
+    // 标签
     tag,
+    // 标签的属性数组
     attrsList: attrs,
+    // 标签属性数组转换成对象形式，方便后续使用
     attrsMap: makeAttrsMap(attrs),
     rawAttrsMap: {},
     parent,
@@ -80,8 +85,10 @@ export function parse (
   template: string,
   options: CompilerOptions
 ): ASTElement | void {
+  // 1. 解析 options
   warn = options.warn || baseWarn
 
+  // isPreTag mustUseProp getTagNamespace isReservedTag 来源于 baseOptions
   platformIsPreTag = options.isPreTag || no
   platformMustUseProp = options.mustUseProp || no
   platformGetTagNamespace = options.getTagNamespace || no
@@ -204,7 +211,7 @@ export function parse (
       )
     }
   }
-
+  // 2. 调用 parseHTML 解析模板
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -214,6 +221,8 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
+    // 解析过程中的回调函数，处理完对应内容，会执行，生成 ast 对象(ast 对象就是一个普通对象)
+    // 开始标签
     start (tag, attrs, unary, start, end) {
       // check namespace.
       // inherit parent ns if there is one
@@ -224,12 +233,12 @@ export function parse (
       if (isIE && ns === 'svg') {
         attrs = guardIESVGBug(attrs)
       }
-
+      // 创建 ast 对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
       }
-
+      // 开始给 ast 对象赋值
       if (process.env.NODE_ENV !== 'production') {
         if (options.outputSourceRange) {
           element.start = start
@@ -267,7 +276,8 @@ export function parse (
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element
       }
-
+      // 开始处理指令
+      // 处理 v-pre 指令
       if (!inVPre) {
         processPre(element)
         if (element.pre) {
@@ -281,8 +291,12 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
+        // 结构化的指令
+        // v-for
         processFor(element)
+        // v-if
         processIf(element)
+        // v-once
         processOnce(element)
       }
 
@@ -300,7 +314,7 @@ export function parse (
         closeElement(element)
       }
     },
-
+    // 结束标签
     end (tag, start, end) {
       const element = stack[stack.length - 1]
       // pop stack
@@ -311,7 +325,7 @@ export function parse (
       }
       closeElement(element)
     },
-
+    // 文本内容
     chars (text: string, start: number, end: number) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
@@ -360,9 +374,11 @@ export function parse (
           text = text.replace(whitespaceRE, ' ')
         }
         let res
+        // 创建 ast 节点
         let child: ?ASTNode
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           child = {
+            // type 为2，即表达式
             type: 2,
             expression: res.expression,
             tokens: res.tokens,
@@ -370,6 +386,7 @@ export function parse (
           }
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
           child = {
+            // type 为3，即文本，在优化时会被标记为静态节点
             type: 3,
             text
           }
@@ -383,11 +400,14 @@ export function parse (
         }
       }
     },
+    // 注释节点
     comment (text: string, start, end) {
       // adding anything as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
       if (currentParent) {
+        // 创建 ast 文本节点
         const child: ASTText = {
+          // type 在 优化ast 时会有用处 type 为3，即文本，在优化时会被标记为静态节点
           type: 3,
           text,
           isComment: true
@@ -400,10 +420,12 @@ export function parse (
       }
     }
   })
+  // 返回 ast
   return root
 }
-
+// 处理 v-pre
 function processPre (el) {
+  // 获取 v-pre 的值，并从 attrsList 移除 v-pre，这样它就不会被 processAttrs 处理
   if (getAndRemoveAttr(el, 'v-pre') != null) {
     el.pre = true
   }
@@ -532,17 +554,23 @@ export function parseFor (exp: string): ?ForParseResult {
 }
 
 function processIf (el) {
+  // 这里的 el 就是 ast 对象
+  // 也是获取v-if 的值，并移除 v-if
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
+    // 将 v-if 的值存储到 el.if 上
     el.if = exp
+    // 把 v-if 的表达式，ast对象本身，存储到 ast 的 ifConditions 属性中
     addIfCondition(el, {
       exp: exp,
       block: el
     })
   } else {
+    // 处理 v-else
     if (getAndRemoveAttr(el, 'v-else') != null) {
       el.else = true
     }
+    // 处理 v-else-if
     const elseif = getAndRemoveAttr(el, 'v-else-if')
     if (elseif) {
       el.elseif = elseif
@@ -583,7 +611,7 @@ function findPrevElement (children: Array<any>): ASTElement | void {
     }
   }
 }
-
+// 把 v-if 的表达式，ast对象本身，存储到 ast 的 ifConditions 属性中
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   if (!el.ifConditions) {
     el.ifConditions = []

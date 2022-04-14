@@ -29,7 +29,7 @@ console.log(arr[0])
 
 ## vue 切换只有运行时版本和带编译版本代码
 
-1. 使用别名
+一、使用别名
 
 ```js
 // vue.config.js
@@ -43,7 +43,7 @@ module.exports = {
 }
 ```
 
-2. 使用 vue-cli 配置
+二、使用 vue-cli 配置
 
 ```js
 // vue.config.js
@@ -104,7 +104,7 @@ parent updated
 如果是基础值，那根本不需要改变数组值，如果是对象，那指针不同，也不需要对比，必须要重新渲染。
 只判断对象指针相同，而不是真正的判断对象值相同，应该也是这种原因，收益低，如果对象很复杂，对比更消耗性能。
 
-## what's this...
+## what's this
 
 1. diff 算法只比较同层节点，这是因为 dom 的特性，一般而言，我们很少会将父节点移动到子层，也很少会把子节点移动到父层，所以之比较同层节点减少运算。
 
@@ -119,3 +119,19 @@ parent updated
 h 函数 会在 normalizeChildren 中调用 createTextVNode 来生成。
 
 vue2 中标签内部的空格，换行会在编译后的 render 中被保留。所以如非必要，去除这些空格换行，可以提升下性能。 vue3 已经做过优化了。
+
+## ast
+
+抽象语法树简称 ast(abstract syntax tree)。使用对象的形式描述树形的代码结构。vue 中的抽象语法树是用来描述树形结构的 html 字符串。
+
+### vue 中为什么使用 ast？
+
+template 转换成 ast 后，可以通过 ast 对 template 做优化处理。通过标记 template 中的静态内容，在 patch 的时候直接跳过静态内容。在 patch 的过程中静态内容不需要对比和重新渲染。
+
+### 编译
+
+在包含编译的版本下，当传入的是 template 时，会去走内部的编译逻辑。通过将 template 转换成 ast 语法树(ast 只是 js 对象)，再转换成字符串形式的 js 代码，最后通过 new Function() 来生成真正的 js 代码，也就是 render 函数。该 render 函数会通过编译时写入的 \_c 来获取 vnode。
+
+所以，当我们手写 render 传入时，通过 h 来调用 createElement 。与编译生成的 render 函数内部使用 \_c 的本质是一样的。都是通过 createElement 来获取 vnode。
+
+所以，vue 编译的实质就是，把 template 变成 一段生成 vnode 的 js 代码。

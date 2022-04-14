@@ -24,7 +24,7 @@ const mount = Vue.prototype.$mount
  * 注册包含编译的$mount方法
  * 模板编译相关处理
  * 最终结果是将 template 转换为 render，再进行 mount
- * 
+ *
  * 总结下：template 会有两种情况使用 innerHTML 获取模板，一个是传入 id选择器时，一个是传入标签时。如果以字符串形式传入标签，不会调用 innerHTML
  *        如果是以 el 来获取标签，会使用 outerHTML
  */
@@ -105,6 +105,16 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
+      /**
+       *
+       * 在包含编译的版本下，当传入的是 template 时，会去走内部的编译逻辑。
+       * 通过将 template 转换成 ast 语法树，再转换成字符串形式的 js 代码，
+       * 最后通过 new Function() 来生成真正的 js 代码，也就是 render 函数。
+       * 该 render 函数会通过编译时写入的 \_c 来获取 vnode。
+       *
+       * 所以，当我们手写 render 传入时，通过 h 来调用 createElement 。
+       * 与编译生成的 render 函数内部使用 \_c 的本质是一样的。都是通过 createElement 来获取 vnode。
+       */
       // 将 template 转为 render
       // staticRenderFns 优化时有用处
       const { render, staticRenderFns } = compileToFunctions(
