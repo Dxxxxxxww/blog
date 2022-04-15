@@ -68,7 +68,7 @@ export default class Watcher {
       this.lazy = !!options.lazy
       // watcher 默认是异步执行的(nextTick) 。在 queueWatcher 会进行去重处理。
       // 当在一个 dom 更新周期内时，nextTick 只会执行一次
-      // 如果要多次执行就可以在 user watcher 中设置 sync = true 强制更新执行
+      // 如果要多次执行就可以在 user watcher 中设置 sync = true 强制更新执行，比较耗性能
       // https://forum.vuejs.org/t/synchronize-watch/4848/2
       this.sync = !!options.sync
       // 除了 before，上面的4个属性都与渲染watcher无关

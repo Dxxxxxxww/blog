@@ -135,3 +135,44 @@ template 转换成 ast 后，可以通过 ast 对 template 做优化处理。通
 所以，当我们手写 render 传入时，通过 h 来调用 createElement 。与编译生成的 render 函数内部使用 \_c 的本质是一样的。都是通过 createElement 来获取 vnode。
 
 所以，vue 编译的实质就是，把 template 变成 一段生成 vnode 的 js 代码。
+
+#### 减少使用空格，换行
+
+如果使用包含编译版本的 vue，则少写没有必要的空白和换行，因为在编译时都会生成 ast 对象，存放在内存中，占用内存资源。
+
+#### 线上打包
+
+这里要注意的是，即便是包含编译版本的 vue。在打包时，也会使用到 vue-loader。
+
+因为 vue-loader 的作用是：
+
+1. 将 Vue 单文件组件转换为 JavaScript 模块。否则 webpack 无法识别 .vue 文件。
+2. 将组件代码编译成 render 函数。
+
+我们使用带编译版本的 vue 不是为了解决 vue 单文件组件的问题。而是在 vue 中可能会用到。
+
+```js
+new Vue({
+  template: 'xxx'
+})
+
+Vue.extend({
+  template: 'xxx'
+})
+```
+
+这种情况。
+
+#### 流程自讲
+
+我们在入口文件里通过 compileToFunctions 函数来将 template 转换成 render，compileToFunctions 是一个通过科里化生成的函数，通过父级函数传递 baseOptions，baseCompile 进行参数分离，最终形成了这个函数。
+
+而 compileToFunctions 做的操作其实就两个：一个是通过调用内部的 compile -> 去调用 baseCompile 去进行编译，另一个就是 调用 createFunction -> new Function 去把字符串形式的代码转变成真正的 render 函数。
+
+所以，实际上编译的核心就两点，一个是 baseCompile 函数，一个是 new Function。 new Function 我们不用详谈，这里就简单讲讲 baseCompile。
+
+baseCompile 主要做三件事：
+
+1. 把 template 编译成 ast 对象；
+2. 优化 ast 对象，标记静态节点及静态根节点；
+3. 将 ast 对象转换成字符串形式的 js 代码。

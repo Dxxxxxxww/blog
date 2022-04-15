@@ -24,13 +24,13 @@ export const createCompiler = createCompilerCreator(
       // 2. 优化 ast，标记ast及其子节点的静态节点和静态根节点
       optimize(ast, options)
     }
-    // 3. 将 ast 转换成字符串形式的 js 代码
+    // 3. 将 ast 转换成字符串形式的 js 代码。本质上就是将ast里面的属性提取出来，放到字符串中拼接。
     const code = generate(ast, options)
     return {
       ast,
       // 这里的 render 只是个字符串形式的 js 代码，还需要在 compileToFunctions 进行转换
       render: code.render,
-      // 这里的 staticRenderFns 只是个字符串形式的 js 代码，还需要在 compileToFunctions 进行转换
+      // 这里的 staticRenderFns 只是静态根节点的字符串形式的 js 代码，还需要在 compileToFunctions 进行转换
       staticRenderFns: code.staticRenderFns
     }
   }
