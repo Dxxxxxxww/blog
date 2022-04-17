@@ -622,3 +622,7 @@ var 声明的函数(引用类型)也在堆中。这是正常的，因为 window 
 [资料 1](https://juejin.cn/post/6887054571080777735)
 
 [资料 2](https://juejin.cn/post/6844903997615128583#comment)
+
+## promise
+
+如果在一个 promise 中返回了一个新的 promise，那么被返回的这个 promise 会延后两个微任务之后执行。

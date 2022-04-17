@@ -56,32 +56,65 @@
       // document.body.style.backgroundColor = '#f00'
 
       // 变体3
-      debugger
-      function a() {
-        console.log('a')
-        debugger
-        Promise.resolve().then(() => {
-          console.log('promise')
-          debugger
-          a()
-        })
-      }
-      a()
-      setTimeout(() => {
-        console.log(111)
-      }, 3000)
-      document.body.innerHTML = 123
+      // debugger
+      // function a() {
+      //   console.log('a')
+      //   debugger
+      //   Promise.resolve().then(() => {
+      //     console.log('promise')
+      //     debugger
+      //     a()
+      //   })
+      // }
+      // a()
+      // setTimeout(() => {
+      //   console.log(111)
+      // }, 3000)
+      // document.body.innerHTML = 123
 
       // 题目2
+      // function a() {
+      //     //   Promise.resolve().then(() => {
+      //     //     a()
+      //     //   })
+      //   setTimeout(()=> {
+      //       a()
+      //   })
+      // }
+      // a()
+      // // 这样就可以顺利渲染，这是因为 setTimeout 会给渲染进程中的定时器线程去执行，不会影响到页面渲染。
+      // setTimeout(() => {
+      //   console.log(111)
+      // }, 3000)
+
       debugger
       function a() {
-        a()
+          console.log('a')
+          debugger
+          Promise.resolve().then(() => {
+              console.log('promise')
+              debugger
+              a()
+          })
       }
+
       a()
-      // 堆栈溢出报错，下面的代码不会执行
+
       setTimeout(() => {
-        console.log(111)
+          console.log(111)
       }, 3000)
+      document.body.style.width='100px'
+      document.body.style.height = '200px'
+      document.body.style.float = 'left'
+      document.body.style.backgroundColor = '#f00'
+      document.body.style.marginLeft = '100px'
+      document.body.innerHTML = 123
+      // 重流会重新计算 dom tree css tree，gui 渲染线程会与 js 线程冲突。
+      // https://juejin.cn/post/6844903553795014663#heading-18
+      // https://juejin.cn/post/6976644294740279310
+      // 根据以上这些信息，为什么这里的渲染还会在 微任务之前，
+      // https://lisongfeng.cn/2019/06/05/understanding-modern-browsers.html
+      // https://developer.chrome.com/blog/inside-browser-part1/
     </script>
   </head>
   <body>
