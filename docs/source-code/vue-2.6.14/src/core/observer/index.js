@@ -50,6 +50,7 @@ export class Observer {
   // 1.解决循环对象 2. 解决新增属性的问题
   // 这里的 dep 用来在数组使用 升级版 api 时派发更新
   // 这里的 dep 用来在对象使用 $set $delete 时派发更新
+  // 这个 dep 会在 defineReactive 中的 childOb.dep.depend() 进行依赖收集
   dep: Dep;
   // 实例计数器  如果是根数据，则需要将 vmCount 计数自增
   vmCount: number; // number of vms that have this object as root $data
@@ -248,6 +249,7 @@ export function defineReactive (
         // 如果 childOb 是数组，这里也会使用数组的 dep 进行依赖收集
         if (childOb) {
           // 子级(第二层)对象的__ob__的dep进行依赖收集
+          // 对象 dep 会在这里进行依赖收集
           childOb.dep.depend()
           if (Array.isArray(value)) {
             // 内部遍历数组，对是对象的数组项进行依赖收集，如果还是数组则递归。

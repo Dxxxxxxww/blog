@@ -97,10 +97,12 @@ if (process.env.NODE_ENV !== 'production') {
     if (hasProxy) {
       // determine which proxy handler to use
       const options = vm.$options
-      // getHandler hasHandle
+      // getHandler hasHandle 所做的事情几乎差不多，都是在渲染阶段对不合法的数据做判断和处理
       // 模板生成的 render 函数执行时，会使用 hasHandler 去判断当前vm实例上是否有 _c _v _s 等等辅助函数
       // 以及data，props，computed 等等在 render(template) 中使用的数据
-      // 当使用vue-loader解析.vue文件时，这个时候options.render._withStripped为真值
+      // 当手动传入 render 函数，或者是 vue-loader 编译生成的 render，才会在 _init 时就已经有 render 属性了
+      // 当使用 vue-loader 解析.vue文件时，这个时候 options.render._withStripped 为真值，
+      // 所以只有在 vue-loader 编译时，才会选用 getHandler
       const handlers = options.render && options.render._withStripped
         ? getHandler
         : hasHandler
@@ -114,3 +116,34 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export { initProxy }
+
+
+// const obj = {
+//   a: 1,
+//   b: 2,
+//   c: 3
+// }
+// const proxy = new Proxy(obj, {
+//   has (target, key) {
+//     console.log('has==', key)
+//     return key in target
+//   },
+//   get (target, key) {
+//     console.log('get++', key)
+//     return target[key]
+//   }
+// })
+//
+// 触发getHandler，输出a
+// proxy.a // get++ a
+//
+// // 触发hasHandler，输出 b c
+// with(proxy){
+//   const d = b + c
+// }
+// has== b
+// get++ Symbol(Symbol.unscopables)
+// get++ b
+// has== c
+// get++ Symbol(Symbol.unscopables)
+// get++ c

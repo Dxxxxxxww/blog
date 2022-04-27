@@ -181,7 +181,7 @@ export function createPatchFunction (backend) {
       // associated DOM element for it.
       vnode = ownerArray[index] = cloneVNode(vnode);
     }
-
+    // 只有在 createChildren 中调用时才传递 true
     vnode.isRootInsert = !nested; // for transition enter check
     // 是组件则调用 createComponent() 并返回
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
@@ -263,20 +263,26 @@ export function createPatchFunction (backend) {
       insert(parentElm, vnode.elm, refElm);
     }
   }
-
+  // 内部通过调用 init 钩子来创建组件实例
   function createComponent(vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data;
     if (isDef(i)) {
+      // 占位 vnode 才会有 hook，组件真实 vnode 没有 hook，所以不会去调用 init
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive;
       if (isDef((i = i.hook)) && isDef((i = i.init))) {
+        // 获取到 init 钩子并调用，创建组件实例
         i(vnode, false /* hydrating */);
       }
       // after calling the init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
+      // 组件真实 vnode 由于不会去执行 init，所以不会有 vnode.componentInstance 属性，所以这里也不会调用，返回 false
+      // 组件真实 vnode 的 tag 是 html 的标签。
       if (isDef(vnode.componentInstance)) {
+        // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的钩子函数)
         initComponent(vnode, insertedVnodeQueue);
+        // 这里的插入都是将组件真实 vnode.elm 插入到父组件的 html 中
         insert(parentElm, vnode.elm, refElm);
         if (isTrue(isReactivated)) {
           reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm);
@@ -285,7 +291,7 @@ export function createPatchFunction (backend) {
       }
     }
   }
-
+  // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的钩子函数)
   function initComponent(vnode, insertedVnodeQueue) {
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(
@@ -889,6 +895,7 @@ export function createPatchFunction (backend) {
   const isRenderedModule = makeMap("attrs,class,staticClass,staticStyle,key");
 
   // Note: this is a browser-only function so we can assume elms are DOM nodes.
+  // 这是一个仅供浏览器使用的函数，因此我们可以假设elms是DOM节点
   function hydrate(elm, vnode, insertedVnodeQueue, inVPre) {
     let i;
     const { tag, data, children } = vnode;

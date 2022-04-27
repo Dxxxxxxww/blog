@@ -21,6 +21,8 @@ import {
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
 
+// 每次组件 patch，都会执行该函数，都会重新生成闭包变量 prevActiveInstance。
+// 这样一来，每个组件的祖级都不会被覆盖，也不需要用 list 来存储整个"族谱"
 export function setActiveInstance(vm: Component) {
   const prevActiveInstance = activeInstance
   activeInstance = vm
@@ -33,19 +35,23 @@ export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 获取当前组件的父组件实例/Vue 实例
   let parent = options.parent
+  // 建立父子关系
   // 找到当前实例的父级，将当前实例添加到其子列表中
   // 找到当前组件的父组件，将当前组件添加到父组件的子组件列表中
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
+    // 把当前组件推到父组件的子组件列表中
     parent.$children.push(vm)
   }
-  // 挂载实例属性
+  // 保存父组件
   vm.$parent = parent
+  // main.js 里的 new Vue()，根实例
   vm.$root = parent ? parent.$root : vm
-
+  // 用于保存子组件实例
   vm.$children = []
   vm.$refs = {}
   // 挂载实例私有属性
@@ -65,9 +71,11 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // 上一次处理的 vnode
     const prevVnode = vm._vnode
     // 保存当前激活的实例
-    // 我们知道组件渲染是一个递归的过程，渲染顺序是先子后父。
-    // 那么在这种递归渲染的过程中，
-    // 我们必须正确保证一对引用关系：当前渲染的组件实例以及其父级组件实例。
+    // 我们知道组件渲染(挂载)是一个递归的过程，渲染顺序是先子后父。
+    // 那么在这种递归渲染(挂载)的过程中，
+    // 由于父组件先创建，我们先保存了父组件实例到 activeInstance 中，
+    // 这样在子组件渲染(挂载) 就可以通过 activeInstance 获取到 父组件实例。
+    // 每一个组件其实都相当于是一个单向链表，保留着对父级的引用，区别在于，组件还会保存着祖父级的引用
     const restoreActiveInstance = setActiveInstance(vm)
     // 将当前的 vnode 保存到 vm._vnode 上，用于下次更新
     vm._vnode = vnode
@@ -79,6 +87,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       // 首次渲染
       // vm.$el 真实dom节点
       // 把 $el 转为 vnode 与 新的vnode 比较，将比较的结果生成真实dom返回给 vm.$el
+      // 组件真实 vnode 初次挂载时，vm.$el 还不存在
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
@@ -157,8 +166,11 @@ export function lifecycleMixin (Vue: Class<Component>) {
 export function mountComponent (
   vm: Component,
   el: ?Element,
+  // 在 $mount 调用时传递
   hydrating?: boolean
 ): Component {
+  // 使用传入的 el 挂载 $el
+  // 根实例的 $el 就是在这里挂载的，组件的在 patch 中
   vm.$el = el
   // 如果没有传入 render
   if (!vm.$options.render) {

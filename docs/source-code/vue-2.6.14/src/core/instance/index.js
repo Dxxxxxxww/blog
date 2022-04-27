@@ -14,7 +14,7 @@ function Vue (options) {
   }
   // _uid: 设置实例唯一标识，初始为0
   // _isVue：设置 vue 实例标识，跳过 observe 响应式处理数据
-  // mergeOptions：合并选项
+  // 声明 $options，使用 mergeOptions：合并选项
   // _renderProxy：初始化 _renderProxy
   // 调用其他 init 方法。
   // initLifecycle，initEvents，initRender，

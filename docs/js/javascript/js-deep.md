@@ -626,3 +626,223 @@ var 声明的函数(引用类型)也在堆中。这是正常的，因为 window 
 ## promise
 
 如果在一个 promise 中返回了一个新的 promise，那么被返回的这个 promise 会延后两个微任务之后执行。
+
+## 页面加载事件
+
+document.DOMContentLoaded: 事件在初始 HTML 文档完全加载和解析之后触发，而不需要等待样式表、图像和子帧完成加载。
+
+window.load: 当整个页面已经加载时，包括所有相关资源(如样式表和图像) ，将触发加载事件。这与 DOMContentLoaded 形成了对比，DOMContentLoaded 在页面 DOM 加载完成后立即启动，而不需要等待资源完成加载。
+
+## async/await in JavaScript loop in sequence 循环
+
+先说结论，循环里需要使用 async/await 来保证串行的话，使用基本循环。
+
+### 能保证串行的
+
+[资料](https://zellwk.com/blog/async-await-in-loops/)
+
+3 种基本循环和 1 中需要回调的循环
+
+1. for；
+2. for...of;
+3. while;
+4. reduce。
+
+reduce 中会有很奇怪的表现。
+
+```js
+const reduceLoop = async (_) => {
+  console.log('Start')
+
+  const sum = await fruitsToGet.reduce(async (sum, fruit) => {
+    const numFruit = await getNumFruit(fruit)
+    // 原因是 async 的函数，总是返回 promise，所以第一次遍历完返回，返回值就变成了 Promise.resolve(sum + numFruit)
+    // 也就是 Promise.resolve(0 + 27)
+    // async 定义： async函数内部return语句返回的值，会成为then方法回调函数的参数。async函数内部抛出错误，会导致返回的 Promise 对象变为reject状态。抛出的错误对象会被catch方法回调函数接收到。
+    // 也就是说，正常返回是 resolve，报错是 reject
+    return sum + numFruit
+  }, 0)
+
+  console.log(sum)
+  console.log('End')
+}
+
+reduceLoop()
+// 'Start'
+// '[object Promise]14'
+// 'End'
+
+// 所以在 reduce 中使用，需要 await 一下
+
+// 据说这种写法会卡着很慢，但在最新版 chrome 中没有体现。
+//  This happens because reduceLoop needs to wait for the promisedSum to be completed for each iteration.
+// 这是因为 reduceLoop 需要等待每个迭代完成承诺的和。
+const reduceLoop = async (_) => {
+  console.log('Start')
+
+  const sum = await fruitsToGet.reduce(async (promisedSum, fruit) => {
+    // 注意这一步，上一次循环的结果求值
+    const sum = await promisedSum
+    const numFruit = await getNumFruit(fruit)
+    return sum + numFruit
+  }, 0)
+
+  console.log(sum)
+  console.log('End')
+}
+// 这种比上面一种会执行快一点，不会卡顿很久，但是也会有问题。所以最好的方式还是使用基本循环。
+const reduceLoop = async (_) => {
+  console.log('Start')
+
+  const sum = await fruitsToGet.reduce(async (promisedSum, fruit) => {
+    // Heavy-lifting comes first.
+    // This triggers all three `getNumFruit` promises before waiting for the next interation of the loop.
+    // This works because reduce can fire all three getNumFruit promises before waiting for the next iteration of the loop. However, this method is slightly confusing since you have to be careful of the order you await things
+    // 这是因为 reduce 可以在等待循环的下一次迭代之前激发所有三个 getNumFruit promise。但是，这个方法有点令人困惑，因为您必须小心等待事物的顺序。
+    const numFruit = await getNumFruit(fruit)
+    const sum = await promisedSum
+    return sum + numFruit
+  }, 0)
+
+  console.log(sum)
+  console.log('End')
+}
+```
+
+### 不能保证串行的
+
+需要回调的循环
+
+1. forEach;
+2. map;
+3. filter。
+
+---
+
+1. forEach：不支持 async/await, promise；
+
+```js
+const fruitBasket = {
+  apple: 27,
+  grape: 0,
+  pear: 14
+}
+
+const fruitsToGet = ['apple', 'grape', 'pear']
+
+const getNumFruit = (fruit) => {
+  return fruitBasket[fruit]
+}
+
+const forEachLoop = (_) => {
+  console.log('Start')
+
+  fruitsToGet.forEach(async (fruit) => {
+    const numFruit = await getNumFruit(fruit)
+    console.log(numFruit)
+  })
+
+  console.log('End')
+}
+// 'Start'
+// 'End'
+// '27'
+// '0'
+// '14'
+```
+
+2. map：总是返回 promise 组成的数组。可以根据这种行为，在外层用 Promise.all() 来包裹，并行执行；
+
+```js
+const mapLoop = async (_) => {
+  console.log('Start')
+
+  const numFruits = await fruitsToGet.map(async (fruit) => {
+    const numFruit = await getNumFruit(fruit)
+    return numFruit
+  })
+
+  console.log(numFruits)
+
+  console.log('End')
+}
+
+// 'Start'
+// '[Promise, Promise, Promise]'
+// 'End'
+
+const mapLoop = async (_) => {
+  console.log('Start')
+
+  const promises = fruitsToGet.map(async (fruit) => {
+    const numFruit = await getNumFruit(fruit)
+    return numFruit
+  })
+
+  const numFruits = await Promise.all(promises)
+  console.log(numFruits)
+
+  console.log('End')
+}
+
+// 'Start'
+// '[27, 0, 14]'
+// 'End'
+
+const mapLoop = async (_) => {
+  // ...
+  const promises = fruitsToGet.map(async (fruit) => {
+    const numFruit = await getNumFruit(fruit)
+    // Adds onn fruits before returning
+    return numFruit + 100
+  })
+  // ...
+}
+
+// 'Start'
+// '[127, 100, 114]'
+// 'End'
+```
+
+3. filter：总是不能获得期望的效果，因为 promise 是一个“真值”，在 filter 的判断下总是会返回 true；
+
+```js
+const filterLoop = async (_) => {
+  console.log('Start')
+
+  const moreThan20 = await fruitsToGet.filter(async (fruit) => {
+    const numFruit = await getNumFruit(fruit)
+    return numFruit > 20
+  })
+
+  console.log(moreThan20)
+  console.log('End')
+}
+
+// 'Start'
+// ['apple', 'grape', 'pear']
+// 'End'
+
+// 上面代码其实是这样的
+const filtered = array.filter(() => true)
+
+// 正确使用 filter 需要与 map 搭配
+const filterLoop = async (_) => {
+  console.log('Start')
+  // 先用 map 包装
+  const promises = await fruitsToGet.map((fruit) => getNumFruit(fruit))
+  // 在用 Promise.all 求值
+  const numFruits = await Promise.all(promises)
+  // 最后对值进行过滤
+  const moreThan20 = fruitsToGet.filter((fruit, index) => {
+    const numFruit = numFruits[index]
+    return numFruit > 20
+  })
+
+  console.log(moreThan20)
+  console.log('End')
+}
+// Start
+// [ 'apple' ]
+// End
+```

@@ -64,6 +64,7 @@ export function _createElement (
   // 标签，可以是正常的HTML元素标签，也可以是Component组件。
   tag?: string | Class<Component> | Function | Object,
   // VNode的数据，其类型为VNodeData，可以在根目录flow/vnode.js文件中看到其具体定义。
+  // 就是 h 函数的第二个对象参数
   data?: VNodeData,
   // VNode的子节点。
   children?: any,
@@ -179,6 +180,7 @@ export function _createElement (
     }
   } else {
     // tag 不是字符串，直接给 h函数(createElement) 传递了组件，用户手写 render 并传递组件对象
+    // 此时的 data 是undefined
     // new Vue({
     //     render: h => h(App)
     // }).$mount("#app");

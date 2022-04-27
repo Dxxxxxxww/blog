@@ -17,6 +17,7 @@ export default class Dep {
   // $attrs 使用defineReactive定义，这时候会生成第一个dep，id为0,
   // $listeners 使用defineReactive定义，这时候会生成第一个dep，id为1,
   // 所以对于 data 的dep，其实是从 id === 2 开始的
+  // 所以一般来说，对象的 dep 是偶数，key 是基数。并且深度优先
   id: number;
   // dep 实例对应的 watcher 对象池/观察者池<数组>
   subs: Array<Watcher>;

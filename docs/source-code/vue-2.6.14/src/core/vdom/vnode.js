@@ -40,10 +40,15 @@ export default class VNode {
   constructor (
     tag?: string,
     data?: VNodeData,
+    // 创建组件 vnode 时，该值为 undefined
     children?: ?Array<VNode>,
+    // 创建组件 vnode 时，该值为 undefined
     text?: string,
+    // 创建组件 vnode 时，该值为 undefined
     elm?: Node,
     context?: Component,
+    // 创建组件 vnode 时，会传递 { Ctor, propsData, listeners, tag, children }
+    // 在 patch 时，在 init 钩子函数中，会通过 vnode.componentOptions.Ctor 来实例化组件
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {

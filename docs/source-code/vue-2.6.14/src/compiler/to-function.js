@@ -36,6 +36,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production') {
       // detect possible CSP restriction
+      // 查看是否开启了 csp 内容安全策略 限制
       try {
         new Function('return 1')
       } catch (e) {
@@ -119,7 +120,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
         )
       }
     }
-    // 4. 缓存并返回编译结果(render, staticRenderFns 函数)
+    // 4. 缓存并返回编译结果(render, staticRenderFns 函数)，对于同一个组件而言我们应该只编译一次。
     return (cache[key] = res)
   }
 }

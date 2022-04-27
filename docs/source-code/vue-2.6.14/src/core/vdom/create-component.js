@@ -37,20 +37,29 @@ import {
 // snabbdom 中一共有 pre、init、create、insert、prepatch、update、postpatch、destroy、remove、post
 // vue 重写了 init、prepatch、insert、destroy
 const componentVNodeHooks = {
+  // 在 patch 时调用
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
       !vnode.componentInstance._isDestroyed &&
+      // keepAlive 的情况
       vnode.data.keepAlive
     ) {
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      // 创建组件实例
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
+        // 激活的实例，它其实就是当前组件对象的父组件对象
         activeInstance
       )
+      // 挂载组件
+      // 需要注意的是，在 patch 的 createComponent 中，hydrating 传 false，所以不会在这里挂载，
+      // 而是在 createComponent 中直接通过 insert 来挂载到页面上。
+      // 这里的 $mount 实际上是为了
+      // 组件真实 vnode.elm 挂载是在 patch/createComponent 里的 insert中，插入到父组件的 html 中
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -101,11 +110,13 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-// createComponent 主要做两件事情
+// createComponent 主要做三件事情
 // 1. 构造子类构造函数
 // 2. 安装组件钩子函数
+// 3. 创建并返回 vnode
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
+  // 就是 h 函数的第二个对象参数
   data: ?VNodeData,
   context: Component,
   children: ?Array<VNode>,
@@ -138,6 +149,7 @@ export function createComponent (
 
   // async component
   let asyncFactory
+  // 如果没有 cid 则认为是异步组件，每个组件在使用时，都会进行 extend，在 extend 时就会增加 cid 属性。
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor)
@@ -159,9 +171,11 @@ export function createComponent (
 
   // resolve constructor options in case global mixins are applied after
   // component constructor creation
+  // 在组件构造函数创建后合并全局mixin选项和组件自身选项
   resolveConstructorOptions(Ctor)
 
   // transform component v-model data into props & events
+  // 处理组件上的 v-model 指令
   if (isDef(data.model)) {
     transformModel(Ctor.options, data)
   }
@@ -194,16 +208,20 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
-  // 安装组件钩子函数。Vue 中的虚拟DOM 借鉴了开源库 snabbdom 的实现，
+  // 安装组件钩子函数。init/prepatch/insert/destroy
+  // Vue 中的虚拟DOM 借鉴了开源库 snabbdom 的实现，
   // 这个库里面有一些 vnode节点 在处于不同的场景下，提供了对应的钩子函数来方便我们处理相关的逻辑
+  // 在 init 钩子中会创建组件实例。
   installComponentHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
   // 组件vnode 的 children 是 undefined，也就是说组件VNode没有children子节点
+  // 创建组件 vnode 对象
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
+    // 在 patch 时，在 init 钩子函数中，会通过 vnode.componentOptions.Ctor 来实例化组件
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
   )
@@ -225,9 +243,15 @@ export function createComponentInstanceForVnode (
   // activeInstance in lifecycle state
   parent: any
 ): Component {
+  // 组件内部选项
   const options: InternalComponentOptions = {
+    // 标记当前是组件
     _isComponent: true,
+    // 在 createComponent 中创建的 vnode，它是占位的 vnode，也就是父 vnode，一个 vnode
+    // `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`
     _parentVnode: vnode,
+    // activeInstance 也就是当前组件对象的父组件对象，一个 Vue 的实例
+    // 对于 App.vue 来说，它的 parent 就是 main.js 里的 new Vue() 实例
     parent
   }
   // check inline-template render functions
@@ -236,6 +260,7 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  // 调用组件构造函数来创建组件实例
   return new vnode.componentOptions.Ctor(options)
 }
 // 安装组件钩子函数。Vue 中的虚拟DOM 借鉴了开源库 snabbdom 的实现，
@@ -245,7 +270,10 @@ export function createComponentInstanceForVnode (
 // 其他的钩子函数会在其他地方合并，由于不是重点，不再详细的进行分析
 function installComponentHooks (data: VNodeData) {
   // vue 生命周期钩子不存在 hook 中
-  // 自己写的也不会在 data.hook 中
+  // data 由于是从 createElement 中传递过来，也就是 h 函数的第二个参数，
+  // 所以 data.hook 有可能包含用户传入的钩子，
+  // 如果用户传入了钩子，会被合并到一个函数中与内置钩子一起调用。
+  // 一定得是钩子名的，不然你传个 a,b,c 也是不会在源码中去调用的。
   const hooks = data.hook || (data.hook = {})
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]

@@ -17,11 +17,13 @@ let uid = 0
  * 这个函数不是初始化 Vue.mixin 的。需要区分开来
  */
 export function initMixin (Vue: Class<Component>) {
+  // options：实例化组件对象时传入的 options
   Vue.prototype._init = function (options?: Object) {
     // 保存 vue 实例
     const vm: Component = this
     // a uid
     // 设置实例唯一标识 初始为0
+    // main.js 中 new Vue 创建的根实例 uid 为 0
     vm._uid = uid++
 
     let startTag, endTag
@@ -47,11 +49,13 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       // 由于动态选项合并非常慢，而且没有
       // 内部组件选项需要特殊处理。
+      // 内部会使用构造函数的静态options 作为 原型来创建组件实例的 $options
       initInternalComponent(vm, options)
     } else {
-      // new Vue 创建实例会进入到这里
+      // new Vue 创建实例，首次渲染时，Vue 构造函数的 options 与用户传入的 options 合并
       // mixins 的合并会在 mergeOptions 中进行
       vm.$options = mergeOptions(
+        // 内部还会一直溯源合并到 Vue 构造函数，也就是说每个 $options 都会包含其父类/祖类构造函数的选项
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
@@ -72,11 +76,12 @@ export function initMixin (Vue: Class<Component>) {
     vm._self = vm
     // vm(Vue 实例)的生命周期相关变量初始化 挂载一些实例属性以及私有实例属性。将当前实例添加到父实例的子列表中
     // $children $parent $root $refs
+    // 建立父子组件关系
     initLifecycle(vm)
     // vm 的事件中心初始化，监听父组件绑定在当前组件上的事件
     initEvents(vm)
     // vm 的编译 render 初始化
-    // $slots $scopedSlots，_c，$createElement(render 的参数 h 函数)，$attrs，$listeners
+    // $slots $scopedSlots，_c，$createElement(render 的参数 h 函数)，$attrs，$listeners，$vnode
     // 为了更方便的创建 HOC 设置 $attrs，$listeners 为响应式的
     initRender(vm)
     // 调用 beforeCreate 生命周期钩子
@@ -85,7 +90,6 @@ export function initMixin (Vue: Class<Component>) {
     // 在 data props 初始化前先注入 inject
     // 把 inject 的成员注入到 vm 上
     initInjections(vm)
-    // 初始化 props methods data computed watch
     // 初始化 vm 的 _props methods _data computed watch
     initState(vm)
     // resolve provide after data/props
@@ -103,16 +107,22 @@ export function initMixin (Vue: Class<Component>) {
     }
     // 挂载
     if (vm.$options.el) {
+      // 调用 mountComponent
       vm.$mount(vm.$options.el)
     }
   }
 }
 
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
+  // 注意这里，会使用构造函数的静态options 作为 原型来创建组件实例的 $options
   const opts = vm.$options = Object.create(vm.constructor.options)
   // doing this because it's faster than dynamic enumeration.
+  // 获取在 createComponent 中创建的占位 vnode
+  // 占位 vnode 的标签名： `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`
   const parentVnode = options._parentVnode
+  // 获取当前组件的父组件对象 Vue 实例 activeInstance
   opts.parent = options.parent
+  // 将占位 vnode 挂载到 vm.$options 上
   opts._parentVnode = parentVnode
 
   const vnodeComponentOptions = parentVnode.componentOptions
@@ -130,6 +140,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
   if (Ctor.super) {
+    // Vue 构造函数
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions
     if (superOptions !== cachedSuperOptions) {
@@ -142,6 +153,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
       if (modifiedOptions) {
         extend(Ctor.extendOptions, modifiedOptions)
       }
+      // Ctor.extendOptions 就是组件的选项对象，它在 Vue.extend 中挂载
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)
       if (options.name) {
         options.components[options.name] = Ctor

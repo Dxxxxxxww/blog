@@ -558,3 +558,6 @@ export default class VueRouter {
 }
 ```
 
+## 手写简单的 vuex
+
+@[code](./code/vuex.js)

@@ -25,6 +25,11 @@ const mount = Vue.prototype.$mount
  * 模板编译相关处理
  * 最终结果是将 template 转换为 render，再进行 mount
  *
+ * 其实我们使用Vue-Cli脚手架创建的项目，
+ * 组件在$mount方法执行的时候，已经存在render函数了，
+ * 这是因为vue-loader已经帮我们把template转换为render函数了，
+ * 因此对于大多数情况来说不会走处理template的过程，只有少部分特殊情况才会走template处理。
+ *
  * 总结下：template 会有两种情况使用 innerHTML 获取模板，一个是传入 id选择器时，一个是传入标签时。如果以字符串形式传入标签，不会调用 innerHTML
  *        如果是以 el 来获取标签，会使用 outerHTML
  */

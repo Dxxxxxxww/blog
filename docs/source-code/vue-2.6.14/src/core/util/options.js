@@ -416,7 +416,7 @@ export function mergeOptions (
   if (process.env.NODE_ENV !== 'production') {
     checkComponents(child)
   }
-
+  // 如果是函数，则为组件构造函数
   if (typeof child === 'function') {
     child = child.options
   }
@@ -435,7 +435,7 @@ export function mergeOptions (
   // the result of another mergeOptions call.
   // 而不是另一个合并选项调用的结果
   // Only merged options has the _base property.
-  // 只合并带有 _base 的选项
+  // 只合并不带有 _base 的选项。带有 _base 也就是 Vue 组件构造函数
   if (!child._base) {
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
