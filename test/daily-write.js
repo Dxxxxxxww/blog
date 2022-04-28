@@ -1,5 +1,95 @@
-const { log } = console
+// day 13
+// 第一种
+function add(...args1) {
+  let totalArgs = args1
+  function fn(...args2) {
+    totalArgs = totalArgs.concat(args2)
+    return fn
+  }
+  fn.valueOf = () => {
+    return totalArgs.reduce((total, cur) => {
+      return total + cur
+    }, 0)
+  }
+  return fn
+}
+
+add(1)(2)(3).valueOf()
+
+// 第二种，利用 bind 特性
+function add() {
+  const args = [...arguments]
+  const fn = add.bind(this, ...args)
+  fn.valueOf = () => {
+    return args.reduce((total, cur) => {
+      return total + cur
+    }, 0)
+  }
+  return fn
+}
+
+// 实现一个公共的科里化函数，将普通函数转变成科里化函数
+// add(1,2,3) == 6  const arr2 = curry(add)  add2(1)(2)(3)
+
+function curry(func) {
+  const argLength = func.length
+  const args = Array.prototype.slice.call(arguments, 1)
+  return function fn() {
+    args.push(...arguments)
+    if (args.length < argLength) {
+      return fn
+    }
+    return func(...args)
+  }
+}
+
+function add1(x, y, z) {
+  return x + y + z
+}
+
+const add2 = curry(add1)
+console.log(add2(1)(2)(3))
+// day 12
+// 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
+class Arrange {
+  tasks = []
+  constructor(name) {
+    this.tasks.push(() => {
+      console.log(`hi, this is ${name}`)
+    })
+  }
+  wait(time) {
+    this.tasks.push(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(`wake up after ${time}s`)
+            resolve()
+          }, time * 1e3)
+        })
+    )
+    return this
+  }
+  do(action) {
+    this.tasks.push(() => {
+      console.log(`do ${action}`)
+    })
+    return this
+  }
+  async execute() {
+    while (!!this.tasks.length) {
+      const task = this.tasks.shift()
+      task && (await task())
+    }
+  }
+}
+
+const arrange = (name) => new Arrange(name)
+
+arrange('William').wait(3).do('commit').wait(3).do('push').execute()
+
 // day 11 promise 1
+const { log } = console
 class _LazyMan {
   tasks = []
   constructor(name) {

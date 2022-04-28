@@ -789,3 +789,14 @@ dep.notify()
 ## 手写 promise
 
 [promise](https://dxxxxxxww.github.io/blog/js/javascript/手写promise.html)
+
+## 编程挑战
+
+### 实现 LazyMan('hank').sleep(3).eat('food').sleepFirst(1)
+
+@[code](./code/eventloop.js)
+
+### 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
+
+@[code](./code/arrange.js)
+

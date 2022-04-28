@@ -6,7 +6,7 @@
 function _c(fn) {
   const params = Array.prototype.slice.call(arguments, 1)
   if (params.length < fn.length) {
-    return function(...args) {
+    return function (...args) {
       return fn(...params.concat(args))
     }
   }
@@ -14,7 +14,7 @@ function _c(fn) {
 }
 ```
 
-## lodash.flowRight
+## lodash.flowRight compose
 
 flowRight 参数从右往左开始调用
 
@@ -23,8 +23,10 @@ flowRight 参数从右往左开始调用
 // 函数洋葱调用  a(b(c()))
 // 函数组合需要满足结合律，即：
 // compose(a, b, c), compose(compose(a, b), c), compose(a, compose(b, c)), 结果相同
-const flowRight = (...args) => (value) =>
-  args.reverse().reduce((initVal, current) => current(initVal), value)
+const flowRight =
+  (...args) =>
+  (value) =>
+    args.reverse().reduce((initVal, current) => current(initVal), value)
 
 const fi = (arr) => arr[0]
 const re = (arr) => arr.reverse()
@@ -49,8 +51,10 @@ flowRight(tu, log, fi, log, re)(a)
 flow 参数从左往右开始调用
 
 ```js
-const flowRight = (...args) => (value) =>
-  args.reduce((initVal, current) => current(initVal), value)
+const flowRight =
+  (...args) =>
+  (value) =>
+    args.reduce((initVal, current) => current(initVal), value)
 
 const fi = (arr) => arr[0]
 const re = (arr) => arr.reverse()

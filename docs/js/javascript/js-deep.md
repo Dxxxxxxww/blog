@@ -719,7 +719,7 @@ const reduceLoop = async (_) => {
 
 ---
 
-1. forEach：不支持 async/await, promise；
+forEach：不支持 async/await, promise；
 
 ```js
 const fruitBasket = {
@@ -751,7 +751,7 @@ const forEachLoop = (_) => {
 // '14'
 ```
 
-2. map：总是返回 promise 组成的数组。可以根据这种行为，在外层用 Promise.all() 来包裹，并行执行；
+map：总是返回 promise 组成的数组。可以根据这种行为，在外层用 Promise.all() 来包裹，并行执行；
 
 ```js
 const mapLoop = async (_) => {
@@ -804,7 +804,7 @@ const mapLoop = async (_) => {
 // 'End'
 ```
 
-3. filter：总是不能获得期望的效果，因为 promise 是一个“真值”，在 filter 的判断下总是会返回 true；
+filter：总是不能获得期望的效果，因为 promise 是一个“真值”，在 filter 的判断下总是会返回 true；
 
 ```js
 const filterLoop = async (_) => {
