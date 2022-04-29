@@ -1,51 +1,75 @@
-// 实现 add(1)(2)(3)  add(1,2,3) == 6
-// 第一种
-function add(...args1) {
-  let totalArgs = args1
-  function fn(...args2) {
-    totalArgs = totalArgs.concat(args2)
-    return fn
-  }
-  fn.valueOf = () => {
-    return totalArgs.reduce((total, cur) => {
-      return total + cur
-    }, 0)
-  }
-  return fn
-}
-
-add(1)(2)(3).valueOf()
-
-// 第二种，利用 bind 特性
-function add() {
-  const args = [...arguments]
-  const fn = add.bind(this, ...args)
-  fn.valueOf = () => {
-    return args.reduce((total, cur) => {
-      return total + cur
-    }, 0)
-  }
-  return fn
-}
-
-// 实现一个公共的科里化函数，将普通函数转变成科里化函数
-// add(1,2,3) == 6  const arr2 = curry(add)  add2(1)(2)(3)
-
-function curry(func) {
-  const argLength = func.length
-  const args = Array.prototype.slice.call(arguments, 1)
-  return function fn() {
-    args.push(...arguments)
-    if (args.length < argLength) {
-      return fn
+class EventCenter {
+  center = {}
+  on(event, handler) {
+    if (!this.center[event]) {
+      this.center[event] = []
     }
-    return func(...args)
+    this.center[event].push({
+      handler,
+      id: this.stringify(handler)
+    })
+  }
+  once(event, handler) {
+    if (!this.center[event]) {
+      this.center[event] = []
+    }
+    const _handler = () => {
+      handler()
+      this.off(event, handler)
+    }
+    this.center[event].push({
+      handler: _handler,
+      id: this.stringify(_handler)
+    })
+    this.on(event, handler)
+  }
+  off(event, handler) {
+    const eventList = this.center[event]
+    const id = this.stringify(handler)
+
+    if (!!eventList) {
+      const index = eventList.findIndex((eventObj) => eventObj.id === id)
+      eventList.splice(index, 1)
+    }
+  }
+  clear(event) {
+    this.center[event] = []
+  }
+  trigger(event) {
+    this.center[event]?.forEach((eventObj) => {
+      eventObj.handler()
+    })
+  }
+  stringify(handler) {
+    return handler.toString()
   }
 }
 
-function add1(x, y, z) {
-  return x + y + z
+const ec = new EventCenter()
+ec.on('click', () => {
+  console.log('click a')
+})
+function b() {
+  console.log('click b')
 }
 
-const add2 = curry(add1)
-console.log(add2(1)(2)(3))
+ec.on('click', b)
+
+const c = () => {
+  console.log('keyup c')
+}
+
+function d() {
+  console.log('keyup d')
+}
+
+ec.once('keyup', c)
+ec.once('keyup', d)
+
+ec.trigger('click')
+ec.trigger('keyup')
+console.log('before off ----')
+ec.off('click', b)
+
+ec.trigger('click')
+ec.trigger('keyup')
