@@ -800,3 +800,6 @@ dep.notify()
 
 @[code](./code/arrange.js)
 
+### 实现一个发布订阅模式
+
+@[code](./code/event-center.js)

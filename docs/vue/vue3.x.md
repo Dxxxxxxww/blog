@@ -98,3 +98,13 @@ bundler:
 
 1. vue.esm-bundler.js，包含编译器，内部还导入了 compiler-core。这个版本就是脚手架默认导入的版本，只包含运行时，vue 体积最小的版本。
 2. vue.runtime.esm-bundler.js
+
+## v3 新 api
+
+`ref` 传入基本类型的值，是响应式的主要是因为，内部创建了一个 `{ value: xx }` 的对象，并使用 proxy 响应式处理后返回。如果 `ref` 传入引用类型的值，内部会去调用 `reactive`。
+
+`toRef`，`toRefs`，搭配 `reactive`，`props` 使用。当我们在一个自定义 hook 中使用 `reactive` 响应式处理了一个对象，又想在 `setup` 中直接通过结构获取属性，就可以使用这两个 `api`。
+
+### 生命周期钩子
+
+`renderTracked` 与 `renderTriggered` 的区别：`renderTracked` 在首次渲染也会触发。
