@@ -2,6 +2,29 @@
 
 ## instanceof
 
+### 递归写法
+
+```js
+function MyInstanceof(obj, constructor) {
+  const proto = Object.getPrototypeOf(obj)
+  if (!proto) {
+    return false
+  }
+  if (proto !== constructor.prototype) {
+    return MyInstanceof(proto, constructor)
+  }
+  return true
+}
+
+function A() {}
+
+const a = new A()
+const c = ''
+
+// console.log(MyInstanceof(a, A))
+// console.log(MyInstanceof(c, A))
+```
+
 ### 使用 Object.getPrototypeOf()
 
 ```js

@@ -416,7 +416,7 @@ webpack5 文档中已不存在
 
 ## devtool
 
-配置 source-map。默认配置跟随 mode。
+配置 source-map, sourcemap。默认配置跟随 mode。
 
 source-map：加密代码与源代码的映射关系，方便调试定位源代码。
 
