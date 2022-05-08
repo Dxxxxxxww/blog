@@ -794,7 +794,7 @@ dep.notify()
 
 ### 实现 LazyMan('hank').sleep(3).eat('food').sleepFirst(1)
 
-@[code](./code/eventloop.js)
+@[code](./code/lazyman.js)
 
 ### 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
 

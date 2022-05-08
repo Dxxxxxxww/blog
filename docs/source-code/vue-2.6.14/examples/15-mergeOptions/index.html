@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>extend</title>
+</head>
+<body>
+<div id="app"></div>
+<script src="../../dist/vue.js"></script>
+<script>
+  const ctor = Vue.component('Comp', {
+    template: '<div>hello vue</div>',
+    inject: ['a'],
+    mounted() {
+      console.log(this)
+    }
+  })
+  // const ctor2 = Vue.extend(ctor)
+  const mixin = {
+    data() {
+      return {
+        m: 1
+      }
+    },
+  }
+  const vm = new Vue({
+    el: '#app',
+    mixins: [mixin],
+    data() {
+      return {
+        a: 1
+      }
+    },
+    provide: {
+      a: this.a
+    },
+    render(h) {
+      return h(ctor)
+    }
+  })
+</script>
+</body>
+</html>

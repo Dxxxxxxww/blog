@@ -8,6 +8,7 @@ import { mergeOptions } from '../util/index'
 export function initMixin (Vue: GlobalAPI) {
   Vue.mixin = function (mixin: Object) {
     // 这里的 this 指向 Vue 构造函数
+    // 注意这里没有传递 vm
     this.options = mergeOptions(this.options, mixin)
     return this
   }

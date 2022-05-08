@@ -125,13 +125,14 @@ export function createComponent (
   if (isUndef(Ctor)) {
     return
   }
-  // 拿到基本构造函数，也就是 Vue 的构造函数。$options._base赋值过程是在initGlobalAPI函数执行的过程中赋值的
+  // 拿到基本构造函数，也就是 Vue 的构造函数。$options._base 赋值过程是在 initGlobalAPI 函数执行的过程中赋值的
   // 因为在 _init 中进行了 mergeOptions 进行配置合并，所以这里可以使用 $options 来获取
   const baseCtor = context.$options._base
 
+  // 1. 构造子类构造函数
   // plain options object: turn it into a constructor
   // 我们组件导出的都是一个对象。但是实际上传递过来的对象上的参数要比我们写组件的要多。
-  // 这是因为vue-loader在处理.vue文件的时候默认帮我们做了一些处理
+  // 这是因为 vue-loader 在处理.vue 文件的时候默认帮我们做了一些处理
   if (isObject(Ctor)) {
     // 使用 Vue.extend 来创建组件的构造函数
     // Vue.extend 在initGlobalAPI方法中调用initExtend时被定义的
@@ -140,6 +141,7 @@ export function createComponent (
 
   // if at this stage it's not a constructor or an async component factory,
   // reject.
+  // 组件检验相关 非重点
   if (typeof Ctor !== 'function') {
     if (process.env.NODE_ENV !== 'production') {
       warn(`Invalid Component definition: ${String(Ctor)}`, context)
@@ -148,6 +150,7 @@ export function createComponent (
   }
 
   // async component
+  // 异步组件相关 非重点
   let asyncFactory
   // 如果没有 cid 则认为是异步组件，每个组件在使用时，都会进行 extend，在 extend 时就会增加 cid 属性。
   if (isUndef(Ctor.cid)) {
@@ -181,9 +184,11 @@ export function createComponent (
   }
 
   // extract props
+  // 获取 prosData 相关 非重点
   const propsData = extractPropsFromVNodeData(data, Ctor, tag)
 
   // functional component
+  // 函数组件相关 非重点
   if (isTrue(Ctor.options.functional)) {
     return createFunctionalComponent(Ctor, propsData, data, context, children)
   }
@@ -206,7 +211,7 @@ export function createComponent (
       data.slot = slot
     }
   }
-
+  // 2. 安装组件钩子函数
   // install component management hooks onto the placeholder node
   // 安装组件钩子函数。init/prepatch/insert/destroy
   // Vue 中的虚拟DOM 借鉴了开源库 snabbdom 的实现，
@@ -216,6 +221,7 @@ export function createComponent (
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
+  // 3. 创建并返回 vnode
   // 组件vnode 的 children 是 undefined，也就是说组件VNode没有children子节点
   // 创建组件 vnode 对象
   const vnode = new VNode(
@@ -225,7 +231,7 @@ export function createComponent (
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
   )
-
+  // weex 相关 非重点
   // Weex specific: invoke recycle-list optimized @render function for
   // extracting cell-slot template.
   // https://github.com/Hanks10100/weex-native-directive/tree/master/component

@@ -18,11 +18,12 @@ class EventCenter {
       handler()
       this.off(event, handler)
     }
+    // 这里不能使用 $on 因为这里的 id 取的不是 _handler 的 id，而是 handler
     this.center[event].push({
       handler: _handler,
-      id: this.stringify(_handler)
+      id: this.stringify(handler)
     })
-    this.on(event, handler)
+    // this.on(event, handler)
   }
   off(event, handler) {
     const eventList = this.center[event]
@@ -37,7 +38,10 @@ class EventCenter {
     this.center[event] = []
   }
   trigger(event) {
-    this.center[event]?.forEach((eventObj) => {
+    // 拷贝一份，防止 once 中的函数处理完直接 off 了，导致 数组长度变了，循环出问题。
+    const eventList = this.center[event]?.slice() ?? []
+    eventList.forEach((eventObj) => {
+      // console.log(this.center[event].length)
       eventObj.handler()
     })
   }
@@ -57,11 +61,11 @@ function b() {
 ec.on('click', b)
 
 const c = () => {
-  console.log('keyup c')
+  console.log('once keyup c')
 }
 
 function d() {
-  console.log('keyup d')
+  console.log('once keyup d')
 }
 
 ec.once('keyup', c)
@@ -69,7 +73,7 @@ ec.once('keyup', d)
 
 ec.trigger('click')
 ec.trigger('keyup')
-console.log('before off ----')
+console.log('after off ----')
 ec.off('click', b)
 
 ec.trigger('click')

@@ -9,15 +9,16 @@ const p2 = new Promise((resolve, reject) => {
   reject('失败2233')
 })
 
-p2.then('', err => {
+p2.then('', (err) => {
   console.log(err)
+  // 想要使用 catch 捕获住，这里必须使用 throw。可以理解为 try...catch
   // throw new Error('456') // 输出 errorLo:::: Error: 456
   return new Error('456') // 输出 hahaha Error: 456
 }).then(
-  val => {
+  (val) => {
     console.log('hahaha', val)
   },
-  err => {
+  (err) => {
     console.log('errorLo::::', err)
   }
 )
@@ -36,10 +37,10 @@ const p = new Promise((resolve, reject) => {
 })
 
 p.then(
-  value => {
+  (value) => {
     console.log(value)
   },
-  err => {
+  (err) => {
     console.log(err)
   }
 )
@@ -72,13 +73,13 @@ class MyPromise {
     callback(this.resolve, this.reject)
   }
 
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.status = FULFILLED
     this.value = value
   }
 
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.status = REJECTED
     this.reason = reason
@@ -101,10 +102,10 @@ const p = new MyPromise((resolve, reject) => {
 })
 
 p.then(
-  value => {
+  (value) => {
     console.log(value)
   },
-  err => {
+  (err) => {
     console.log(err)
   }
 )
@@ -137,7 +138,7 @@ class MyPromise {
     callback(this.resolve, this.reject)
   }
 
-  resolve = value => {
+  resolve = (value) => {
     if (this.status === PENDING) {
       this.status = FULFILLED
     }
@@ -145,7 +146,7 @@ class MyPromise {
     this.handleSuccess(value)
   }
 
-  reject = reason => {
+  reject = (reason) => {
     if (this.status === PENDING) {
       this.status = REJECTED
     }
@@ -172,7 +173,7 @@ const p = new MyPromise((resolve, reject) => {
 })
 
 p.then(
-  value => {
+  (value) => {
     console.log(value)
   },
   () => {}
@@ -184,17 +185,17 @@ p.then(
 ```js
 const p = Promise.resolve('成功')
 
-p.then(val => {
+p.then((val) => {
   console.log(val)
   return 1
 })
 
-p.then(val => {
+p.then((val) => {
   console.log(val)
   return 2
 })
 
-p.then(val => {
+p.then((val) => {
   console.log(val)
   return 3
 })
@@ -223,7 +224,7 @@ class MyPromise {
     callback(this.resolve, this.reject)
   }
 
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.value = value
     this.status = FULFILLED
@@ -233,7 +234,7 @@ class MyPromise {
     }
   }
 
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.reason = reason
     this.status = REJECTED
@@ -259,17 +260,17 @@ const p = new MyPromise((resolve, reject) => {
   resolve('成功')
 })
 
-p.then(val => {
+p.then((val) => {
   console.log(val)
   return 1
 })
 
-p.then(val => {
+p.then((val) => {
   console.log(val)
   return 2
 })
 
-p.then(val => {
+p.then((val) => {
   console.log(val)
   return 3
 })
@@ -298,7 +299,7 @@ class MyPromise {
     callback(this.resolve, this.reject)
   }
 
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.value = value
     this.status = FULFILLED
@@ -307,7 +308,7 @@ class MyPromise {
       this.handleSuccess.shift()(value)
     }
   }
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.reason = reason
     this.status = REJECTED
@@ -369,7 +370,7 @@ class MyPromise {
     callback(this.resolve, this.reject)
   }
 
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.value = value
     this.status = FULFILLED
@@ -378,7 +379,7 @@ class MyPromise {
       this.handleSuccess.shift()(value)
     }
   }
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.reason = reason
     this.status = REJECTED
@@ -419,7 +420,7 @@ const p = new MyPromise((resolve, reject) => {
   resolve('成功')
 })
 
-const p2 = new MyPromise(resolve => {
+const p2 = new MyPromise((resolve) => {
   resolve('other')
 })
 
@@ -440,7 +441,7 @@ const promise = new Promise((resolve, reject) => {
 
 const p2 = promise.then(() => p2)
 
-p2.catch(err => console.log(err)) // TypeError: Chaining cycle detected for promise #<Promise>
+p2.catch((err) => console.log(err)) // TypeError: Chaining cycle detected for promise #<Promise>
 ```
 
 由上述代码可知，当一个 promise.then 返回的 promise 与 promise.then 中的 success 方法返回值相同时，就会报错。以下是代码实现：
@@ -460,13 +461,13 @@ class MyPromise {
   constructor(callback) {
     callback(this.resolve, this.reject)
   }
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.status = FULFILLED
     this.value = value
     while (this.handleSuccess.length) this.handleSuccess.shift()(value)
   }
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.status = REJECTED
     this.reason = reason
@@ -510,10 +511,10 @@ const p = new MyPromise((resolve, reject) => {
 const p2 = p.then(() => p2)
 
 p2.then(
-  v => {
+  (v) => {
     console.log(v)
   },
-  err => {
+  (err) => {
     console.log(err) // TypeError: Chaining cycle detected for promise #<Promise>, 死循环
   }
 )
@@ -527,7 +528,7 @@ const p = new Promise((resolve, reject) => {
   throw new Error('123')
 })
 
-p.catch(err => {
+p.catch((err) => {
   console.log(err) // Error: 123
 })
 
@@ -538,7 +539,7 @@ const p = new Promise((resolve, reject) => {
 
 p.then(() => {
   throw new Error('abc')
-}).catch(err => {
+}).catch((err) => {
   console.log(err) // Error: abc
 })
 ```
@@ -564,13 +565,13 @@ class MyPromise {
       this.reject(e)
     }
   }
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.status = FULFILLED
     this.value = value
     while (this.handleSuccess.length) this.handleSuccess.shift()(value)
   }
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.status = REJECTED
     this.reason = reason
@@ -615,10 +616,10 @@ const p = new MyPromise((resolve, reject) => {
 })
 
 p.then(
-  v => {
+  (v) => {
     console.log(v)
   },
-  err => {
+  (err) => {
     console.log(err) // Error: 123
   }
 )
@@ -628,16 +629,16 @@ const p = new MyPromise((resolve, reject) => {
 })
 
 p.then(
-  v => {
+  (v) => {
     console.log(v) // 123
     throw new Error('abc')
   },
-  err => {
+  (err) => {
     console.log(err)
   }
 ).then(
   () => {},
-  err => console.log(`wahaha-${err}`) // wahaha-Error: abc
+  (err) => console.log(`wahaha-${err}`) // wahaha-Error: abc
 )
 ```
 
@@ -663,14 +664,14 @@ class MyPromise {
     }
   }
   // 更改状态，保存值供下一次 then 方法使用
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.status = FULFILLED
     this.value = value
     while (this.handleSuccess.length) this.handleSuccess.shift()()
   }
   // 更改状态，保存值供下一次 catch 方法使用
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.status = REJECTED
     this.reason = reason
@@ -745,21 +746,21 @@ const p1 = new MyPromise((resolve, reject) => {
 })
 
 const p2 = p1.then(
-  val => {
+  (val) => {
     console.log(val)
     return 10000
   },
-  err => {
+  (err) => {
     console.log(err)
     throw new Error('娃哈哈')
   }
 )
 
 p2.then(
-  value => {
+  (value) => {
     console.log(value)
   },
-  err => console.log(err)
+  (err) => console.log(err)
 )
 ```
 
@@ -785,14 +786,14 @@ class MyPromise {
     }
   }
   // 更改状态，保存值供下一次 then 方法使用
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.status = FULFILLED
     this.value = value
     while (this.handleSuccess.length) this.handleSuccess.shift()()
   }
   // 更改状态，保存值供下一次 catch 方法使用
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.status = REJECTED
     this.reason = reason
@@ -800,10 +801,10 @@ class MyPromise {
   }
   // 查看 promise 状态
   then(success, fail) {
-    success = isFunc(success) ? success : value => value
+    success = isFunc(success) ? success : (value) => value
     fail = isFunc(fail)
       ? fail
-      : reason => {
+      : (reason) => {
           throw reason
         }
     // then 返回的 promise
@@ -869,7 +870,7 @@ const resolvePromise = (otherPromise, res, resolve, reject) => {
   resolve(res)
 }
 
-const isFunc = func =>
+const isFunc = (func) =>
   Object.prototype.toString.call(func).slice(8, 16) === 'Function'
 
 const p1 = new MyPromise((resolve, reject) => {
@@ -880,10 +881,10 @@ const p2 = p1
   .then()
   .then()
   .then(
-    val => {
+    (val) => {
       console.log('val-', val)
     },
-    err => {
+    (err) => {
       console.log('err-', err)
     }
   )
@@ -927,7 +928,7 @@ class MyPromise {
         const current = arr[i]
         if (current instanceof MyPromise) {
           // promise
-          current.then(value => addItem(i, value), reject)
+          current.then((value) => addItem(i, value), reject)
         } else {
           // 其他类型
           addItem(i, current)
@@ -938,18 +939,18 @@ class MyPromise {
 
   static resolve(value) {
     if (value instanceof MyPromise) return value
-    return new MyPromise(resolve => resolve(value))
+    return new MyPromise((resolve) => resolve(value))
   }
 
   // 更改状态，保存值供下一次 then 方法使用
-  resolve = value => {
+  resolve = (value) => {
     if (this.status !== PENDING) return
     this.status = FULFILLED
     this.value = value
     while (this.handleSuccess.length) this.handleSuccess.shift()()
   }
   // 更改状态，保存值供下一次 catch 方法使用
-  reject = reason => {
+  reject = (reason) => {
     if (this.status !== PENDING) return
     this.status = REJECTED
     this.reason = reason
@@ -957,10 +958,10 @@ class MyPromise {
   }
   // 查看 promise 状态
   then(success, fail) {
-    success = isFunc(success) ? success : value => value
+    success = isFunc(success) ? success : (value) => value
     fail = isFunc(fail)
       ? fail
-      : reason => {
+      : (reason) => {
           throw reason
         }
     const promise2 = new MyPromise((resolve, reject) => {
@@ -1020,19 +1021,19 @@ class MyPromise {
     // finally 会将前一个 promise 的返回值传递下去，自身回调的返回值则不会
     // finally 回调不接受任何参数
     return this.then(
-      val => {
+      (val) => {
         // 如果 finally 的回调返回一个 异步的 promise ，后面的 then 也同样需要等待这个 promise 改变状态后才能调用
         return MyPromise.resolve(callback()).then(
           () => val,
-          err => {
+          (err) => {
             throw err
           }
         )
       },
-      err => {
+      (err) => {
         return MyPromise.resolve(callback()).then(
           () => err,
-          error => {
+          (error) => {
             throw error
           }
         )
@@ -1054,7 +1055,7 @@ const resolvePromise = (otherPromise, res, resolve, reject) => {
   resolve(res)
 }
 
-const isFunc = func =>
+const isFunc = (func) =>
   Object.prototype.toString.call(func).slice(8, 16) === 'Function'
 
 // 测试 all
@@ -1068,8 +1069,8 @@ const p2 = new MyPromise((resolve, reject) => {
 })
 
 MyPromise.all([p, 1, 2, p2, 3, 4]).then(
-  val => console.log(val),
-  err => console.log(err)
+  (val) => console.log(val),
+  (err) => console.log(err)
 )
 // [ '成功', 1, 2, '成功222', 3, 4 ]
 
@@ -1087,10 +1088,10 @@ p2.finally(() => {
   console.log('finally')
   return p
 }).then(
-  val => {
+  (val) => {
     console.log(val)
   },
-  err => {
+  (err) => {
     console.log(err)
   }
 )
@@ -1106,7 +1107,7 @@ const p2 = new MyPromise((resolve, reject) => {
   reject('失败2233')
 })
 
-p2.catch(err => {
+p2.catch((err) => {
   console.log(err)
 })
 // 失败2233
@@ -1161,7 +1162,7 @@ function resolutionProcedure(promise2, x, resolve, reject) {
     x.then(
       // 继续调用 resolutionProcedure 解析
       // 防止 value 的返回值还是一个 Promise
-      value => resolutionProcedure(promise2, value, resolve, reject),
+      (value) => resolutionProcedure(promise2, value, resolve, reject),
       reject
     )
     return
@@ -1181,13 +1182,13 @@ function resolutionProcedure(promise2, x, resolve, reject) {
         // 其中第一个参数为 resolvePromise，第二个参数为 rejectPromise
         then.call(
           x,
-          y => {
+          (y) => {
             if (called) return
             called = true
             // 防止 y 的返回值还是一个 Promise
             resolutionProcedure(promise2, y, resolve, reject)
           },
-          r => {
+          (r) => {
             // 失败结果会向下传递
             if (called) return
             called = true
@@ -1232,7 +1233,7 @@ class Promise {
      * 只有等待状态 (pending) 下的 Promise 才能修改状态
      */
     // 成功函数
-    const resolve = value => {
+    const resolve = (value) => {
       // 如果 value 是个 Promise 则递归执行
       if (value instanceof Promise) {
         return value.then(resolve, reject)
@@ -1244,20 +1245,20 @@ class Promise {
           this.value = value
 
           // 执行 resolve 回调队列
-          this.resolvedCallbacks.forEach(fn => fn())
+          this.resolvedCallbacks.forEach((fn) => fn())
         }
       })
     }
 
     // 失败函数
-    const reject = reason => {
+    const reject = (reason) => {
       nextTick(() => {
         if (this.state === PENDING) {
           this.state = REJECTED
           this.reason = reason
 
           // 执行 reject 回调队列
-          this.rejectedCallbacks.forEach(fn => fn())
+          this.rejectedCallbacks.forEach((fn) => fn())
         }
       })
     }
@@ -1279,10 +1280,10 @@ class Promise {
    * onFulfilled 和 onRejected 均为可选参数
    */
   then(onFulfilled, onRejected) {
-    onFulfilled = isFunction(onFulfilled) ? onFulfilled : v => v
+    onFulfilled = isFunction(onFulfilled) ? onFulfilled : (v) => v
     onRejected = isFunction(onRejected)
       ? onRejected
-      : e => {
+      : (e) => {
           throw e
         }
     /**
@@ -1365,8 +1366,8 @@ class Promise {
    */
   finally(cb) {
     return this.then(
-      value => Promise.resolve(cb()).then(() => value),
-      error =>
+      (value) => Promise.resolve(cb()).then(() => value),
+      (error) =>
         Promise.resolve(cb()).then(() => {
           throw error
         })
@@ -1444,10 +1445,10 @@ class Promise {
 
       for (let i = 0; i < promises.length; i++) {
         Promise.resolve(promises[i]).then(
-          v => {
+          (v) => {
             check(i, v)
           },
-          e => {
+          (e) => {
             // 当其中一个 Promise 失败时直接调用 reject
             reject(e)
             return
@@ -1516,13 +1517,13 @@ class Promise {
 
       for (let i = 0; i < promises.length; i++) {
         Promise.resolve(promises[i]).then(
-          value => {
+          (value) => {
             check(i, {
               status: FULFILLED,
               value
             })
           },
-          reason => {
+          (reason) => {
             check(i, {
               status: REJECTED,
               reason
@@ -1568,7 +1569,7 @@ class Promise {
 
       for (let i = 0; i < promises.length; i++) {
         // 当其中一个 Promise 成功时直接调用 resolve
-        Promise.resolve(promises[i]).then(resolve, r => {
+        Promise.resolve(promises[i]).then(resolve, (r) => {
           check(i, r)
         })
       }
@@ -1585,7 +1586,7 @@ class Promise {
    *
    */
   static promisify(func) {
-    return function(...options) {
+    return function (...options) {
       return new Promise((resolve, reject) => {
         func(...options, (err, ...data) => {
           // 通过回调函数返回的参数来控制 promise 的状态
@@ -1600,7 +1601,7 @@ class Promise {
 }
 
 // promises-aplus-tests 测试方法
-Promise.defer = Promise.deferred = function() {
+Promise.defer = Promise.deferred = function () {
   const dfd = {}
   dfd.promise = new Promise((resolve, reject) => {
     dfd.resolve = resolve

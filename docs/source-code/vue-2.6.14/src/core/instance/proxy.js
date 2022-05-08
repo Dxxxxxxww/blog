@@ -60,6 +60,7 @@ if (process.env.NODE_ENV !== 'production') {
   const hasHandler = {
     // target：vm
     // with 触发 in 触发
+    // has 只是判断属性是否存在，当然不会返回属性，返回属性要通过 get 来返回，这里没有拦截 get
     has (target, key) {
       const has = key in target
       const isAllowed = allowedGlobals(key) ||

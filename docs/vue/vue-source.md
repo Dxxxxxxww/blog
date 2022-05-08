@@ -19,3 +19,24 @@ nextTick 降级代码处理方式。
 ## 属性访问优化
 
 每次对属性进行访问，都会去走到内部的 getter 。所以多次访问前，可以先缓存下。
+
+## 自定义合并策略的选项
+
+Vue.config.optionMergeStrategies 默认是一个空对象，它是用户配置的自定义合并策略的选项。它会影响 vue 内部的合并策略。
+
+```js
+// mergeOptions 源码核心代码
+function mergeField(key) {
+  // strats === config.optionMergeStrategies
+  // 这里基本上用的就是 defaultStrat 函数了
+  // config.optionMergeStrategies 默认是一个空对象，
+  // vue 内部会设置 el，propsData，生命周期 的合并策略。
+  // 它是用户配置的自定义合并策略的选项。
+  // https://cn.vuejs.org/v2/api/#optionMergeStrategies
+  // defaultStrat，子项属性优先，也就是如果子项属性存在，就取子项。否则取父项
+  const strat = strats[key] || defaultStrat
+  options[key] = strat(parent[key], child[key], vm, key)
+}
+```
+
+如果我们有全局使用 Vue.mixin 进行混入，但是又需要做一些条件判断哪些组件不需要混入，就可以使用这个配置，去进行一些自定义的操作。

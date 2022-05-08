@@ -7,10 +7,35 @@ sidebar: auto
 ## 无限 debugger
 
 ```js
-;(function() {
+;(function () {
   var a = new Date()
   debugger
   return new Date() - a > 100
+})()
+```
+
+```js
+// 在 main.jd 中判断环境导入下面的代码执行
+// no-debugger.js
+;(() => {
+  function block() {
+    if (
+      window.outerHeight - window.innerHeight > 200 ||
+      window.outerWidth - window.innerWidth > 200
+    ) {
+      document.body.innerHTML = 'no debugger'
+    }
+    setInterval(() => {
+      ;(function () {
+        return false
+      }
+        ['constructor']('debugger')
+        ['call']())
+    }, 50)
+  }
+  try {
+    block()
+  } catch (err) {}
 })()
 ```
 

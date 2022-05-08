@@ -27,6 +27,7 @@ const ALWAYS_NORMALIZE = 2
 // 为包装器函数提供了更加灵活的接口
 // without getting yelled at by flow
 // 处理参数，最终调用 _createElement 返回 vnode
+// 其实就是实现了函数重载
 export function createElement (
   // vm 实例，开发环境下是 vm_renderProxy
   context: Component,
@@ -116,11 +117,11 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
-  // 规范化 children 子节点。
+  // 1. 规范化 children 子节点。
   // 因为虚拟DOM是一个树形结构，每一个节点都应该是VNode类型，
   // 但是children参数又是任意类型的，
   // 所以如果有子节点，我们需要把它进行规范化成VNode类型
-  // 相等说明是用户传递的 render 始终规范化
+  // 用户传递的 render 始终规范化
   if (normalizationType === ALWAYS_NORMALIZE) {
     // 处理children，不管用户传入数组/原始值，最终返回一维数组
     children = normalizeChildren(children)
@@ -131,6 +132,7 @@ export function _createElement (
     children = simpleNormalizeChildren(children)
   }
   let vnode, ns
+  // 2. 创建 VNode 节点
   // tag 是字符串
   if (typeof tag === 'string') {
     let Ctor
@@ -149,6 +151,7 @@ export function _createElement (
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       )
+    // 尝试在全局或者局部注册的组件中去匹配
     // tag 不是保留标签，并且 data 不存在 && 对组件名称做处理，查找自定义组件
     // !data 这种情况就是没有给组件传递 props/event ，仅使用了组件。 <SonComponent />
     // !data.pre 这种情况是使用组件并传递了 props/event ，并且没有使用 v-pre 指令。 <SonComponent :text="text" @click="handleClick" />

@@ -22,8 +22,10 @@ import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util'
 // 二维数组转为一维数组
 export function simpleNormalizeChildren (children: any) {
   for (let i = 0; i < children.length; i++) {
+    // 如果子项存在数组，则直接将 children 深度降一层
     if (Array.isArray(children[i])) {
       // 骚操作，用 concat + apply 来拍平数组
+      // 注意这里传入的是 children 而不是 children[i]
       return Array.prototype.concat.apply([], children)
     }
   }
@@ -47,9 +49,10 @@ export function normalizeChildren (children: any): ?Array<VNode> {
     // 是数组，通过递归，把多维数组拍平成一维数组
     : Array.isArray(children)
       ? normalizeArrayChildren(children)
+      // 不是数组，则 children 就是 undefined 了
       : undefined
 }
-
+// 判断是否是文本节点，如果存在两个连续的文本节点，则将其合并成一个文本节点。
 function isTextNode (node): boolean {
   return isDef(node) && isDef(node.text) && isFalse(node.isComment)
 }
@@ -66,6 +69,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
     // 遍历项为数组：多见于v-for或者slot的时候，会出现嵌套VNode数组的情况
     if (Array.isArray(c)) {
       if (c.length > 0) {
+        // 还是数组的话就递归
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)
         // merge adjacent text nodes
         // 如果存在两个连续的文本节点，则将其合并成一个文本节点。

@@ -360,6 +360,7 @@ function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
     // 如果 watch 值是数组的话，则遍历创建。在文档 https://cn.vuejs.org/v2/api/#watch 中有用法介绍
+    // mergeOptions 中也会把相同的 key 的 watch 合并成一个数组
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])

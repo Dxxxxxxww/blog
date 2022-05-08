@@ -154,6 +154,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
         extend(Ctor.extendOptions, modifiedOptions)
       }
       // Ctor.extendOptions 就是组件的选项对象，它在 Vue.extend 中挂载
+      // 注意这里没有传递 vm
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)
       if (options.name) {
         options.components[options.name] = Ctor

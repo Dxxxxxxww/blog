@@ -386,6 +386,7 @@ export function callHook (vm: Component, hook: string) {
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
   if (handlers) {
+    // 生命周期钩子在内部是以函数数组的形式存在 [Function]
     for (let i = 0, j = handlers.length; i < j; i++) {
       invokeWithErrorHandling(handlers[i], vm, null, vm, info)
     }

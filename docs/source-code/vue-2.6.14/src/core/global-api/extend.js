@@ -20,7 +20,8 @@ export function initExtend(Vue: GlobalAPI) {
 
   /**
    * Class inheritance
-   * Vue.extend 说是继承，其实就是将组件对象转化为组件构造函数
+   * Vue.extend 说是继承，其实就是将组件对象转化为组件构造函数，用户可以手动调用 extend 来使用，
+   * 也会在使用组件时 createComponent，自动的进行
    * 在 createComponent 中也会调用继承。也就是说，每一次的组件使用，都是在继承。
    * 加了缓存之后，如果同一个组件在不同页面里被多次使用，只会继承一次。
    * 组件C 在 页面A 中已经使用一次，就会执行继承。在 页面B 中再使用的话，就会直接从缓存中获取，直接返回。
@@ -58,6 +59,7 @@ export function initExtend(Vue: GlobalAPI) {
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
     // 合并Vue的选项，传入组件的选项
+    // 注意这里没有传递 vm
     Sub.options = mergeOptions(Super.options, extendOptions)
     // 挂载静态属性，值是 Vue 构造函数
     Sub['super'] = Super
