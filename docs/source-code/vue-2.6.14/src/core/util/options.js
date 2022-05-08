@@ -75,6 +75,7 @@ function mergeData (to: Object, from: ?Object): Object {
     ) {
       mergeData(toVal, fromVal)
     }
+    // 如果子项，父项都有值，且是基本值，则啥也不做，也就是说子项优先。返回 to
   }
   return to
 }

@@ -49,13 +49,14 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       // 由于动态选项合并非常慢，而且没有
       // 内部组件选项需要特殊处理。
-      // 内部会使用构造函数的静态options 作为 原型来创建组件实例的 $options
+      // 内部会使用构造函数的静态options 作为 原型来创建组件实例的 $options，
+      // 也就是说，每个组件实例都会有其构造函数的options(构造函数的 options 还会包括 Vue 构造函数的 options)
       initInternalComponent(vm, options)
     } else {
       // new Vue 创建实例，首次渲染时，Vue 构造函数的 options 与用户传入的 options 合并
       // mixins 的合并会在 mergeOptions 中进行
       vm.$options = mergeOptions(
-        // 内部还会一直溯源合并到 Vue 构造函数，也就是说每个 $options 都会包含其父类/祖类构造函数的选项
+        // 内部还会一直溯源合并到 Vue 构造函数，也就是说 Vue 实例的 $options 会包含其构造函数的选项
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
