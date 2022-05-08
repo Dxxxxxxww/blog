@@ -30,7 +30,7 @@ function mergeField(key) {
   // strats === config.optionMergeStrategies
   // 这里基本上用的就是 defaultStrat 函数了
   // config.optionMergeStrategies 默认是一个空对象，
-  // vue 内部会设置 el，propsData，生命周期 的合并策略。
+  // vue 内部会设置 el，propsData，生命周期 的合并策略。ga
   // 它是用户配置的自定义合并策略的选项。
   // https://cn.vuejs.org/v2/api/#optionMergeStrategies
   // defaultStrat，子项属性优先，也就是如果子项属性存在，就取子项。否则取父项
