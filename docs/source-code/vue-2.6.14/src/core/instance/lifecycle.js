@@ -245,7 +245,7 @@ export function mountComponent (
   hydrating = false
 
   // manually mounted instance, call mounted on self
-  // 手动挂载实例，自己调用mounted
+  // 手动挂载实例，自己调用 mounted
   // mounted is called for render-created child components in its inserted hook
   // 在它(子组件)的插入钩子中为渲染创建的子组件调用 mounted
   if (vm.$vnode == null) {

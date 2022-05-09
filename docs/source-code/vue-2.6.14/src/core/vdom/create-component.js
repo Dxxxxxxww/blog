@@ -36,9 +36,10 @@ import {
 // 内部的钩子 hooks 会在 组件vnode patch 期间调用
 // snabbdom 中一共有 pre、init、create、insert、prepatch、update、postpatch、destroy、remove、post
 // vue 重写了 init、prepatch、insert、destroy
+// 组件 vnode 钩子函数
 const componentVNodeHooks = {
   // 在 patch 时调用
-  init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
+  init(vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
       !vnode.componentInstance._isDestroyed &&
@@ -50,11 +51,11 @@ const componentVNodeHooks = {
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
       // 创建组件实例
-      const child = vnode.componentInstance = createComponentInstanceForVnode(
+      const child = (vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         // 激活的实例，它其实就是当前组件对象的父组件对象
         activeInstance
-      )
+      ))
       // 挂载组件
       // 需要注意的是，在 patch 的 createComponent 中，hydrating 传 false，所以不会在这里挂载，
       // 而是在 createComponent 中直接通过 insert 来挂载到页面上。
@@ -64,9 +65,9 @@ const componentVNodeHooks = {
     }
   },
 
-  prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
+  prepatch(oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
-    const child = vnode.componentInstance = oldVnode.componentInstance
+    const child = (vnode.componentInstance = oldVnode.componentInstance)
     updateChildComponent(
       child,
       options.propsData, // updated props
@@ -75,8 +76,8 @@ const componentVNodeHooks = {
       options.children // new children
     )
   },
-
-  insert (vnode: MountedComponentVNode) {
+  // 组件 vnode insert 钩子函数的主要作用就是触发组件的 mounted 生命周期钩子
+  insert(vnode: MountedComponentVNode) {
     const { context, componentInstance } = vnode
     if (!componentInstance._isMounted) {
       componentInstance._isMounted = true
@@ -96,7 +97,7 @@ const componentVNodeHooks = {
     }
   },
 
-  destroy (vnode: MountedComponentVNode) {
+  destroy(vnode: MountedComponentVNode) {
     const { componentInstance } = vnode
     if (!componentInstance._isDestroyed) {
       if (!vnode.data.keepAlive) {
@@ -105,7 +106,7 @@ const componentVNodeHooks = {
         deactivateChildComponent(componentInstance, true /* direct */)
       }
     }
-  }
+  },
 }
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
@@ -269,7 +270,7 @@ export function createComponentInstanceForVnode (
   // 调用组件构造函数来创建组件实例
   return new vnode.componentOptions.Ctor(options)
 }
-// 安装组件钩子函数。Vue 中的虚拟DOM 借鉴了开源库 snabbdom 的实现，
+// 安装组件 vnode 钩子函数。Vue 中的虚拟DOM 借鉴了开源库 snabbdom 的实现，
 // 这个库里面有一些 vnode节点 在处于不同的场景下，提供了对应的钩子函数来方便我们处理相关的逻辑。
 // snabbdom 中一共有 pre、init、create、insert、prepatch、update、postpatch、destroy、remove、post
 // vue 重写了 init、prepatch、insert、destroy 会在这里进行合并。
