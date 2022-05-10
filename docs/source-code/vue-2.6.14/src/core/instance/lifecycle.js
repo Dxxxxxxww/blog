@@ -77,7 +77,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // 这样在子组件渲染(挂载) 就可以通过 activeInstance 获取到 父组件实例。
     // 每一个组件其实都相当于是一个单向链表，保留着对父级的引用，区别在于，组件还会保存着祖父级的引用
     const restoreActiveInstance = setActiveInstance(vm)
-    // 将当前的 vnode 保存到 vm._vnode 上，用于下次更新
+    // 将当前的真实 vnode 保存到 vm._vnode 上，用于下次更新
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // __patch__ 在入口(src/platforms/runtime/index.js)被注入。
@@ -87,7 +87,13 @@ export function lifecycleMixin (Vue: Class<Component>) {
       // 首次渲染
       // vm.$el 真实dom节点
       // 把 $el 转为 vnode 与 新的vnode 比较，将比较的结果生成真实dom返回给 vm.$el
-      // 组件真实 vnode 初次挂载时，vm.$el 还不存在
+      // 组件初次挂载时，vm.$el 还不存在
+      // 组件进入到这里的逻辑是，父节点在 createElm 中通过 patch/createComponent 传入组件占位 vnode
+      // 通过组件占位 vnode 上的 data.hook.init 来创建组件实例(注意，组件真实 vnode 上是不会有 data.hook 的，除非用户传入)，并执行 $mount
+      // 然后到了 render 生成了组件真实 vnode，再 _update 到了这里。
+      // 此时的 vm 是组件实例，vm._vnode 是组件真实 vnode， vm._vnode.parent 是组件占位 vnode
+      // 经过了 patch 后，返回了组件的 $el，此时组件还没有挂载。
+      // 这一系列创建组件实例的流程结束后，又回到了 init 钩子函数中，组件的真正挂载是在 init 中的 insert
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
@@ -101,6 +107,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (prevEl) {
       prevEl.__vue__ = null
     }
+    // 给 dom 元素上挂载一个 vue 的标记，表示这个元素是 vue 创建的
     if (vm.$el) {
       vm.$el.__vue__ = vm
     }

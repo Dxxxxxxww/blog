@@ -153,8 +153,8 @@ export function createPatchFunction(backend) {
 
   let creatingElmInVPre = 0
   /**
+   * 根据 vnode 创建 dom 元素，并将元素挂载到 vnode.elm 上，调用 insert 将元素挂载到真实 dom 上。
    * 几个主要的步骤：创建组件节点、创建普通节点、创建注释节点以及创建文本节点。
-   * 根据 vnode 创建 dom 元素，并将元素挂载到 vnode.elm 上，调用 insert 将元素挂载到真实 dom 上
    * 在 patch 中调用时，最多只会传前四个参数
    * @param vnode 新vnode 节点
    * @param insertedVnodeQueue 新插入的 vnode 节点队列
@@ -219,6 +219,7 @@ export function createPatchFunction(backend) {
         }
       }
 
+      // 创建 dom 元素
       vnode.elm = vnode.ns
         ? // createElementNS 处理 svg
           nodeOps.createElementNS(vnode.ns, tag)
@@ -246,6 +247,7 @@ export function createPatchFunction(backend) {
           insert(parentElm, vnode.elm, refElm)
         }
       } else {
+        // 先创建子节点建然后插入到其父级下面，最后才是父节点 insert，是一个深度优先遍历
         // 创建子元素的 dom 对象
         createChildren(vnode, children, insertedVnodeQueue)
         // 判断是否有 data，如果有则调用 create 钩子
@@ -1034,6 +1036,8 @@ export function createPatchFunction(backend) {
    * 根实例与组件的首次渲染和派发更新渲染。
    * 根实例的首次渲染和派发更新渲染基本相同。
    * 组件的首次渲染和派发更新渲染不同。
+   *
+   * patch 核心就是 createElm patchVnode updateChildren
    * @param  {Vnode} oldVnode 旧vnode
    * @param {Vnode} vnode 新vnode
    * @returns {*}

@@ -41,7 +41,7 @@ export function initMixin (Vue: Class<Component>) {
     // merge options 合并配置
     // 合并 options 将传入的 options 与初始化时构造函数生成的 options 合并
     // 如果是组件
-    // 单文件组件都会进入到这里
+    // 组件在实例化时会进入到这里
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // 优化内部组件实例化;
@@ -77,7 +77,7 @@ export function initMixin (Vue: Class<Component>) {
     vm._self = vm
     // vm(Vue 实例)的生命周期相关变量初始化 挂载一些实例属性以及私有实例属性。将当前实例添加到父实例的子列表中
     // $children $parent $root $refs
-    // 建立父子组件关系
+    // 建立实例的父子组件关系
     initLifecycle(vm)
     // vm 的事件中心初始化，监听父组件绑定在当前组件上的事件
     initEvents(vm)

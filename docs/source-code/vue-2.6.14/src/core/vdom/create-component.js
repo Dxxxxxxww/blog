@@ -254,7 +254,7 @@ export function createComponentInstanceForVnode (
   const options: InternalComponentOptions = {
     // 标记当前是组件
     _isComponent: true,
-    // 在 createComponent 中创建的 vnode，它是占位的 vnode，也就是父 vnode，一个 vnode
+    // 在 createComponent 中创建的 vnode，它是占位的 vnode，也就是组件真实 vnode 的父 vnode
     // `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`
     _parentVnode: vnode,
     // activeInstance 也就是当前组件对象的父组件对象，一个 Vue 的实例

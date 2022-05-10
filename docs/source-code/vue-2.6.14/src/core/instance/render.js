@@ -105,6 +105,8 @@ export function renderMixin (Vue: Class<Component>) {
       // 当父组件被 patched ，嵌套组件的渲染 fns 被调用
       currentRenderingInstance = vm
       // h 函数 -> vm.$createElement
+      // render 函数执行，会先创建子级的 vnode，再创建父级的 vnode，
+      // 这是正常的，就好比函数执行，传递了一个函数调用结果的参数，也会先执行这个函数获取结果作为参数。
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)
@@ -140,6 +142,7 @@ export function renderMixin (Vue: Class<Component>) {
       vnode = createEmptyVNode()
     }
     // set parent
+    // 建立组件 vnode 与组件占位 vnode 的父子关系
     vnode.parent = _parentVnode
     return vnode
   }
