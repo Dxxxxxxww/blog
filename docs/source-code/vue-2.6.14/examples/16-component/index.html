@@ -1,39 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-</head>
-<body>
-<div id="app"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
 
-<script src="../../dist/vue.js"></script>
-<script>
-  // 这种组件编写方式，而不是 SFC 的方式，就会走自带的编译
-  Vue.component('HelloWorld', {
-    template: `<div>{{label}}</div>`,
-    data() {
-      return {
-        label: `hello-world`
-      }
-    }
-  })
-  const vm = new Vue({
-    el: '#app',
-    data() {
-      return {
-        a: 1
-      }
-    },
-    template: `
+    <script src="../../dist/vue.js"></script>
+    <script>
+      // 这种组件编写方式，而不是 SFC 的方式，就会走自带的编译
+      Vue.component('Parent', {
+        template: `<div>{{label}}</div>`,
+        data() {
+          return {
+            label: `Parent`,
+          }
+        },
+      })
+      Vue.component('GrandSon', {
+        template: `<div>{{label2}}</div>`,
+        data() {
+          return {
+            label2: `GrandSon`,
+          }
+        },
+      })
+      const vm = new Vue({
+        el: '#app',
+        data() {
+          return {
+            a: 1,
+          }
+        },
+        template: `
     <div style="font-size: 12px;">
       <div>{{ a }}</div>
       <HelloWorld></HelloWorld>
-    </div>`
-  })
-</script>
-</body>
+    </div>`,
+      })
+    </script>
+  </body>
 </html>

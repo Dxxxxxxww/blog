@@ -125,7 +125,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       vm._watcher.update()
     }
   }
-
+  // 组件销毁的过程，应该是从父组件开始，然后递归销毁子组件，当子组件都销毁完毕时，父组件基本完成了销毁动作。
   Vue.prototype.$destroy = function () {
     const vm: Component = this
     if (vm._isBeingDestroyed) {
@@ -135,14 +135,18 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._isBeingDestroyed = true
     // remove self from parent
     const parent = vm.$parent
+    // 在父组件的$children移除自身
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm)
     }
     // teardown watchers
+    // 移除自身依赖
+    // 移除当前组件的 render watcher 观察者
     if (vm._watcher) {
       vm._watcher.teardown()
     }
     let i = vm._watchers.length
+    // 移除所有观察者
     while (i--) {
       vm._watchers[i].teardown()
     }
@@ -154,10 +158,12 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // call the last hook...
     vm._isDestroyed = true
     // invoke destroy hooks on current rendered tree
+    // 触发子组件销毁动作，注意第二个传参是 null
     vm.__patch__(vm._vnode, null)
     // fire destroyed hook
     callHook(vm, 'destroyed')
     // turn off all instance listeners.
+    // 移除事件监听
     vm.$off()
     // remove __vue__ reference
     if (vm.$el) {
@@ -255,6 +261,8 @@ export function mountComponent (
   // 手动挂载实例，自己调用 mounted
   // mounted is called for render-created child components in its inserted hook
   // 在它(子组件)的插入钩子中为渲染创建的子组件调用 mounted
+  // 只有根实例才会满足这个条件，
+  // 也就是说这里触发的是根实例的 mounted 方法，而不是组件的 mounted 方法
   if (vm.$vnode == null) {
     vm._isMounted = true
     // 触发 mounted 生命周期钩子
@@ -398,6 +406,16 @@ export function callHook (vm: Component, hook: string) {
       invokeWithErrorHandling(handlers[i], vm, null, vm, info)
     }
   }
+  // 判断是否有监听生命周期钩子函数的，如果有就触发
+  // 在 initEvents 中初始化，在 Vue.prototype.$on 中改为 true
+  // this.$on('hook:destroyed', () => {
+  //   window.removeEventListener('resize', listenResize)
+  // })
+  // 在template模板中，我们可以使用 @hook:xxx 的形式来监听子组件对应的生命周期，
+  // 当对应的生命周期函数被触发的时候，会执行我们提供的回调函数，这种做法对于需要监听子组件某个生命周期的需求来说十分有用。
+  // 在撰写Vue应用的时候，我们经常需要在created/mounted等生命周期中监听resize/scroll等事件，
+  // 然后在beforeDestroy/destroyed生命周期中移除。对于这种需求，
+  // 我们可以把逻辑写在同一个地方，而不是分散在两个生命周期中，这对于需要监听自身生命周期的需要来说也十分有用。
   if (vm._hasHookEvent) {
     vm.$emit('hook:' + hook)
   }

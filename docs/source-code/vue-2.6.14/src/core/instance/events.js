@@ -70,6 +70,10 @@ export function eventsMixin (Vue: Class<Component>) {
       // 通过在注册时使用一个布尔标志来优化 hook:event 开销
       // instead of a hash lookup
       // 代替 hash 查找
+      // 判断是否有监听生命周期钩子函数
+      // this.$on('hook:destroyed', () => {
+      //   window.removeEventListener('resize', listenResize)
+      // })
       if (hookRE.test(event)) {
         vm._hasHookEvent = true
       }

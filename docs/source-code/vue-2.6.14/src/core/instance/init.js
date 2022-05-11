@@ -79,7 +79,7 @@ export function initMixin (Vue: Class<Component>) {
     // $children $parent $root $refs
     // 建立实例的父子组件关系
     initLifecycle(vm)
-    // vm 的事件中心初始化，监听父组件绑定在当前组件上的事件
+    // vm 的事件中心初始化 _events，监听父组件绑定在当前组件上的事件。_hasHookEvent
     initEvents(vm)
     // vm 的编译 render 初始化
     // $slots $scopedSlots，_c，$createElement(render 的参数 h 函数)，$attrs，$listeners，$vnode

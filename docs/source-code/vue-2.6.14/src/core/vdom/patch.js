@@ -292,7 +292,7 @@ export function createPatchFunction(backend) {
       // 组件真实 vnode 由于不会去执行 init，所以不会有 vnode.componentInstance 属性，所以这里也不会调用，返回 false
       // 组件真实 vnode 的 tag 是 html 的标签。
       if (isDef(vnode.componentInstance)) {
-        // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的钩子函数)
+        // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的 create 钩子函数，将 insert 钩子函数存入 insertedVnodeQueue 队列中)
         initComponent(vnode, insertedVnodeQueue)
         // 这里的插入都是将组件真实 vnode.elm 插入到父组件的 html 中
         insert(parentElm, vnode.elm, refElm)
@@ -303,7 +303,7 @@ export function createPatchFunction(backend) {
       }
     }
   }
-  // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的钩子函数)
+  // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的 create 钩子函数，将 insert 钩子函数存入 insertedVnodeQueue 队列中)
   function initComponent(vnode, insertedVnodeQueue) {
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(
@@ -314,6 +314,9 @@ export function createPatchFunction(backend) {
     }
     vnode.elm = vnode.componentInstance.$el
     if (isPatchable(vnode)) {
+      // 遍历调用模块的钩子函数。
+      // 如果 vnode 有 create 钩子函数，也执行。
+      // 如果 vnode 有 insert 钩子函数，则推入到 insertedVnodeQueue 队列
       invokeCreateHooks(vnode, insertedVnodeQueue)
       setScope(vnode)
     } else {
@@ -414,6 +417,7 @@ export function createPatchFunction(backend) {
       // 有 create 钩子函数，则调用
       if (isDef(i.create)) i.create(emptyNode, vnode)
       // 有 insert 则推入到 insertedVnodeQueue 队列中
+      // vnode.data.hook.insert ， i.insert 最重要的功能就是调用组件的 mounted 生命周期钩子函数
       if (isDef(i.insert)) insertedVnodeQueue.push(vnode)
     }
   }
@@ -474,7 +478,9 @@ export function createPatchFunction(backend) {
     let i, j
     const data = vnode.data
     if (isDef(data)) {
+      // 执行组件 vnode destroy 钩子函数
       if (isDef((i = data.hook)) && isDef((i = i.destroy))) i(vnode)
+      // 执行模块的 destroy 钩子函数
       for (i = 0; i < cbs.destroy.length; ++i) cbs.destroy[i](vnode)
     }
     if (isDef((i = vnode.children))) {
@@ -1043,7 +1049,7 @@ export function createPatchFunction(backend) {
    * @returns {*}
    */
   return function patch(oldVnode, vnode, hydrating, removeOnly) {
-    // 如果新 vnode 不存在
+    // 如果新 vnode 不存在, $destroy 中 传递 null
     if (isUndef(vnode)) {
       // 并且 oldVnode 存在，则对 oldVnode 执行 destroy 钩子函数
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)

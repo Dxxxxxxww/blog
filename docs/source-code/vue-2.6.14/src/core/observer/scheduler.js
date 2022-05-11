@@ -112,7 +112,7 @@ function flushSchedulerQueue () {
     // 获取当前 watcher
     watcher = queue[index]
     // 判断是否有 beforeUpdate 生命周期钩子要执行
-    // 只有 渲染watcher 会有这个
+    // 只有 渲染watcher 会有这个，在 mountComponent 中创建 render watcher 实例时传入
     if (watcher.before) {
       watcher.before()
     }
@@ -151,8 +151,9 @@ function flushSchedulerQueue () {
   resetSchedulerState()
 
   // call component updated and activated hooks
-  // 调用组件 updated 和 activated 生命周期钩子
+  // 调用组件 activated 生命周期钩子
   callActivatedHooks(activatedQueue)
+  // 调用组件的 updated 生命周期钩子
   callUpdatedHooks(updatedQueue)
 
   // devtool hook

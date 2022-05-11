@@ -77,10 +77,12 @@ const componentVNodeHooks = {
     )
   },
   // 组件 vnode insert 钩子函数的主要作用就是触发组件的 mounted 生命周期钩子
+  // insert 是在 patch 的最后通过 invokeInsertHook 触发
   insert(vnode: MountedComponentVNode) {
     const { context, componentInstance } = vnode
     if (!componentInstance._isMounted) {
       componentInstance._isMounted = true
+      // 调用组件的 mounted 生命周期钩子函数
       callHook(componentInstance, 'mounted')
     }
     if (vnode.data.keepAlive) {
@@ -100,9 +102,12 @@ const componentVNodeHooks = {
   destroy(vnode: MountedComponentVNode) {
     const { componentInstance } = vnode
     if (!componentInstance._isDestroyed) {
+      // 不是 keep-alive
       if (!vnode.data.keepAlive) {
+        // 调用实例的 $destroy
         componentInstance.$destroy()
       } else {
+        // 是 keep-alive 的话，调用 deactivated 生命周期钩子函数
         deactivateChildComponent(componentInstance, true /* direct */)
       }
     }
