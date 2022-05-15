@@ -208,13 +208,22 @@ export default class Watcher {
    */
   cleanupDeps () {
     let i = this.deps.length
+    // v-if v-else 场景下，如果切换显示后，新展示的页面里就不需要再有旧展示页面的依赖收集，需要清除
+    // 这一步是移除不需要的 watcher
+    // 通俗的解释为什么这步是必须的
+    // 本来我们互相抓着对方的袖口，你放开了我不放开，我还是能够把你扔出去，所以需要两边都断开。
+    // 如果没有这一步移除 watcher，那么依赖更新的时候，
+    // 还是会通知到这个不必要的 watcher，进行一些代码更新的操作，虽然不会真正的改变页面，但是是一种性能浪费。
     while (i--) {
       const dep = this.deps[i]
       // 如果在新的依赖id中已经没有了，就说明已经不需要了，就把旧的依赖项删除
       if (!this.newDepIds.has(dep.id)) {
+        // 注意这里，把 dep 中的 watcher 观察者池中移除当前 watcher
         dep.removeSub(this)
       }
     }
+    // 这一次渲染结束后，新依赖就变成老依赖了，需要交换下
+    // 这一步是移除 watch 中的 dep
     // 将新的依赖赋值给老依赖，清空新依赖
     let tmp = this.depIds
     this.depIds = this.newDepIds
