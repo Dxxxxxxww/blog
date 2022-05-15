@@ -220,6 +220,7 @@ LIFECYCLE_HOOKS.forEach(hook => {
  * a three-way merge between constructor options, instance
  * options and parent options.
  * 父级作为原型，子级作为选项对象属性
+ * 这就是为什么全局指令/组件/过滤器，能在组件中使用的原因，都存放到原型上了
  */
 function mergeAssets (
   parentVal: ?Object,
@@ -548,6 +549,7 @@ export function mergeOptions (
  * Resolve an asset.
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
+ * 从 options.components 组件集合中获取组件的构造函数
  */
 export function resolveAsset (
   options: Object,
@@ -561,9 +563,12 @@ export function resolveAsset (
   }
   const assets = options[type]
   // check local registration variations first
+  // 通过传入的组件名
   if (hasOwn(assets, id)) return assets[id]
+  // 通过驼峰方式
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]
+  // 通过连字符方式
   const PascalCaseId = capitalize(camelizedId)
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
   // fallback to prototype chain

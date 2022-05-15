@@ -38,7 +38,7 @@ const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
  * 对比是否是相同节点
  * 通过以下几个维度对比
  * key，asyncFactory，tag，isComment，data，sameInputType，isAsyncPlaceholder，asyncFactory.error。
- * 不会去判断子节点和文本节点。
+ * 不会去判断子节点和文本节点，只比较节点本身。
  */
 function sameVnode(a, b) {
   return (
@@ -835,7 +835,7 @@ export function createPatchFunction(backend) {
 
     let i
     const data = vnode.data
-    // 获取 vnode.data.hook 中的用户定义的 prepatch 钩子函数，如果存在则调用
+    // 获取组件 vnode 的 prepatch 钩子函数，如果存在则调用
     if (isDef(data) && isDef((i = data.hook)) && isDef((i = i.prepatch))) {
       i(oldVnode, vnode)
     }
@@ -1068,7 +1068,8 @@ export function createPatchFunction(backend) {
       // 根据 vnode 创建 dom 元素，由于这里没有传入 parentElm 所以不会挂载
       createElm(vnode, insertedVnodeQueue)
     } else {
-      // 实例的首次挂载和派发更新渲染都会走到 else 里面，只不过就是 oldVnode 是否是真实 dom 元素的区别
+      // 实例(也就是普通 html 元素)的首次挂载和派发更新渲染都会走到 else 里面，
+      // 只不过就是 oldVnode 是否是真实 dom 元素的区别
       // oldVnode 存在
       // 判断 oldVnode 是否有 nodeType 属性，也就是判断其是否是真实的 dom元素
       // 如果是真实的 dom 元素，则说明是首次渲染。

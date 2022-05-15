@@ -30,7 +30,7 @@ export default class Dep {
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
-
+  // 将传入的 watcher 从观察者池中移除
   removeSub (sub: Watcher) {
     // 相同watcher引用，可以删除  shared/util.js
     remove(this.subs, sub)

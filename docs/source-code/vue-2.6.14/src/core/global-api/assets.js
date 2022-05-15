@@ -18,6 +18,9 @@ export function initAssetRegisters (Vue: GlobalAPI) {
       definition: Function | Object
     ): Function | Object | void {
       // 如果没传 definition，则表示是获取
+      // 当我们在组件内使用全局组件/指令/过滤器时，
+      // 由于组件选项合并，Vue.options 会变成组件选项的原型，
+      // 这就是为什么全局指令/组件/过滤器，能在组件中使用的原因。
       if (!definition) {
         return this.options[type + "s"][id];
       } else {
@@ -27,7 +30,7 @@ export function initAssetRegisters (Vue: GlobalAPI) {
           validateComponentName(id);
         }
         // 如果是组件，并且传入的是普通对象的话
-        Vue.component('componentA', { template: '' })
+        // Vue.component('componentA', { template: '' })
         if (type === "component" && isPlainObject(definition)) {
           definition.name = definition.name || id;
           // this.options._base 就是 Vue

@@ -161,6 +161,7 @@ export function _createElement (
     // 跳过这个元素和它的子元素的编译过程。可以用来显示原始 Mustache 标签（显示插值表达式）。跳过大量没有指令的节点会加快编译。
     } else if (
       (!data || !data.pre)
+      // resolveAsset 从 options.components 组件集合中获取组件/全局组件的构造函数/组件对象
       && isDef(Ctor = resolveAsset(context.$options, 'components', tag))
     ) {
       // component

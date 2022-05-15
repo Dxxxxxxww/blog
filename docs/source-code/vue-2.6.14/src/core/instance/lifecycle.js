@@ -135,7 +135,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._isBeingDestroyed = true
     // remove self from parent
     const parent = vm.$parent
-    // 在父组件的$children移除自身
+    // 在父组件的 $children 移除自身
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm)
     }
@@ -262,7 +262,8 @@ export function mountComponent (
   // mounted is called for render-created child components in its inserted hook
   // 在它(子组件)的插入钩子中为渲染创建的子组件调用 mounted
   // 只有根实例才会满足这个条件，
-  // 也就是说这里触发的是根实例的 mounted 方法，而不是组件的 mounted 方法
+  // 也就是说这里触发的是根实例的 mounted 方法，而不是组件的 mounted 方法。
+  // 普通元素哪来的 mounted 方法...
   if (vm.$vnode == null) {
     vm._isMounted = true
     // 触发 mounted 生命周期钩子
