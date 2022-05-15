@@ -86,3 +86,29 @@ function mergeField(key) {
 1. 初始化阶段的流程
 2. 更新阶段的流程
 3. 销毁阶段的流程
+
+## vue 父子组件创建的先后顺序
+
+vnode 创建顺序：
+
+1. 子 vnode 先创建。
+2. 父 vnode 后创建。
+
+因为是 render 函数的子节点参数 \_c 调用，会先创建。
+
+---
+
+dom 元素创建顺序：
+
+1. 父 dom 先创建。
+2. 子 dom 后创建。
+
+在 patch/createElm 中，不管父节点是 dom 还是组件，在这里都会是 dom 标签，所以会创建自身 vnode 的 dom 元素。然后执行 createChildren 遍历创建子级的 dom 并执行 挂载。
+最后 父 dom 执行 insert 挂载。
+
+---
+
+挂载顺序：
+
+1. 子先挂载到父上。
+2. 父再往上挂载。
