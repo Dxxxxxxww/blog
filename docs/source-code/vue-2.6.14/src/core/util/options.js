@@ -168,7 +168,8 @@ function mergeHook (
   const res = childVal
     // 如果有，再判断 parentVal(父项声明周期) 有没有，
     ? parentVal
-      // 如果有则一定是数组形式，这个时候直接把 childVal 添加到 parentVal 数组的末尾；
+      // 如果有则一定是数组形式(因为父级已经经历过 mergeHook 了已经是一个数组形式，parentVal 参数类型是一个数组)，
+      // 这个时候直接把 childVal 添加到 parentVal 数组的末尾；
       // 所以会先执行父项的生命周期钩子
       ? parentVal.concat(childVal)
       // 如果没有，则需要判断一下 childVal 是不是数组，

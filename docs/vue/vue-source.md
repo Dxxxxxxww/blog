@@ -72,6 +72,8 @@ function mergeField(key) {
 
 ### 7. 生命周期钩子函数是怎么变成数组的？
 
+在 \_init 中 mergeOptions 中， mergeHook 策略合并成了数组。
+
 ### 8. 简述 mergeOptions 选项合并策略
 
 ### 9. debugger 一下 组件 destroy
@@ -91,7 +93,7 @@ function mergeField(key) {
 ### 完整描述一下 父子组件生命周期执行流程
 
 1. 初始化阶段的流程 完成
-2. 更新阶段的流程
+2. 更新阶段的流程 完成
 3. 销毁阶段的流程
 
 ## vue 父子组件创建的先后顺序
@@ -126,12 +128,29 @@ dom 元素创建顺序：
 
 占位 vnode 的 componentInstance 属性就是组件实例。
 
-vm.\_vnode 指向真实 vnode
+vm.\_vnode 指向真实 vnode(在 \_upade 中绑定，在 patch 前)
 
 vm.$vnode 指向占位 node  vm.$options.\_parentVnode 是占位 vnode
 
 真实 vnode 的 parent 是 占位 vnode
 
-### 如果组件传入了 $el 挂载会怎么样？ debugger
+### 如果组件传入了 $el 挂载会怎么样？
 
+会多一次 mount 调用，多走一次 mountComponent 的流程。在 \_init 时，由于组件传递了 el，会进行一次 mount 操作。此时的 vm.$el 就是 $el。这时候也会给 vm 上添加 \_vnode 真实 vnode。
+页面上 el 对应的 dom 会被 patch remove 掉，这时候组件会先被挂载到 el 对应的地方。
 
+在第二次 mount 的时候，这时候是 create-component init 钩子中的 mount，此时给 el 传递 undefined。在 mountComponent 时，由于传入的 el 是 undefined，vm.$el 就会被赋值成 undefined。
+
+并且由于第一次已经产生了 \_vnode ,所以这次会走到 update 流程。
+
+但是由于第一次产生的 vnode 和这次的 vnode 只是引用地址不同，值其实是相同的 vnode，所以这次 diff 流程最终也只会走到子级文本节点相同，啥也没有处理，白白跑了一次 diff。
+
+然后 create-component init 钩子结束，回到 patch/createComponent 函数中，进行 insert，将原本挂载到 $el 地方的 elm，挂载到其父级 dom 下。
+
+最后回到父级 vnode ，随着 父级 vnode.elm 挂载到 dom 上而挂载。
+
+### (自定义)指令的调用时机简述
+
+指令也会有 bind，insert，等等选项钩子。在生成 patch 的函数定义的地方，可以找到 directives 的模块钩子一共有三个：create，update，destroy。这三个模块钩子会在组件执行相应的操作(挂载，更新，销毁)时，触发模块的钩子函数时执行(在 patch 中搜索 cbs 可以找到)，并在模块钩子中去执行我们定义的指令选项钩子函数。
+
+cbs: 模块钩子，data.hook 组件占位 vnode 钩子(snabbdom 钩子)

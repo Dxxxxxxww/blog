@@ -97,16 +97,20 @@ function genHandler (handler: ASTElementHandler | Array<ASTElementHandler>): str
   if (!handler) {
     return 'function(){}'
   }
-
+  // 如果对同一事件有多个监听函数，则遍历调用 genHandler
   if (Array.isArray(handler)) {
     return `[${handler.map(handler => genHandler(handler)).join(',')}]`
   }
-
+  // 是否为简单访问方式
   const isMethodPath = simplePathRE.test(handler.value)
+  // 是否为函数表达式方式
   const isFunctionExpression = fnExpRE.test(handler.value)
+  // 是否为函数调用方式
   const isFunctionInvocation = simplePathRE.test(handler.value.replace(fnInvokeRE, ''))
 
   if (!handler.modifiers) {
+    // 对于函数简单访问方式，和函数表达式方式来说，会直接返回传入的参数
+    // @click="handleClick"  @click="() => {}"
     if (isMethodPath || isFunctionExpression) {
       return handler.value
     }
@@ -114,6 +118,7 @@ function genHandler (handler: ASTElementHandler | Array<ASTElementHandler>): str
     if (__WEEX__ && handler.params) {
       return genWeexHandler(handler.params, handler.value)
     }
+    // 对于函数调用的形式，会给它包裹一层函数
     return `function($event){${
       isFunctionInvocation ? `return ${handler.value}` : handler.value
     }}` // inline statement

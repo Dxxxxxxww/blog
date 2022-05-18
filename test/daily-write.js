@@ -1,3 +1,16 @@
+//  15
+function myNew(Fn, ...args) {
+  const obj = Object.create(Fn.prototype)
+  const res = Fn.apply(obj, args)
+  return typeof res === 'object' || typeof res === 'function' ? res : obj
+}
+// Object.create 模拟
+function ObjectCreate(proto) {
+  const obj = {}
+  Object.setPrototypeOf(obj, proto)
+  return obj
+}
+
 // day 14
 class EventCenter {
   center = {}

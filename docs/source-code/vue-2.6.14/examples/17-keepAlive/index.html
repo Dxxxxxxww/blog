@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>keepAlive</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../../dist/vue.js"></script>
+  <script>
+      Vue.component('GrandSon', {
+        template: `<div>{{label2}}</div>`,
+        data() {
+          return {
+            label2: `GrandSon`,
+          }
+        },
+      })
+      const ctor = Vue.component('Comp', {
+        template: `
+          <div>
+            <keep-alive>
+              <GrandSon v-if="visible"></GrandSon>
+            </keep-alive>
+            <button @click="visible = !visible">click</button>
+          </div>
+        `,
+        data() {
+          return {
+            visible: false
+          }
+        },
+        mounted() {
+          console.log(this)
+        }
+      })
+      const vm = new Vue({
+        el: '#app',
+        render(h) {
+          return h(ctor)
+        }
+      })
+  </script>
+</body>
+</html>

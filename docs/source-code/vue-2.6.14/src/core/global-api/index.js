@@ -74,6 +74,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   // 在 createComponent 中 会使用到
   Vue.options._base = Vue;
   // 设置 keep-alive 组件
+  // shared/util.js extend 将第二个对象拷贝到第一个对象上，如果有键名冲突，第二个覆盖第一个
   extend(Vue.options.components, builtInComponents);
 
   // 初始化 Vue.use

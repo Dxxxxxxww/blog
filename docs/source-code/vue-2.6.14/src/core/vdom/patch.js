@@ -117,6 +117,8 @@ export function createPatchFunction(backend) {
 
   function createRmCb(childElm, listeners) {
     function remove() {
+      // 理解为标记清除
+      // “这玩意儿就是移除的时候一个标志位，跟 transition 也有关系的，我们上次技术分享涉及到这个问题，beforeDestroy 为什么会拿不到 dom，动画场景可以拿到，非动画拿不到，跟remove.listeners这玩意儿有点关系” --- chr
       if (--remove.listeners === 0) {
         removeNode(childElm)
       }

@@ -50,7 +50,7 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
-      // 创建组件实例
+      // 创建组件实例，并挂载到 vnode 上
       const child = (vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         // 激活的实例，它其实就是当前组件对象的父组件对象
@@ -199,6 +199,9 @@ export function createComponent (
     return createFunctionalComponent(Ctor, propsData, data, context, children)
   }
   // 事件监听处理
+  // 对于原生 DOM 事件它取的是 data.on。但对于组件而言，因为添加了 native 修饰符，
+  // 所以它会出现在 nativeOn 对象上，而不是 on 对象上。
+  // 又因为此时的 on 对象，是我们撰写的组件自定义事件，所以需要特殊处理一下
   // extract listeners, since these needs to be treated as
   // child component listeners instead of DOM listeners
   const listeners = data.on
@@ -209,6 +212,7 @@ export function createComponent (
   if (isTrue(Ctor.options.abstract)) {
     // abstract components do not keep anything
     // other than props & listeners & slot
+    // 抽象组件不保留任何东西，除了 props、listeners、slot
 
     // work around flow
     const slot = data.slot

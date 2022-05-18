@@ -943,7 +943,8 @@ function parseModifiers (name: string): Object | void {
     return ret
   }
 }
-
+// 开发环境下同一个标签上定义了多个相同属性则报警告
+// 对于事件来说，是支持定义多个的，因为对同一个事件会存在多个监听的情况 events[name] = [handler]，但是这里也会报警告
 function makeAttrsMap (attrs: Array<Object>): Object {
   const map = {}
   for (let i = 0, l = attrs.length; i < l; i++) {

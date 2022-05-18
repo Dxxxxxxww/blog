@@ -12,7 +12,7 @@ import baseModules from 'core/vdom/modules/index'
 /**
  * attrs, 钩子函数，create，update
  * klass, 钩子函数，create，update
- * events, 钩子函数，create，update
+ * events, 钩子函数，create，update，处理 dom 原生事件
  * domProps, 钩子函数，create，update
  * style, 钩子函数，create，update
  * transition 钩子函数，create，activate, remove

@@ -23,6 +23,7 @@ export function initRender (vm: Component) {
   // vm.$vnode options._parentVnode 占位 vnode
   const parentVnode = vm.$vnode = options._parentVnode // the placeholder node in parent tree
   const renderContext = parentVnode && parentVnode.context
+  // 解析插槽
   vm.$slots = resolveSlots(options._renderChildren, renderContext)
   vm.$scopedSlots = emptyObject
   // bind the createElement fn to this instance
@@ -143,6 +144,7 @@ export function renderMixin (Vue: Class<Component>) {
     }
     // set parent
     // 建立组件 vnode 与组件占位 vnode 的父子关系
+    // 占位 vnode 的 parent 是 keepAlive，keepAlive 实例的 _vnode(真实 vnode)是其子组件的占位 vnode
     vnode.parent = _parentVnode
     return vnode
   }

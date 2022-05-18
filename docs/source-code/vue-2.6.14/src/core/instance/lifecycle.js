@@ -40,7 +40,9 @@ export function initLifecycle (vm: Component) {
   // 建立父子关系
   // 找到当前实例的父级，将当前实例添加到其子列表中
   // 找到当前组件的父组件，将当前组件添加到父组件的子组件列表中
+  // 抽象组件不建立父子关系
   if (parent && !options.abstract) {
+    // 如果父组件是抽象组件则继续网上找，找到非抽象组件，建立父子关系
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
@@ -136,6 +138,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // remove self from parent
     const parent = vm.$parent
     // 在父组件的 $children 移除自身
+    // 非抽象组件
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm)
     }

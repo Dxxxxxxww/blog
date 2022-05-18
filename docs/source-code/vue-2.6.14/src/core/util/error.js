@@ -23,12 +23,14 @@ export function handleError (err: Error, vm: any, info: string) {
               const capture = hooks[i].call(cur, err, vm, info) === false
               if (capture) return
             } catch (e) {
+              // 如果用户定义了全局的错误捕获方法，就会调用，否则直接使用 console.error 抛出
               globalHandleError(e, cur, 'errorCaptured hook')
             }
           }
         }
       }
     }
+    // 如果用户定义了全局的错误捕获方法，就会调用，否则直接使用 console.error 抛出
     globalHandleError(err, vm, info)
   } finally {
     popTarget()
@@ -62,6 +64,7 @@ export function invokeWithErrorHandling (
   return res
 }
 
+// 如果用户定义了全局的错误捕获方法，就会调用，否则直接使用 console.error 抛出
 function globalHandleError (err, vm, info) {
   if (config.errorHandler) {
     try {

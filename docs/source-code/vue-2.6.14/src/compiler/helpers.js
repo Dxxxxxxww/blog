@@ -124,10 +124,13 @@ export function addHandler (
   }
 
   let events
+  // 如果有添加原生修饰符
   if (modifiers.native) {
     delete modifiers.native
+    // 将事件存到原生事件列表中
     events = el.nativeEvents || (el.nativeEvents = {})
   } else {
+    // 如果没有原生修饰符，就放到普通事件列表中
     events = el.events || (el.events = {})
   }
 
@@ -135,7 +138,8 @@ export function addHandler (
   if (modifiers !== emptyObject) {
     newHandler.modifiers = modifiers
   }
-
+  // 开发环境下同一个标签上定义了多个相同属性会在 makeAttrsMap 中报警告
+  // 对于事件来说，是支持定义多个的，因为对同一个事件会存在多个监听的情况 events[name] = [handler]，但是这里也会报警告
   const handlers = events[name]
   /* istanbul ignore if */
   if (Array.isArray(handlers)) {

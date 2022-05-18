@@ -54,7 +54,7 @@ export function initMixin (Vue: Class<Component>) {
       initInternalComponent(vm, options)
     } else {
       // new Vue 创建实例，首次渲染时，Vue 构造函数的 options 与用户传入的 options 合并
-      // mixins 的合并会在 mergeOptions 中进行
+      // mixins，directives，filters，components 的合并会在 mergeOptions 中进行
       vm.$options = mergeOptions(
         // 内部还会一直溯源合并到 Vue 构造函数，也就是说 Vue 实例的 $options 会包含其构造函数的选项
         resolveConstructorOptions(vm.constructor),
@@ -128,6 +128,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 
   const vnodeComponentOptions = parentVnode.componentOptions
   opts.propsData = vnodeComponentOptions.propsData
+  // 获取父级的监听函数
   opts._parentListeners = vnodeComponentOptions.listeners
   opts._renderChildren = vnodeComponentOptions.children
   opts._componentTag = vnodeComponentOptions.tag
