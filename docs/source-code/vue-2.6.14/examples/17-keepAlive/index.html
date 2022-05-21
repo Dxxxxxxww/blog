@@ -8,36 +8,52 @@
   <div id="app"></div>
   <script src="../../dist/vue.js"></script>
   <script>
-      Vue.component('GrandSon', {
+      Vue.component('A', {
         template: `<div>{{label2}}</div>`,
         data() {
           return {
-            label2: `GrandSon`,
+            label2: `A`,
           }
         },
       })
-      const ctor = Vue.component('Comp', {
+      Vue.component('B', {
+        template: `<div>{{label2}}</div>`,
+        data() {
+          return {
+            label2: `B`,
+          }
+        },
+      })
+      const vm = new Vue({
+        el: '#app',
+        // component 不会生成占位 vnode ，直接就是当前 is 对应组件的占位 vnode
+        // 编译成 render， _c(comp, { tag: 'component' })
+        // 这里的 comp 就是 'A'/'B'，会额外传递一个 { tag: 'component' } 参数。
+        // 动态组件的替换不会走 patchVnode 的逻辑
         template: `
           <div>
             <keep-alive>
-              <GrandSon v-if="visible"></GrandSon>
+              <component :is="comp"></component>
             </keep-alive>
-            <button @click="visible = !visible">click</button>
+            <button @click="change">click</button>
           </div>
         `,
         data() {
           return {
-            visible: false
+            comp:'A'
           }
         },
         mounted() {
           console.log(this)
-        }
-      })
-      const vm = new Vue({
-        el: '#app',
-        render(h) {
-          return h(ctor)
+        },
+        methods: {
+          change() {
+            if (this.comp === 'A') {
+              this.comp = 'B'
+            }else {
+              this.comp = 'A'
+            }
+          }
         }
       })
   </script>

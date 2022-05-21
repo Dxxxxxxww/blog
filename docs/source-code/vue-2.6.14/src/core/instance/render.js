@@ -144,7 +144,9 @@ export function renderMixin (Vue: Class<Component>) {
     }
     // set parent
     // 建立组件 vnode 与组件占位 vnode 的父子关系
-    // 占位 vnode 的 parent 是 keepAlive，keepAlive 实例的 _vnode(真实 vnode)是其子组件的占位 vnode
+    // 对于 keep-alive 来说
+    // 组件占位 vnode 的 parent 是 keepAlive 的占位 vnode，
+    // keepAlive 实例的 _vnode(真实 vnode)是其子组件的占位 vnode，因为 keep-alive render 返回子级组件占位 vnode
     vnode.parent = _parentVnode
     return vnode
   }

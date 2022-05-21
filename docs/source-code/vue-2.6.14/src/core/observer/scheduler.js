@@ -176,12 +176,15 @@ function callUpdatedHooks (queue) {
 
 /**
  * Queue a kept-alive component that was activated during patch.
+ * 对 patch 期间激活的 keep-alive 组件进行排队。
  * The queue will be processed after the entire tree has been patched.
+ * 在整个树被 patch 之后，队列将被处理。
  */
 export function queueActivatedComponent (vm: Component) {
   // setting _inactive to false here so that a render function can
   // rely on checking whether it's in an inactive tree (e.g. router-view)
   vm._inactive = false
+  // 最终在 flushSchedulerQueue 中处理，调用 activateChildComponent
   activatedChildren.push(vm)
 }
 

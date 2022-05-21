@@ -355,7 +355,7 @@ export function updateChildComponent (
     isUpdatingChildComponent = false
   }
 }
-
+// 递归查找父实例，如果父实例已经有 _inactive 了就返回 true
 function isInInactiveTree (vm) {
   while (vm && (vm = vm.$parent)) {
     if (vm._inactive) return true
@@ -364,6 +364,8 @@ function isInInactiveTree (vm) {
 }
 
 export function activateChildComponent (vm: Component, direct?: boolean) {
+  // _directInactive， _inactive 在 initLifecycle 中定义
+  // 因为每个组件都会执行 patch ，都有可能执行这个函数，所以这些变量都是用来防止组件重复执行 activated 生命周期钩子函数的
   if (direct) {
     vm._directInactive = false
     if (isInInactiveTree(vm)) {
@@ -372,11 +374,14 @@ export function activateChildComponent (vm: Component, direct?: boolean) {
   } else if (vm._directInactive) {
     return
   }
+  // 因为每个组件都会执行 patch ，都有可能执行这个函数，所以这些变量都是用来防止组件重复执行 activated 生命周期钩子函数的
   if (vm._inactive || vm._inactive === null) {
     vm._inactive = false
+    // 递归调用子组件的 activated 生命周期钩子函数
     for (let i = 0; i < vm.$children.length; i++) {
       activateChildComponent(vm.$children[i])
     }
+    // 调用 activated 生命周期钩子函数
     callHook(vm, 'activated')
   }
 }

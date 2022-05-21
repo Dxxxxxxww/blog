@@ -85,6 +85,7 @@ export default {
 
   methods: {
     // 将延迟缓存的 vnode，key 保存起来
+    // vnode 中会包括组件实例，组件 dom
     cacheVNode() {
       const { cache, keys, vnodeToCache, keyToCache } = this
       if (vnodeToCache) {
@@ -146,8 +147,8 @@ export default {
   render () {
     // 获取默认插槽，vm.$slots 在 initRender 时解析
     const slot = this.$slots.default
-    // keep-alive 针对的是组件，对普通节点是没有意义的，所以这里取获取第一个组件 vnode
-    // 从子级 vnode 中拿到第一个组件 vnode
+    // keep-alive 针对的是组件，对普通节点是没有意义的，所以这里取获取第一个组件占位 vnode
+    // 从子级 vnode 中拿到第一个组件占位 vnode
     const vnode: VNode = getFirstComponentChild(slot)
     // 获取组件 vnode 的组件选项
     const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions
@@ -193,6 +194,8 @@ export default {
       // 标志当前 vnode 已经缓存了
       vnode.data.keepAlive = true
     }
+    // 返回子组件占位 vnode， keep-alive render 结束后，
+    // 会将 keep-alive 的占位 vnode 设置为子组件占位 vnode 的父级
     return vnode || (slot && slot[0])
   }
 }

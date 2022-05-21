@@ -58,7 +58,7 @@ module.exports = {
 2. slots
 3. <component v-bind:is="currentTabComponent"></component> 内置组件
 
-## vue 声明周期执行顺序
+## vue 生命周期执行顺序
 
 销毁：
 
@@ -80,10 +80,19 @@ son create
 son beforeMount
 son mounted
 parent mounted
+```
+
+更新：
+
+```js
 parent beforeUpdate
 son beforeUpdate
 son updated
 parent updated
+
+// keep-alive 时，activated 会比 updated 先调用
+activated
+updated
 ```
 
 ## 运行时编译和构建时编译

@@ -40,6 +40,8 @@ import {
 const componentVNodeHooks = {
   // 在 patch 时调用
   init(vnode: VNodeWithData, hydrating: boolean): ?boolean {
+    // 对于 keepAlive 缓存的组件， vnode.componentInstance 会在 keepAlive 的 render 调用时添加，
+    // 并且 vnode.data.keepAlive 也会被设置为 true，从而跳过了创建组件实例，再去 patch 的一系列流程。
     if (
       vnode.componentInstance &&
       !vnode.componentInstance._isDestroyed &&
@@ -86,14 +88,22 @@ const componentVNodeHooks = {
       callHook(componentInstance, 'mounted')
     }
     if (vnode.data.keepAlive) {
+      // 对于 keepAlive 缓存的组件，判断是否挂载
+      // 已经挂载过的 keepAlive 的组件会在 nextTick ，flushSchedulerQueue 中调用。
       if (context._isMounted) {
         // vue-router#1212
         // During updates, a kept-alive component's child components may
         // change, so directly walking the tree here may call activated hooks
         // on incorrect children. Instead we push them into a queue which will
         // be processed after the whole patch process ended.
+        // 在组件更新流程时，在 flushSchedulerQueue 中
+        // 通过 watcher.run 触发 patchVnode 最终执行 insert 钩子到了这里，
+        // 将组件实例推入 keep-alive 组件队列中，在 watcher 执行完之后，
+        // 在 flushSchedulerQueue 调用 activateChildComponent 执行 activated 生命周期钩子函数
         queueActivatedComponent(componentInstance)
       } else {
+        // keepAlive 过的组件首次渲染会直接执行 activated 生命周期钩子函数
+        // 递归调用组件及子组件的 activated 生命周期钩子函数
         activateChildComponent(componentInstance, true /* direct */)
       }
     }
@@ -107,7 +117,8 @@ const componentVNodeHooks = {
         // 调用实例的 $destroy
         componentInstance.$destroy()
       } else {
-        // 是 keep-alive 的话，调用 deactivated 生命周期钩子函数
+        // 是 keep-alive 的话，递归调用组件及子组件的 deactivated 生命周期钩子函数
+        // deactivateChildComponent 函数与 activateChildComponent 的逻辑判断一样
         deactivateChildComponent(componentInstance, true /* direct */)
       }
     }
