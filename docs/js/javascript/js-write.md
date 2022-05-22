@@ -9,24 +9,24 @@ sidebar: auto
 先写一个判断数据类型的方法
 
 ```js
-const analyseType = (o) => {
+const analyseType = o => {
   var s = Object.prototype.toString.call(o)
   return s.match(/\[object (.*?)\]/)[1].toLowerCase()
 }
 
-const isObject = (o) =>
+const isObject = o =>
   analyseType(o) === 'object' ||
   analyseType(o) === 'array' ||
   analyseType(o) === 'function'
 
-const isObject = (o) =>
+const isObject = o =>
   (typeof o === 'object' || typeof o === 'function') && o !== null
 ```
 
 先来个第一版，这个版本没有解决循环引用
 
 ```js
-const deepClone = (target) => {
+const deepClone = target => {
   if (isObject(target)) {
     let cloneTarget
     if (Array.isArray(target)) {
@@ -110,7 +110,7 @@ console.log(deepClone(a), deepClone(c)) // { a: { a: 'a' }, b: { a: { a: 'a' }, 
 
 ```js
 // es3
-Function.prototype.call3 = function () {
+Function.prototype.call3 = function() {
   const context = arguments[0],
     args = []
   context.fn = this
@@ -125,7 +125,7 @@ Function.prototype.call3 = function () {
 }
 
 // es6
-Function.prototype.call6 = function (context, ...args) {
+Function.prototype.call6 = function(context, ...args) {
   context.fn = this
   // es6 可以直接使用 rest参数，会自动展开参数
   const result = context.fn(...args)
@@ -151,7 +151,7 @@ console.log(test.call6(obj, 1, 2, 'c')) // 1 + ccc + 1 + 2 + c
 
 ```js
 // es3
-Function.prototype.apply3 = function (context, args) {
+Function.prototype.apply3 = function(context, args) {
   const params = []
   context.fn = this
 
@@ -166,7 +166,7 @@ Function.prototype.apply3 = function (context, args) {
 }
 
 // es6
-Function.prototype.apply6 = function (context, args) {
+Function.prototype.apply6 = function(context, args) {
   context.fn = this
   const result = args ? context.fn(...args) : context.fn()
   delete context.fn
@@ -192,7 +192,7 @@ console.log(test.apply6(obj, [1, 2, 'c'])) // 1 + ccc + 1 + 2 + c
 第一版 解决 bind 参数传递
 
 ```js
-Function.prototype.apply6 = function (context, args) {
+Function.prototype.apply6 = function(context, args) {
   const params = []
   context.fn = this
 
@@ -206,12 +206,12 @@ Function.prototype.apply6 = function (context, args) {
   return result
 }
 
-Function.prototype.bind3 = function () {
+Function.prototype.bind3 = function() {
   const context = arguments[0],
     args = [].slice.apply6(arguments, [1]),
     fn = this
 
-  return function () {
+  return function() {
     const args2 = [].slice.apply6(arguments)
     return fn.apply6(context, args.concat(args2))
   }
@@ -233,7 +233,7 @@ console.log(test.bind3(obj, 1, 2)('c')) // 1 + ccc + 1 + 2 + c
 第二版，支持 new
 
 ```js
-Function.prototype.apply6 = function (context, args) {
+Function.prototype.apply6 = function(context, args) {
   const params = []
   context.fn = this
 
@@ -247,10 +247,10 @@ Function.prototype.apply6 = function (context, args) {
   return result
 }
 
-Function.prototype.bind4 = function (context) {
+Function.prototype.bind4 = function(context) {
   const args = [].slice.apply6(arguments, [1])
   const self = this
-  const func = function () {
+  const func = function() {
     const args2 = [].slice.apply6(arguments)
     // 通过 this 来判断是否是使用 new 来调用
     return self.apply6(
@@ -299,7 +299,7 @@ console.log(new f(3))
 最终版
 
 ```js
-Function.prototype.apply6 = function (context, args) {
+Function.prototype.apply6 = function(context, args) {
   const params = []
   context.fn = this
 
@@ -313,7 +313,7 @@ Function.prototype.apply6 = function (context, args) {
   return result
 }
 
-Function.prototype.bind5 = function (context) {
+Function.prototype.bind5 = function(context) {
   if (typeof this !== 'function') {
     throw new Error('error')
   }
@@ -321,10 +321,10 @@ Function.prototype.bind5 = function (context) {
   const args = [].slice.apply6(arguments, [1]),
     self = this
 
-  const Fc = function () {}
+  const Fc = function() {}
   Fc.prototype = self.prototype
 
-  const func = function () {
+  const func = function() {
     const args2 = [].slice.apply6(arguments)
     return self.apply6(
       this instanceof func ? this : context,
@@ -424,7 +424,7 @@ instanceofMock(p, Person) // true
 ```js
 Array.prototype.forEach =
   Array.prototype.forEach ||
-  function (fn) {
+  function(fn) {
     // 不能使用箭头函数。否则 this 不会指向数组
     const arr = this
     for (let i = 0, len = arr.length; i < len; i++) {
@@ -438,7 +438,7 @@ Array.prototype.forEach =
 ```js
 Array.prototype.filter =
   Array.prototype.filter ||
-  function (fn) {
+  function(fn) {
     const arr = this,
       result = []
     for (let i = 0, len = arr.length; i < len; i++) {
@@ -456,7 +456,7 @@ Array.prototype.filter =
 ```js
 Array.prototype.map =
   Array.prototype.map ||
-  function (fn) {
+  function(fn) {
     const arr = this,
       result = []
     for (let i = 0, len = arr.length; i < len; i++) {
@@ -474,7 +474,7 @@ every 返回 false 就会终止遍历
 ```js
 Array.prototype.every =
   Array.prototype.every ||
-  function (fn) {
+  function(fn) {
     const arr = this
     let result = true
     for (let i = 0, len = arr.length; i < len; i++) {
@@ -495,7 +495,7 @@ some 返回 true 就会终止遍历
 ```js
 Array.prototype.some =
   Array.prototype.some ||
-  function (fn) {
+  function(fn) {
     const arr = this
     let result = false
     for (let i = 0; i < arr.length; i++) {
@@ -567,7 +567,7 @@ for (const it of obj) {
 ```js
 const obj = {
   store: ['a', 'b', 'c'],
-  [Symbol.iterator]: function* () {
+  [Symbol.iterator]: function*() {
     for (const item of this.store) {
       yield item
     }
@@ -588,7 +588,7 @@ for (const it of obj) {
 function curry(func) {
   return function curriedFn(...args) {
     if (args.length < func.length) {
-      return function () {
+      return function() {
         return curriedFn(...args.concat(Array.from(arguments)))
       }
     }
@@ -606,14 +606,12 @@ flowRight 参数从右往左开始调用
 // 函数洋葱调用  a(b(c()))
 // 函数组合需要满足结合律，即：
 // compose(a, b, c), compose(compose(a, b), c), compose(a, compose(b, c)), 结果相同
-const flowRight =
-  (...args) =>
-  (value) =>
-    args.reverse().reduce((initVal, current) => current(initVal), value)
+const flowRight = (...args) => value =>
+  args.reverse().reduce((initVal, current) => current(initVal), value)
 
-const fi = (arr) => arr[0]
-const re = (arr) => arr.reverse()
-const tu = (str) => str.toUpperCase()
+const fi = arr => arr[0]
+const re = arr => arr.reverse()
+const tu = str => str.toUpperCase()
 
 const a = ['t', 'r', 'y']
 
@@ -621,7 +619,7 @@ console.log(flowRight(tu, fi, re)(a))
 
 // 组合中若想查看哪个函数出错了也可以自己写个 log 函数
 
-const log = (tag) => (val) => {
+const log = tag => val => {
   console.log(val)
   return val
 }
@@ -634,14 +632,12 @@ flowRight(tu, log, fi, log, re)(a)
 flow 参数从左往右开始调用
 
 ```js
-const flowRight =
-  (...args) =>
-  (value) =>
-    args.reduce((initVal, current) => current(initVal), value)
+const flowRight = (...args) => value =>
+  args.reduce((initVal, current) => current(initVal), value)
 
-const fi = (arr) => arr[0]
-const re = (arr) => arr.reverse()
-const tu = (str) => str.toUpperCase()
+const fi = arr => arr[0]
+const re = arr => arr.reverse()
+const tu = str => str.toUpperCase()
 
 const a = ['t', 'r', 'y']
 
@@ -671,7 +667,7 @@ function myNew(constructor) {
 // Object.create 的实现 1
 function myOc(p) {
   // 建立中间函数
-  const temp = function () {}
+  const temp = function() {}
   // 获取原型
   temp.prototype = p
   // 创建对象 这里使用 new 来模拟 Object.create ，这在 new 中感觉有点尴尬，下面使用新的方式
@@ -729,7 +725,7 @@ class EventCenter {
   }
   // 监听事件
   $emit(event, args) {
-    this.sub[event].forEach((handler) => {
+    this.sub[event].forEach(handler => {
       handler(args)
     })
   }
@@ -737,8 +733,8 @@ class EventCenter {
 
 const ec = new EventCenter()
 
-ec.$on('click', (a) => console.log(a))
-ec.$on('click', (a) => console.log(a))
+ec.$on('click', a => console.log(a))
+ec.$on('click', a => console.log(a))
 
 ec.$emit('click', 'hello world')
 ```
@@ -764,7 +760,7 @@ class Dep {
   }
   // 事件发生时通知观察者进行处理
   notify() {
-    this.subs.forEach((watcher) => {
+    this.subs.forEach(watcher => {
       watcher.update()
     })
   }
@@ -803,3 +799,7 @@ dep.notify()
 ### 实现一个发布订阅模式
 
 @[code](./code/event-center.js)
+
+### 实现一个 schedular
+
+@[code](./code/schedular.js)

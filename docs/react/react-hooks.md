@@ -6,6 +6,14 @@ sidebar: auto
 
 记录对官方 hooks 的理解，以及记录一些 hooks 的奇技淫巧
 
+## react hooks 出现原因
+
+1. 类组件缺少复用机制（mixins，HOC），如果需要进行逻辑复用，都是需要在原有组件外再包一层，形成逻辑组件与渲染组件，增加了调试难度以及运行效率降低。
+2. 类组件通常会变得复杂，难以维护。与 vue 类似，将逻辑拆分到不同的生命周期中，导致了同一个逻辑的代码在不同块，同一生命周期中会有不同逻辑的代码。
+3. 类成员方法不能保证 this 指向的准确性，在元素上添加事件监听时，需要使用 bind，或者函数嵌套，箭头函数，提高复杂度。
+
+## react 特点
+
 **react hooks 依赖需要注意的点：**
 
 1. 基本数据类型，组件状态可以放入依赖中；
@@ -13,11 +21,19 @@ sidebar: auto
 
 ---
 
-1. State Hook
+### 一、useState
+
+渲染
+
+用于给函数组件引入状态。通常来说，函数中的变量在函数执行完就会释放，而这里能保存状态的原理就是闭包。
 
 不管 state 是否在 jsx 中使用，只要使用了 setCount，就会触发重新渲染。
 
-[sandbox](https://codesandbox.io/s/usecallback1-yu1sp?file=/src/App.js)
+[sandbox](https://codesandbox.io/s/usecallback1-forked-k35zr0?file=/src/App.js)
+
+---
+
+传入函数
 
 ```js
 const [count, setCount] = useState(0)
@@ -34,7 +50,15 @@ const [count, setCount] = useState(0)
 const [cb, setCb] = useState(() => () => {})
 ```
 
-2. Effect Hook
+---
+
+改变状态的函数是异步的
+
+useState 返回的 set\* 函数是异步的。
+
+---
+
+### 二、useEffect
 
 ```js
 useEffect(() => {
@@ -115,11 +139,11 @@ ChatAPI.subscribeToFriendStatus(300, handleStatusChange) // 运行下一个 effe
 ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange) // 清除最后一个 effect
 ```
 
-3. useRef
+### 三、useRef
 
-官方描述：useRef 返回一个可变的 ref 对象，其 .current 属性被初始化为传入的参数（initialValue）。返回的 ref 对象在组件的整个生命周期内持续存在。**这个 ref 对象是一个变量，不是组件状态，所以它(.current)的改变不会触发组件重新渲染。**
+官方描述：useRef 返回一个可变的 ref 对象，其 .current 属性被初始化为传入的参数（initialValue）。返回的 ref 对象在组件的整个生命周期内（这里刻意强调生命周期是指组件重新渲染时的生命周期改变）一直不变。**这个 ref 对象是一个变量，不是组件状态，所以它(.current)的改变不会触发组件重新渲染。**
 
-我对 useRef 理解就是，生成了一个容器对象，这个容器对象在组件的整个生命周期是不变的，而它的属性 .current 的值是可变的。
+我对 useRef 理解就是，**它不是一个状态，只是个变量。**它生成了一个容器对象，这个容器对象在组件的整个生命周期是不变的，而它的属性 .current 的值是可变的。**常用于获取 dom 元素(可以理解为 vue 中的 ref)。**
 
 实用例子：当函数组件中存在某种非状态变量对象，并且该变量对象在整个组件生命周期中保持不变，且需要被 useEffect 所依赖，这时候可以使用 useRef 来生成这个变量对象。
 
@@ -149,7 +173,7 @@ export const useDocumentTitle = (
 }
 ```
 
-4. useMemo
+### 四、useMemo
 
 官方文档：把“创建”函数和依赖项数组作为参数传入 useMemo，它仅会在某个依赖项改变时才重新计算 memoized 值。这种优化有助于避免在每次渲染时都进行高开销的计算。
 
@@ -157,27 +181,27 @@ export const useDocumentTitle = (
 
 注：传入 useMemo 的函数会在渲染期间执行。如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
 
-可以理解为 vue 中的 computed。
+**可以理解为 vue 中的 computed。**
 
-**
-基本数据类型，组件状态可以放入依赖中。非基本数据类型非组件状态不可放入依赖中。如果我们定义了非基本类型想要做依赖，就要用到 useMemo。
-**这样就能限制住非基本类型在每次渲染时的重新创建。
+**基本数据类型，组件状态可以放入依赖中。非基本数据类型非组件状态不可放入依赖中。如果我们定义了非基本类型想要做依赖，就要用到 useMemo。**这样就能限制住非基本类型在每次渲染时的重新创建。
 
-5. useCallback
+### 五、useCallback
 
 官方文档：把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。
 
-个人理解：可以理解为特殊版本的 useMemo，专门用于函数的情况。当自定义 hook 需要向外返回函数的时候，使用 useCallback 包裹。
+个人理解：可以理解为特殊版本的 useMemo，专门用于函数的情况。性能优化，缓存函数，使组件重新渲染的时候得到相同的函数。
 
 **如果使用的是非原生 dom 节点(自定义组件)，那么回调函数都应该用 useCallback 进行封装。**
 
-6. useReducer
+### 六、useReducer
 
 官方文档：useState 的替代方案。它接收一个形如 (state, action) => newState 的 reducer，并返回当前的 state 以及与其配套的 dispatch 方法。（如果你熟悉 Redux 的话，就已经知道它如何工作了。）在某些场景下，useReducer 会比 useState 更适用，例如 state 逻辑较复杂且包含多个子值，或者下一个 state 依赖于之前的 state 等。
 
 个人理解：从功能上来说，useState 与 useReducer 可以互换的，用其中一个实现的功能，使用另一个也是可以实现的。useState 适合定义单个的状态，useReducer 适合定义一群/多个互相影响的状态。
 
-7. useContext
+### 七、useContext
+
+可以用来替代 redux，作为跨组件状态共享的手段。
 
 个人理解：hooks 里的局部全局状态管理
 
