@@ -76,7 +76,7 @@ export function initMixin (Vue: Class<Component>) {
     // expose real self
     vm._self = vm
     // vm(Vue 实例)的生命周期相关变量初始化 挂载一些实例属性以及私有实例属性。将当前实例添加到父实例的子列表中
-    // $children $parent $root $refs
+    // $children $parent $root $refs 初始化 _watcher = null
     // 建立实例的父子组件关系
     initLifecycle(vm)
     // vm 的事件中心初始化 _events，监听父组件绑定在当前组件上的事件。_hasHookEvent
@@ -91,7 +91,7 @@ export function initMixin (Vue: Class<Component>) {
     // 在 data props 初始化前先注入 inject
     // 把 inject 的成员注入到 vm 上
     initInjections(vm)
-    // 初始化 vm 的 _props methods _data computed watch
+    // 初始化 vm 的 _props methods _data computed watch，初始化 _watchers = []
     initState(vm)
     // resolve provide after data/props
     // 在 data props 初始化之后初始化 provide

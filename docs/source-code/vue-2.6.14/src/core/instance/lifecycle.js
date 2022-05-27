@@ -67,6 +67,7 @@ export function initLifecycle (vm: Component) {
 
 export function lifecycleMixin (Vue: Class<Component>) {
   // 会在组件渲染的时候调用
+  // 传入的 vnode 都是真实 vnode，对于 keepAlive 来说是个例外，因为 keepAlive 返回的真实 vnode 是其 slot 的占位 vnode。
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
@@ -250,6 +251,7 @@ export function mountComponent (
   // 因为 watcher 的初次 patch 可能会调用 $forceUpdate (例如 内部的子组件 mounted 钩子)，它依赖
   // vm._watcher 已经被定义
   // 创建一个 Watcher 实例 渲染watcher
+  // 每一个组件使用都会调用 mount，因此每一个组件都会有一个 render watcher
   new Watcher(vm, updateComponent, noop, {
     // 调用 beforeUpdate 生命周期钩子
     before () {
@@ -275,6 +277,7 @@ export function mountComponent (
   return vm
 }
 
+// 更新子组件，强制重新渲染 slots
 export function updateChildComponent (
   vm: Component,
   propsData: ?Object,
@@ -304,6 +307,9 @@ export function updateChildComponent (
   // Any static slot children from the parent may have changed during parent's
   // update. Dynamic scoped slots may also have changed. In such cases, a forced
   // update is necessary to ensure correctness.
+  // 任何来源于父级的静态子插槽，都有可能在父级更新时发生了变化。
+  // 动态作用于插槽也有可能发生变化。
+  // 在这些情况下，一个强制更新是必要的，以确保正确性
   const needsForceUpdate = !!(
     renderChildren ||               // has new static slots
     vm.$options._renderChildren ||  // has old static slots
@@ -325,6 +331,7 @@ export function updateChildComponent (
   vm.$listeners = listeners || emptyObject
 
   // update props
+  // 更新 props，props 的变动会让子组件自动触发子组件的渲染 watcher
   if (propsData && vm.$options.props) {
     toggleObserving(false)
     const props = vm._props
@@ -346,8 +353,11 @@ export function updateChildComponent (
   updateComponentListeners(vm, listeners, oldListeners)
 
   // resolve slots + force update if has children
+  // 强制重新渲染 slots
   if (needsForceUpdate) {
+    // 解析 slots
     vm.$slots = resolveSlots(renderChildren, parentVnode.context)
+    // 在下一个 tick 渲染
     vm.$forceUpdate()
   }
 

@@ -1,30 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>observe</title>
-</head>
-<body>
-  <div id="app">
-    <h1>{{ msg }}</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>observe</title>
+  </head>
+  <body>
+    <div id="app">
+      <h1>{{ msg }}</h1>
 
-    {{ msg }}
+      {{ msg }}
 
-    <hr>
+      <hr />
 
-    {{ count }}
-  </div>
+      {{ count }}
+    </div>
 
-  <script src="../../dist/vue.js"></script>
-  <script>
-    const vm = new Vue({
-      el: '#app',
-      data: {
-        msg: 'Hello Vue',
-        count: 100
+    <script src="../../dist/vue.js"></script>
+    <script>
+      const cloneDeep = (obj) => {
+        let newObj = new obj.constructor()
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            const typeOfObject = Object.prototype.toString.call(obj[key])
+            if (typeOfObject.slice(8, typeOfObject.length - 1) === 'Object') {
+              newObj[key] = cloneDeep(obj[key])
+            } else {
+              newObj[key] = obj[key]
+            }
+          }
+        }
+        return newObj
       }
-    })
-  </script>
-</body>
+      const vm = new Vue({
+        el: '#app',
+        data: {
+          msg: 'Hello Vue',
+          count: 100,
+          a: { b: 'b' },
+        },
+        mounted() {
+          // debugger
+          // 深拷贝后就是完全的另一个对象了，即便是深层的属性，也不会触发 getter
+          // 这是因为新对象上不会有 __ob__(在定义时就设置为不可遍历) 和 get set
+          console.log('cloneDeep ====')
+          console.time()
+          const a = cloneDeep(this.a)
+          console.log(a.b)
+          console.timeEnd()
+
+          console.log('no cloneDeep ====')
+          console.time()
+          const aa = this.a
+          console.log(aa.b)
+          console.timeEnd()
+
+          console.log(a)
+          console.log(aa)
+        },
+      })
+    </script>
+  </body>
 </html>

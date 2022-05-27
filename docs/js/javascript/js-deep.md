@@ -141,7 +141,7 @@ console.log(fun()) // 1
 var a = 1
 var obj = {
   a: 2,
-  b: function() {
+  b: function () {
     return this.a
   }
 }
@@ -214,7 +214,7 @@ var value = 1
 
 var foo = {
   value: 2,
-  bar: function() {
+  bar: function () {
     return this.value
   }
 }
@@ -332,15 +332,15 @@ const p2 = new Promise((resolve, reject) => {
   reject('失败2233')
 })
 
-p2.then('', err => {
+p2.then('', (err) => {
   console.log(err)
   // throw new Error('456') // 输出 errorLo:::: Error: 456
   return new Error('456') // 输出 hahaha Error: 456
 }).then(
-  val => {
+  (val) => {
     console.log('hahaha', val)
   },
-  err => {
+  (err) => {
     console.log('errorLo::::', err)
   }
 )
@@ -348,11 +348,11 @@ p2.then('', err => {
 
 ```js
 axios('/api').then(
-  res => {
+  (res) => {
     throw new Error('异常A')
     // return axios('/api/error') // 这个新的 promise 所产生的异常，then 的第二个参数是捕获不到的
   },
-  err => {
+  (err) => {
     // then 的第二个参数 => catch函数，只能捕获到当前 promise 出现的异常
     // 如果在当前的 promise 中返回了一个新的 promise，并且这个 promise 报错了，这里是无法捕获到的
   }
@@ -360,7 +360,7 @@ axios('/api').then(
 
 axios('/api')
   .then()
-  .catch(err => {
+  .catch((err) => {
     // 而使用这种方法是全都可以捕获到(当然 catch 中又报错了的话那自然是捕获不到的)
   })
 ```
@@ -373,7 +373,7 @@ axios('/api')
 const urls = ['/api/getInfo', '/api/getUser']
 
 // 返回一个 promise 数组
-Promise.all(urls.map(item => axios(item))).then(valList => {
+Promise.all(urls.map((item) => axios(item))).then((valList) => {
   console.log(valList)
 })
 ```
@@ -387,35 +387,33 @@ const timeout = new Promise((_, reject) => {
 })
 
 Promise.race([getInfo, timeout])
-  .then(val => {
+  .then((val) => {
     console.log(val)
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err)
   })
 ```
 
 ## EventLoop
 
-[可以查看 eventloop 过程](https://www.jsv9000.app/)
+eventloop 整体顺序，script 整块代码先执行，微任务，宏任务，浏览器渲染。
 
-**注意：代码中不能有中文**
+[可以查看 eventloop 过程，注意：代码中不能有中文](https://www.jsv9000.app/)
 
 [最后一次搞懂 Event Loop](https://juejin.cn/post/6844903827611598862)
 
 [Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
-
-**在不同的浏览器下，甚至是同一种浏览器的不同版本中，异步任务的执行顺序都会有差异，也就是说他们的优先级并不是完全固定的。**
-
-**注意，只是异步任务的优先级会有所不同，这主要还是各个浏览器的问题。**
-
-**所以 winter 也说了这种题作为面试题极为不合适。**
 
 [学习资料 1](https://juejin.cn/post/6844903827611598862#heading-19)
 
 [学习资料 2](https://juejin.cn/post/6844903553795014663#heading-21)
 
 ### 一、promise
+
+如果在一个 promise 中返回了一个新的 promise，那么被返回的这个 promise 会延后两个微任务之后执行。
+
+promise 的微任务，是在该 promise resolve() 后才会推入微任务队列中的。
 
 #### 2021/11/06 更新：详细的执行过程可以用[链接](https://www.jsv9000.app/)查看
 
@@ -424,36 +422,36 @@ var p1 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then(val => {
+  .then((val) => {
     console.log('then11', val)
     new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then(val => {
+      .then((val) => {
         console.log('then21', val)
         return 'c'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then23', val)
         Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then(val => {
+          .then((val) => {
             console.log('then24', val)
             return 'e'
           })
         return 'f'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then25', val)
         return 'g'
       })
     return 'z'
   })
-  .then(val => {
+  .then((val) => {
     console.log('then12', val)
   })
 
@@ -476,39 +474,39 @@ var p2 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then(val => {
+  .then((val) => {
     console.log('then11', val)
     new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then(val => {
+      .then((val) => {
         console.log('then21', val)
         return 'c'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then23', val)
         return Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then(val => {
+          .then((val) => {
             console.log('then24', val)
             return 'e'
           })
       })
-      .then(val => {
+      .then((val) => {
         console.log('then25', val)
         return 'f'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then26', val)
         return 'g'
       })
     return 'z'
   })
-  .then(val => {
+  .then((val) => {
     console.log('then12', val)
   })
 
@@ -535,38 +533,38 @@ var p2 = new Promise((resolve, reject) => {
   console.log('promise1')
   resolve('a')
 })
-  .then(val => {
+  .then((val) => {
     console.log('then11', val)
     return new Promise((resolve, reject) => {
       console.log('promise2')
       resolve('b')
     })
-      .then(val => {
+      .then((val) => {
         console.log('then21', val)
         return 'c'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then23', val)
         return Promise.resolve()
           .then(() => {
             console.log('then23里的 then')
             return 'd'
           })
-          .then(val => {
+          .then((val) => {
             console.log('then24', val)
             return 'e'
           })
       })
-      .then(val => {
+      .then((val) => {
         console.log('then25', val)
         return 'f'
       })
-      .then(val => {
+      .then((val) => {
         console.log('then26', val)
         return 'g'
       })
   })
-  .then(val => {
+  .then((val) => {
     console.log('then12', val)
   })
 
@@ -623,10 +621,6 @@ var 声明的函数(引用类型)也在堆中。这是正常的，因为 window 
 
 [资料 2](https://juejin.cn/post/6844903997615128583#comment)
 
-## promise
-
-如果在一个 promise 中返回了一个新的 promise，那么被返回的这个 promise 会延后两个微任务之后执行。
-
 ## 页面加载事件
 
 document.DOMContentLoaded: 事件在初始 HTML 文档完全加载和解析之后触发，而不需要等待样式表、图像和子帧完成加载。
@@ -651,7 +645,7 @@ window.load: 当整个页面已经加载时，包括所有相关资源(如样式
 reduce 中会有很奇怪的表现。
 
 ```js
-const reduceLoop = async _ => {
+const reduceLoop = async (_) => {
   console.log('Start')
 
   const sum = await fruitsToGet.reduce(async (sum, fruit) => {
@@ -677,7 +671,7 @@ reduceLoop()
 // 据说这种写法会卡着很慢，但在最新版 chrome 中没有体现。
 //  This happens because reduceLoop needs to wait for the promisedSum to be completed for each iteration.
 // 这是因为 reduceLoop 需要等待每个迭代完成承诺的和。
-const reduceLoop = async _ => {
+const reduceLoop = async (_) => {
   console.log('Start')
 
   const sum = await fruitsToGet.reduce(async (promisedSum, fruit) => {
@@ -691,7 +685,7 @@ const reduceLoop = async _ => {
   console.log('End')
 }
 // 这种比上面一种会执行快一点，不会卡顿很久，但是也会有问题。所以最好的方式还是使用基本循环。
-const reduceLoop = async _ => {
+const reduceLoop = async (_) => {
   console.log('Start')
 
   const sum = await fruitsToGet.reduce(async (promisedSum, fruit) => {
@@ -730,14 +724,14 @@ const fruitBasket = {
 
 const fruitsToGet = ['apple', 'grape', 'pear']
 
-const getNumFruit = fruit => {
+const getNumFruit = (fruit) => {
   return fruitBasket[fruit]
 }
 
-const forEachLoop = _ => {
+const forEachLoop = (_) => {
   console.log('Start')
 
-  fruitsToGet.forEach(async fruit => {
+  fruitsToGet.forEach(async (fruit) => {
     const numFruit = await getNumFruit(fruit)
     console.log(numFruit)
   })
@@ -754,10 +748,10 @@ const forEachLoop = _ => {
 map：总是返回 promise 组成的数组。可以根据这种行为，在外层用 Promise.all() 来包裹，并行执行；
 
 ```js
-const mapLoop = async _ => {
+const mapLoop = async (_) => {
   console.log('Start')
 
-  const numFruits = await fruitsToGet.map(async fruit => {
+  const numFruits = await fruitsToGet.map(async (fruit) => {
     const numFruit = await getNumFruit(fruit)
     return numFruit
   })
@@ -771,10 +765,10 @@ const mapLoop = async _ => {
 // '[Promise, Promise, Promise]'
 // 'End'
 
-const mapLoop = async _ => {
+const mapLoop = async (_) => {
   console.log('Start')
 
-  const promises = fruitsToGet.map(async fruit => {
+  const promises = fruitsToGet.map(async (fruit) => {
     const numFruit = await getNumFruit(fruit)
     return numFruit
   })
@@ -789,9 +783,9 @@ const mapLoop = async _ => {
 // '[27, 0, 14]'
 // 'End'
 
-const mapLoop = async _ => {
+const mapLoop = async (_) => {
   // ...
-  const promises = fruitsToGet.map(async fruit => {
+  const promises = fruitsToGet.map(async (fruit) => {
     const numFruit = await getNumFruit(fruit)
     // Adds onn fruits before returning
     return numFruit + 100
@@ -807,10 +801,10 @@ const mapLoop = async _ => {
 filter：总是不能获得期望的效果，因为 promise 是一个“真值”，在 filter 的判断下总是会返回 true；
 
 ```js
-const filterLoop = async _ => {
+const filterLoop = async (_) => {
   console.log('Start')
 
-  const moreThan20 = await fruitsToGet.filter(async fruit => {
+  const moreThan20 = await fruitsToGet.filter(async (fruit) => {
     const numFruit = await getNumFruit(fruit)
     return numFruit > 20
   })
@@ -827,10 +821,10 @@ const filterLoop = async _ => {
 const filtered = array.filter(() => true)
 
 // 正确使用 filter 需要与 map 搭配
-const filterLoop = async _ => {
+const filterLoop = async (_) => {
   console.log('Start')
   // 先用 map 包装
-  const promises = await fruitsToGet.map(fruit => getNumFruit(fruit))
+  const promises = await fruitsToGet.map((fruit) => getNumFruit(fruit))
   // 在用 Promise.all 求值
   const numFruits = await Promise.all(promises)
   // 最后对值进行过滤

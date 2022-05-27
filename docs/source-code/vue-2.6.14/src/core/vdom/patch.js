@@ -221,7 +221,8 @@ export function createPatchFunction(backend) {
         }
       }
 
-      // 创建 dom 元素
+      // 创建 dom 元素，挂载到真实 vnode.elm 上
+      // 占位 vnode 的 elm 在 createComponent 中挂载
       vnode.elm = vnode.ns
         ? // createElementNS 处理 svg
           nodeOps.createElementNS(vnode.ns, tag)
@@ -277,7 +278,7 @@ export function createPatchFunction(backend) {
       insert(parentElm, vnode.elm, refElm)
     }
   }
-  // 内部通过调用 init 钩子来创建组件实例
+  // 内部通过调用 init 钩子来创建组件实例，只有占位 vnode 会执行内部代码，非占位 vnode 会直接 return
   function createComponent(vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     // 占位 vnode 才会有 hook，组件真实 vnode 没有 hook，所以不会去调用 init
@@ -285,18 +286,23 @@ export function createPatchFunction(backend) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       if (isDef((i = i.hook)) && isDef((i = i.init))) {
         // 获取到组件 vnode init 钩子并调用，创建组件实例，执行组件的 _init，执行 mount，但不会真正的挂载。
+        // hydrating 真的会影响挂载吗？存疑
+        // 这里传递 false 是考虑两种情况：
+        // 1. 父级是普通 dom 元素，子级是组件的情况，对于子级组件来说此时的 parentElm 是存在的
+        // 2. 更新流程，此时 vnode 已经有 elm 了
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
-      // 组件真实 vnode 由于不会去执行 init，所以不会有 vnode.componentInstance 属性，所以这里也不会调用，返回 false
+      // 组件真实 vnode 由于不会去执行组件 vnode 钩子 init，所以不会有 vnode.componentInstance 属性，所以这里也不会调用，返回 false
       // 组件真实 vnode 的 tag 是 html 的标签。
       if (isDef(vnode.componentInstance)) {
-        // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的 create 钩子函数，将 insert 钩子函数存入 insertedVnodeQueue 队列中)
+        // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的 create 钩子函数，将 insert 钩子函数存入 insertedVnodeQueue 队列中)。
+        // 将创建好的 vm.$el 赋值给占位 vnode.elm，这里的流程是，真实 vnode 创建好 elm，在 patch 中返回，挂载到 vm.$el 上，然后 i() 结束，这边就能获取到 elm 给占位 vnode 挂载。
         initComponent(vnode, insertedVnodeQueue)
-        // 这里的插入都是将组件真实 vnode.elm 插入到父组件的 html 中
+        // 这里的插入都是将组件占位 vnode.elm 插入到父组件的 html 中
         insert(parentElm, vnode.elm, refElm)
         // keep-alive 缓存的组件会进入到这里
         if (isTrue(isReactivated)) {
@@ -306,7 +312,8 @@ export function createPatchFunction(backend) {
       }
     }
   }
-  // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的 create 钩子函数，将 insert 钩子函数存入 insertedVnodeQueue 队列中)
+  // 调用钩子函数(vnode 的钩子函数初始化属性/事件/样式等，组件的 create 钩子函数，将 insert 钩子函数存入 insertedVnodeQueue 队列中)。
+  // 将创建好的 vm.$el 赋值给占位 vnode.elm，这里的流程是，真实 vnode 创建好 elm，在 patch 中返回，挂载到 vm.$el 上，然后 i() 结束，这边就能获取到 elm 给占位 vnode 挂载。
   function initComponent(vnode, insertedVnodeQueue) {
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(
@@ -840,7 +847,8 @@ export function createPatchFunction(backend) {
 
     let i
     const data = vnode.data
-    // 获取组件 vnode 的 prepatch 钩子函数，如果存在则调用
+    // 获取组件占位 vnode 的 prepatch 钩子函数，如果存在则调用，更新子组件，强制重新渲染 slots
+    // keepAlive 通过强制重新渲染 slot，让切换的 components 的渲染 watcher 进入 queue，进行 patch 更新。
     if (isDef(data) && isDef((i = data.hook)) && isDef((i = i.prepatch))) {
       i(oldVnode, vnode)
     }
@@ -1070,7 +1078,7 @@ export function createPatchFunction(backend) {
       // empty mount (likely as component), create new root element
       // 标记这种节点已经创建好了，dom元素也创建好了，但是还没挂载到dom树上，仅仅只存在内存中
       isInitialPatch = true
-      // 根据 vnode 创建 dom 元素，由于这里没有传入 parentElm 所以不会挂载
+      // 根据组件真实 vnode 创建 dom 元素，由于这里没有传入 parentElm 所以不会挂载
       createElm(vnode, insertedVnodeQueue)
     } else {
       // 实例(也就是普通 html 元素)的首次挂载和派发更新渲染都会走到 else 里面，

@@ -4,7 +4,7 @@ sidebar: auto
 
 # js 手写
 
-## 深拷贝
+## 深拷贝 cloneDeep
 
 先写一个判断数据类型的方法
 

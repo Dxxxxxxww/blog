@@ -119,6 +119,7 @@ export default {
     // 这里是一个 LRU 的思想，Least Recently Used 的缩写，即最近最少使用，
     // 是一种常用的页面置换算法，选择最近最久未使用的页面予以淘汰
     this.keys = []
+    console.log('keepAlive created')
   },
 
   destroyed () {
@@ -126,6 +127,7 @@ export default {
     for (const key in this.cache) {
       pruneCacheEntry(this.cache, key, this.keys)
     }
+    console.log('keepAlive destroyed')
   },
 
   mounted () {
@@ -137,6 +139,7 @@ export default {
     this.$watch('exclude', val => {
       pruneCache(this, name => !matches(val, name))
     })
+    console.log('keepAlive mounted')
   },
 
   updated () {
@@ -151,7 +154,8 @@ export default {
     // 从子级 vnode 中拿到第一个组件占位 vnode
     const vnode: VNode = getFirstComponentChild(slot)
     // 获取组件 vnode 的组件选项
-    const componentOptions: ?VNodeComponentOptions = vnode && vnode.componentOptions
+    const componentOptions: ?VNodeComponentOptions =
+      vnode && vnode.componentOptions
     if (componentOptions) {
       // check pattern
       const name: ?string = getComponentName(componentOptions)
@@ -168,21 +172,23 @@ export default {
       // 开始缓存 vnode
       const { cache, keys } = this
       // 如果 key 没有定义，则通过 cid + tag 来拼接
-      const key: ?string = vnode.key == null
-        // same constructor may get registered as different local components
-        // 同一个构造函数可以注册为不同的本地组件
-        // so cid alone is not enough (#3269)
-        // 所以只有 cid 是不够的
-        ? componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
-        : vnode.key
+      const key: ?string =
+        vnode.key == null
+          ? // same constructor may get registered as different local components
+            // 同一个构造函数可以注册为不同的本地组件
+            // so cid alone is not enough (#3269)
+            // 所以只有 cid 是不够的
+            componentOptions.Ctor.cid +
+            (componentOptions.tag ? `::${componentOptions.tag}` : '')
+          : vnode.key
       // key 对应的组件 vnode 已经被缓存了，则从缓存中取出
       if (cache[key]) {
         // 通过 vnode.componentInstance 获取组件实例
         vnode.componentInstance = cache[key].componentInstance
         // make current key freshest
         // 保证当前的 key 是最新的
-        // 将使用过的 key 放到队列末尾，表示最近使用过 LRU
-        // 保证队列越前面，就越是不常访问的
+        // 将使用过的 key 放到队列末尾，表示最近使用过。 LRU 的思想，越久远越不常用的先移除。
+        // 保证队列越前面，就越是不常访问的。
         remove(keys, key)
         keys.push(key)
       } else {
@@ -194,8 +200,8 @@ export default {
       // 标志当前 vnode 已经缓存了
       vnode.data.keepAlive = true
     }
-    // 返回子组件占位 vnode， keep-alive render 结束后，
-    // 会将 keep-alive 的占位 vnode 设置为子组件占位 vnode 的父级
+    // 返回子组件占位 vnode，keep-alive 组件的真实 vnode 就是子组件的占位 vnode
+    // keep-alive render 结束后，会将 keep-alive 的占位 vnode 设置为子组件占位 vnode 的父级
     return vnode || (slot && slot[0])
   }
 }

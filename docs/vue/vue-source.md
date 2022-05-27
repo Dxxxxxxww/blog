@@ -154,3 +154,23 @@ vm.$vnode 指向占位 node  vm.$options.\_parentVnode 是占位 vnode
 指令也会有 bind，insert，等等选项钩子。在生成 patch 的函数定义的地方，可以找到 directives 的模块钩子一共有三个：create，update，destroy。这三个模块钩子会在组件执行相应的操作(挂载，更新，销毁)时，触发模块的钩子函数时执行(在 patch 中搜索 cbs 可以找到)，并在模块钩子中去执行我们定义的指令选项钩子函数。
 
 cbs: 模块钩子，data.hook 组件占位 vnode 钩子(snabbdom 钩子)
+
+### keep-alive 的组件真实 vnode.elm 是怎么挂到 keep-alive 占位 vnode 上的
+
+keep-alive 包裹的子组件(以下称 A)
+
+在父级 createChildren 遇到了 keep-alive 占位 vnode，就会去创建 keep-alive 实例。
+
+keep-alive 初始化实例，调用 mount 进入 \_update 后，此时的 vm 实例指向 keep-alive，render 生成的真实 vnode 其实是 A 的占位 vnode 。
+
+通过 patch/createElm 中 createChildren 去创建 A 组件的 dom 元素时。由于 A 此时是一个占位 vnode，所以就会去走 patch/createComponent 流程。createComponent 就会去走调用 (i = init)：
+
+1. 创建 A 真实 vnode。
+2. 调用 mount。
+   a. 去走 patch，进入 createElm，创建了 dom 并挂载到真实 vnode.elm 上，createElm 结束。patch 返回，将 vnode.elm 返回给 A 组件实例 vm.$el。真实 vnode 流程结束（i 函数调用结束）。回到 A 占位 vnode patch/createComponent 流程中。这时候会在 initComponent 中，通过 vnode.elm = vnode.componentInstance.$el，获取到 vm.$el 并挂载到 A 占位 vnode 上，**这时候真实 vnode 将 elm 传递给占位 vnode 的流程就结束了。**最后 patch/createComponent 结束，返回 true 到 createElm，createElm 结束，返回到 patch，最后又把占位 vnode.elm 返回给 vm.$el 。
+
+所以实际上 vm.$el 经历了两次赋值，一次是真实 vnode 进行赋值，这是为了传递给占位 vnode 用的。第二次赋值对于普通组件确实是多余了，对 keepAlive 正好使用。
+
+A 作为占位 vnode 流程结束，但是又因为 A 占位 vnode 就是 keepAlive 的真实 vnode，所以在 A 占位将 vnode.elm 返回给 keepAlive 实例 vm.$el 上，A 占位 patch 流程结束。回到 keepAlive 作为占位 vnode 的 patch/createComponent 流程中。这个时候，keepAlive 就可以通过调用 initComponent，把 componentInstance.$el 挂载到占位 vnode.elm 上，最后通过 insert 插入到父级 dom 上。
+
+### hydrating 真的会影响挂载吗

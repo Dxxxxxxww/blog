@@ -40,7 +40,7 @@ import {
 const componentVNodeHooks = {
   // 在 patch 时调用
   init(vnode: VNodeWithData, hydrating: boolean): ?boolean {
-    // 对于 keepAlive 缓存的组件， vnode.componentInstance 会在 keepAlive 的 render 调用时添加，
+    // 对于 keepAlive 缓存的组件， vnode.componentInstance 会在 keepAlive 的 render 调用时从缓存中获取，
     // 并且 vnode.data.keepAlive 也会被设置为 true，从而跳过了创建组件实例，再去 patch 的一系列流程。
     if (
       vnode.componentInstance &&
@@ -52,7 +52,7 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
-      // 创建组件实例，并挂载到 vnode 上
+      // 创建组件实例，并挂载到占位 vnode 上
       const child = (vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         // 激活的实例，它其实就是当前组件对象的父组件对象
@@ -70,6 +70,7 @@ const componentVNodeHooks = {
   prepatch(oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = (vnode.componentInstance = oldVnode.componentInstance)
+    // 更新子组件，强制重新渲染 slots
     updateChildComponent(
       child,
       options.propsData, // updated props
@@ -81,6 +82,11 @@ const componentVNodeHooks = {
   // 组件 vnode insert 钩子函数的主要作用就是触发组件的 mounted 生命周期钩子
   // insert 是在 patch 的最后通过 invokeInsertHook 触发
   insert(vnode: MountedComponentVNode) {
+    // 占位 vnode 的 context 是其父级组件实例，context 在 initRender 中确立，initRender 在 _init 中调用，
+    // 只有创建组件实例时，才会修改 context。所以每个占位 vnode 的 context 都是父级组件实例
+    // 而组件 vnode 钩子只有占位 vnode 才有，
+    // 所以对于占位 vnode 来说 context, componentInstance 一定不会相等。
+    // context 是父级组件实例，componentInstance 是自身组件实例。
     const { context, componentInstance } = vnode
     if (!componentInstance._isMounted) {
       componentInstance._isMounted = true
@@ -88,8 +94,8 @@ const componentVNodeHooks = {
       callHook(componentInstance, 'mounted')
     }
     if (vnode.data.keepAlive) {
-      // 对于 keepAlive 缓存的组件，判断是否挂载
-      // 已经挂载过的 keepAlive 的组件会在 nextTick ，flushSchedulerQueue 中调用。
+      // 对于 keepAlive 缓存的组件，判断父级是否已经挂载，
+      // 如果父组件已经挂载，keepAlive 的组件实例会在 nextTick ，flushSchedulerQueue 中调用。
       if (context._isMounted) {
         // vue-router#1212
         // During updates, a kept-alive component's child components may
@@ -102,7 +108,7 @@ const componentVNodeHooks = {
         // 在 flushSchedulerQueue 调用 activateChildComponent 执行 activated 生命周期钩子函数
         queueActivatedComponent(componentInstance)
       } else {
-        // keepAlive 过的组件首次渲染会直接执行 activated 生命周期钩子函数
+        // keepAlive 的组件首次渲染会直接执行 activated 生命周期钩子函数
         // 递归调用组件及子组件的 activated 生命周期钩子函数
         activateChildComponent(componentInstance, true /* direct */)
       }
@@ -135,6 +141,9 @@ export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   // 就是 h 函数的第二个对象参数
   data: ?VNodeData,
+  // 占位 vnode 的 context 是其父级组件实例，context 在 initRender 中确立，initRender 在 _init 中调用，
+  // 只有创建组件实例时，才会修改 context。所以每个占位 vnode 的 context 都是父级组件实例。
+  // 真实 vnode 的 context 是自身组件实例
   context: Component,
   children: ?Array<VNode>,
   tag?: string
