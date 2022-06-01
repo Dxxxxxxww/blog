@@ -689,6 +689,7 @@ export function createPatchFunction(backend) {
         // 如果没有定义key，则通过 sameVnode 进行节点对比。这里就体现出使用 key 的性能更好
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
+          // 内部通过 sameVnode 来判断
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
         // 旧节点列表中找不到对应的新节点，说明是新增的，直接创建对应的dom，并插入到 旧开始节点 oldStartVnode.elm 之前
         if (isUndef(idxInOld)) {
@@ -765,7 +766,7 @@ export function createPatchFunction(backend) {
         newEndIdx,
         insertedVnodeQueue
       )
-      // 新节点已经遍历完了，而旧节点还没遍历完。旧子节点更多的情况 新旧节点一样多的情况
+      // 新节点已经遍历完了，而旧节点还没遍历完。旧子节点更多的情况。或者是命中 else 逻辑
     } else if (newStartIdx > newEndIdx) {
       // 将多余的老节点批量删除
       removeVnodes(oldCh, oldStartIdx, oldEndIdx)

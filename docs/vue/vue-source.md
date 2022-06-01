@@ -45,7 +45,7 @@ function mergeField(key) {
 
 ### 1. 组件真实 dom 是怎么挂载的？
 
-在占位 vnode 的 init 钩子函数中，创建完组件实例后，通过 insert 挂载。
+在组件占位 vnode 的 init 钩子函数中，创建完组件实例后，通过 insert 挂载。
 
 ### 2. 组件占位 vnode 是在哪个环节去除的？
 
@@ -174,3 +174,21 @@ keep-alive 初始化实例，调用 mount 进入 \_update 后，此时的 vm 实
 A 作为占位 vnode 流程结束，但是又因为 A 占位 vnode 就是 keepAlive 的真实 vnode，所以在 A 占位将 vnode.elm 返回给 keepAlive 实例 vm.$el 上，A 占位 patch 流程结束。回到 keepAlive 作为占位 vnode 的 patch/createComponent 流程中。这个时候，keepAlive 就可以通过调用 initComponent，把 componentInstance.$el 挂载到占位 vnode.elm 上，最后通过 insert 插入到父级 dom 上。
 
 ### hydrating 真的会影响挂载吗
+
+### 组件 diff
+
+一、组件 v-if v-else diff 过程，code 在 19-diff-component/index.html。
+
+在父级 div 因为 sameVnode 判断相同，所以通过 patchVnode 进入了 updateChildren 的流程，然后因为节点不匹配，进入了 else 判断分支中，又因为 B 组件在 keyMap 中找不到对应的 index，所以会直接进行 createElm。最后因为 A 组件是在 updateChildren 中命中旧子节点更多的情况，将 A 移除。这里是在父节点的维度，移除了子节点 A。
+
+patchVnode 结束回到 patch 中。由于是 sameVnode 去了 patchVnode 分支，就不会进到 else 里面进行 createElm 和 removeVnodes 操作，直接进行 invokeInsertHook。
+
+明明新旧节点的长度一样，为什么会命中旧子节点更多的情况？
+
+因为进入 updateChildren 的 else 分支，通过遍历 keyMap 去找节点，结束后会将新起始下标右移，导致新节点起始下标超过新节点结束下标。导致命中。
+
+二、组件 component 内置组件的 diff 过程，code 在 19-diff-component/second.html。
+
+流程与上面 1 中相同。
+
+### props 在 diff 的哪个阶段修改

@@ -68,9 +68,7 @@
         // 动态组件的替换不会走 patchVnode 的逻辑
         template: `
           <div>
-            <A v-if="comp === 'A'"></A>
-            <B v-else></B>
-<!--            <component :is="comp"></component>-->
+            <component :is="comp"></component>
             <button @click="change">click</button>
           </div>
         `,
