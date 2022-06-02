@@ -210,7 +210,7 @@ export function createComponent (
   }
 
   // extract props
-  // 获取 prosData 相关 非重点
+  // 通过 data 中的 props attr 获取 prosData 相关 非重点
   const propsData = extractPropsFromVNodeData(data, Ctor, tag)
 
   // functional component

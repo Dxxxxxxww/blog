@@ -397,6 +397,16 @@ Promise.race([getInfo, timeout])
 
 ## EventLoop
 
+更新，这个文档更好
+
+![image](/js/async-promise.png)
+
+[async 搜索由于因为](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/7)
+
+[这种输出题照着这两个文章学就行了](https://juejin.cn/post/6945319439772434469)
+
+---
+
 eventloop 整体顺序，script 整块代码先执行，微任务，宏任务，浏览器渲染。
 
 [可以查看 eventloop 过程，注意：代码中不能有中文](https://www.jsv9000.app/)
@@ -581,6 +591,12 @@ var p2 = new Promise((resolve, reject) => {
 // then12 g
 // 同理，then12 变为最后一轮
 ```
+
+### 二、async
+
+async 其实就是 promise 和 Generator 合并实现。
+
+[async 实现原理](https://es6.ruanyifeng.com/#docs/async#async-%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86)
 
 ## 闭包中的变量存储在哪里？
 

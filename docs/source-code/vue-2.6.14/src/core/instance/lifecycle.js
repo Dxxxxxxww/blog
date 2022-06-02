@@ -334,11 +334,16 @@ export function updateChildComponent (
   // 更新 props，props 的变动会让子组件自动触发子组件的渲染 watcher
   if (propsData && vm.$options.props) {
     toggleObserving(false)
+    // vm._props 在 initState 中的 initProps 进行响应式处理
+    // 这里的 props 是子级组件自身的
     const props = vm._props
     const propKeys = vm.$options._propKeys || []
     for (let i = 0; i < propKeys.length; i++) {
       const key = propKeys[i]
       const propOptions: any = vm.$options.props // wtf flow?
+      // props 校验 求值，在 initProps 中也有使用。
+      // 如果 props 更新了，在这里重新赋值，会触发 setter，进行 dep.notify()
+      // 这里的 propsData 是父级组件传递过来的
       props[key] = validateProp(key, propOptions, propsData, vm)
     }
     toggleObserving(true)

@@ -15,9 +15,9 @@ export default class VNode {
   ns: string | void;
   context: Component | void; // rendered in this component's scope
   key: string | number | void;
-  // 表示组件的options选项
+  // 表示组件的 options 选项，占位 vnode 才会有
   componentOptions: VNodeComponentOptions | void;
-  // 表示当前组件的实例
+  // 表示当前组件的实例，占位 vnode 才会有
   componentInstance: Component | void; // component instance
   parent: VNode | void; // component placeholder node
 

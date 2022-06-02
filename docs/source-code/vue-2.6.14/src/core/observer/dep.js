@@ -14,8 +14,8 @@ export default class Dep {
   // 静态属性，Watcher 对象
   static target: ?Watcher;
   // dep 实例 id 自增计数，每创建一个 dep 就会自增，由于是先赋值后自增，所以 dep 的id 初始为0
-  // $attrs 使用defineReactive定义，这时候会生成第一个dep，id为0,
-  // $listeners 使用defineReactive定义，这时候会生成第一个dep，id为1,
+  // 在 initRender 中 $attrs 使用 defineReactive 定义，这时候会生成第一个dep，id为0,
+  // 在 initRender 中 $listeners 使用 defineReactive 定义，这时候会生成第一个dep，id为1,
   // 所以对于 data 的dep，其实是从 id === 2 开始的
   // 所以一般来说，对象的 dep 是偶数，key 是基数。并且深度优先
   id: number;

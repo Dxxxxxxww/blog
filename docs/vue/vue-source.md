@@ -192,3 +192,54 @@ patchVnode 结束回到 patch 中。由于是 sameVnode 去了 patchVnode 分支
 流程与上面 1 中相同。
 
 ### props 在 diff 的哪个阶段修改
+
+例子在 example/16-component/second.html
+
+当父级组件修改 state 时，触发 dep.notify() 更新，遍历去调用 watcher.update()，将 computed watcher 的 dirty 置为 true，将其他两种 watcher 调用 queueWatcher() 推入 watcher queue。**然后在 nextTick() 中执行**
+flushSchedulerQueue()，调用 watcher.run()，执行父级组件的 render watcher。
+
+在父级组件更新过程中，进入 patchVnode，调用了 updateChildren，去进行子级的比较更新，由于 sameVnode 判断新旧 vnode 相同，进入子级的 patchVnode，这时候会去调用子级组件的占位 vnode 的 prepatch 钩子函数。（此时，通过 render 生成的新的子级组件占位 vnode.componentOptions.propsData 中 a 已经是 2 了）
+
+**prepatch 中调用 updateChildComponent，获取到最新的 props 值，更新给子级组件的 props**，这时候又会触发子级组件的派发更新过程，会在下一个 nextTick 中去执行子级的 render watcher（这就是子组件的更新过程）。
+
+#### 为什么 props 变化了 新旧 vnode 依然还是相同 vnode？
+
+这是因为 sameVnode 不会去比对 props。不会去比对深层值的变化。
+
+```js
+function sameVnode(a, b) {
+  return (
+    // key 是否相同
+    a.key === b.key &&
+    // asyncFactory：异步组件工厂函数
+    a.asyncFactory === b.asyncFactory && // 标签是否相同
+    ((a.tag === b.tag &&
+      // 是否都是注释节点
+      a.isComment === b.isComment &&
+      // 是否都定义了 data
+      isDef(a.data) === isDef(b.data) &&
+      // 是否是相同的输入类型
+      sameInputType(a, b)) ||
+      (isTrue(a.isAsyncPlaceholder) && isUndef(b.asyncFactory.error)))
+  )
+}
+```
+
+sameVnode 的对比标准：
+
+1. key 是否相同。
+2. 是否都是异步组件工厂函数。
+3. （标签相同，并且是否都是注释节点，并且是否都定义了 data，并且是否是相同的输入类型）或者（是否是异步占位节点，并且一部组件工厂函数没有报错）
+
+### 各个 id
+
+watcher 的 id 是从 1 开始的。
+
+组件的 cid 是从 1 开始的，因为 Vue 构造函数的 cid 是 1
+
+dep 的 id 初始为 0。
+在 initRender 中 $attrs 使用 defineReactive 定义，这时候会生成第一个 dep，id 为 0。
+在 initRender 中 $listeners 使用 defineReactive 定义，这时候会生成第一个 dep，id 为 1。
+所以对于 data 的 dep，其实是从 id === 2 开始的。
+
+vm 实例 \_uid，从 0 开始，根实例\_uid 是 0。
