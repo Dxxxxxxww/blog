@@ -467,7 +467,9 @@ export function processElement (
   )
 
   processRef(element)
+  // 处理插槽实体
   processSlotContent(element)
+  // 处理 <slot/> 标签，获取插槽名并存储到 el.slotName 上
   processSlotOutlet(element)
   processComponent(element)
   for (let i = 0; i < transforms.length; i++) {
@@ -628,8 +630,12 @@ function processOnce (el) {
 
 // handle content being passed to a component as slot,
 // e.g. <template slot="xxx">, <div slot-scope="xxx">
+// 处理插槽实体
+// 注意 v-slot 只能添加在 <template> 上
+// 只有一种例外情况，当被提供的内容只有默认插槽时，组件的标签才可以被当作插槽的模板来使用。这样我们就可以把 v-slot 直接用在组件上
 function processSlotContent (el) {
   let slotScope
+  // 给作用域插槽使用
   if (el.tag === 'template') {
     slotScope = getAndRemoveAttr(el, 'scope')
     /* istanbul ignore if */
@@ -658,7 +664,8 @@ function processSlotContent (el) {
     el.slotScope = slotScope
   }
 
-  // slot="xxx"
+  // 2.6之后的语法 v-slot:[dynamicSlotName] v-slot:header v-slot:default 2.6 以前的语法 slot="xxx"
+  // getBindingAttr：获取动态绑定的属性 <template v-slot:xxx ></template>
   const slotTarget = getBindingAttr(el, 'slot')
   if (slotTarget) {
     el.slotTarget = slotTarget === '""' ? '"default"' : slotTarget
@@ -763,6 +770,7 @@ function getSlotName (binding) {
 }
 
 // handle <slot/> outlets
+// 处理 <slot/> 标签，获取插槽名并存储到 el.slotName 上
 function processSlotOutlet (el) {
   if (el.tag === 'slot') {
     el.slotName = getBindingAttr(el, 'name')

@@ -161,17 +161,20 @@ export function getRawBindingAttr (
     el.rawAttrsMap['v-bind:' + name] ||
     el.rawAttrsMap[name]
 }
-
+// 获取动态/静态绑定的属性
 export function getBindingAttr (
   el: ASTElement,
   name: string,
   getStatic?: boolean
 ): ?string {
+  // 获取动态绑定的属性 <div :name="abc" /> 这里的 abc 是 data 中定义的属性
   const dynamicValue =
     getAndRemoveAttr(el, ':' + name) ||
     getAndRemoveAttr(el, 'v-bind:' + name)
+
   if (dynamicValue != null) {
     return parseFilters(dynamicValue)
+  // 静态属性 <div name="abc" /> 这里的 abc 是字符串 abc
   } else if (getStatic !== false) {
     const staticValue = getAndRemoveAttr(el, name)
     if (staticValue != null) {

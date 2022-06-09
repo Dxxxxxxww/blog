@@ -1,30 +1,35 @@
-// 数组拍平
-function flat(array) {
-  // 第一种
-  // let res = []
-  // for (const item of array) {
-  //   if (Array.isArray(item)) {
-  //     res = res.concat(flat(item))
-  //   } else {
-  //     res.push(item)
-  //   }
-  // }
-  // return res
-  return array.reduce((res, item) => {
-    // 第二种
-    // if (Array.isArray(item)) {
-    //   res = res.concat(flat(item))
-    // } else {
-    //   res.push(item)
-    // }
-    // return res
-    // 第三种
-    return Array.isArray(item) ? res.concat(flat(item)) : res.concat(item)
-  }, [])
+let list = [
+  { id: 1, name: '部门 A', parentId: 0 },
+  { id: 2, name: '部门 B', parentId: 0 },
+  { id: 3, name: '部门 C', parentId: 1 },
+  { id: 4, name: '部门 D', parentId: 1 },
+  { id: 5, name: '部门 E', parentId: 2 },
+  { id: 6, name: '部门 F', parentId: 3 },
+  { id: 7, name: '部门 G', parentId: 2 },
+  { id: 8, name: '部门 H', parentId: 4 }
+]
+
+function convert(list) {
+  const _map = {}
+  const res = []
+  list.forEach((item) => {
+    _map[item.id] = item
+  })
+
+  list.forEach((item) => {
+    if (item.parentId === 0) {
+      res.push(item)
+    } else {
+      const parentItem = _map[item.parentId]
+      if (parentItem) {
+        parentItem.children = parentItem.children ?? []
+        parentItem.children.push(item)
+      }
+    }
+  })
+
+  return res
 }
 
-const arr = [1, 2, 3, [4, 5, [6]]]
-
-console.log(flat(arr))
-
-// https://juejin.cn/post/6844904025993773063#heading-9
+const result = convert(list)
+console.log(result);

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>keepAlive</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="../../dist/vue.js"></script>
+    <script>
+      Vue.component('A', {
+        template: `<div>
+        <slot name="header"></slot>
+        <slot>默认插槽</slot>
+        <slot name="footer">默认插槽</slot>
+        </div>`,
+        data() {
+          return {
+            label2: `A`,
+          }
+        },
+        created() {
+          console.log('A created')
+        },
+        mounted() {
+          console.log('A mounted')
+        },
+        activated() {
+          console.log('A activated')
+        },
+        deactivated() {
+          console.log('A deactivated')
+        },
+        beforeDestroy() {
+          console.log('A beforeDestroy')
+        },
+        destroyed() {
+          console.log('A destroyed')
+        },
+      })
+
+      const vm = new Vue({
+        el: '#app',
+        // component 不会生成占位 vnode ，直接就是当前 is 对应组件的占位 vnode
+        // 编译成 render， _c(comp, { tag: 'component' })
+        // 这里的 comp 就是 'A'/'B'，会额外传递一个 { tag: 'component' } 参数。
+        // 动态组件的替换不会走 patchVnode 的逻辑
+        template: `
+          <div>
+            <A>
+              <template v-slot:header>
+                <h1>我是标题</h1>
+              </template>
+              <template v-slot:default>
+                <h2>我是内容</h2>
+              </template>
+              <template v-slot:footer>
+                <h3>我是末尾</h3>
+              </template>
+            </A>
+          </div>
+        `,
+        data() {
+          return {
+            comp: 'A',
+          }
+        },
+      })
+    </script>
+  </body>
+</html>
