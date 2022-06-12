@@ -42,8 +42,6 @@ function cloneDeep(target, map = new WeakMap()) {
 }
 // 2次遍历的方法
 function convert2(list) {
-  // 深拷贝一份 list
-  list = cloneDeep(list)
   const _map = {}
   const res = []
   list.forEach((item) => {
@@ -70,8 +68,6 @@ function convert2(list) {
 }
 // 单次遍历的方法
 function convert(list) {
-  // 深拷贝一份 list
-  list = cloneDeep(list)
   // 存储父级的 map
   const _map = {}
   const res = []
@@ -79,7 +75,7 @@ function convert(list) {
     if (!_map[item.id]) {
       _map[item.id] = item
     } else {
-      // 如果已经有了，可能是之前的循环时将父级存入的
+      // 如果已经有了，可能是之前的循环时将父级存入的假的，把它变成真的
       _map[item.id].name = item.name
       _map[item.id].parentId = item.parentId
       // item = _map[item.id]
@@ -89,6 +85,7 @@ function convert(list) {
     } else {
       const parentItem = _map[item.parentId]
       if (!parentItem) {
+        // 取不到就先赋值一个假的
         _map[item.parentId] = {
           id: item.parentId
         }

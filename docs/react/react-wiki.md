@@ -70,3 +70,58 @@ export function memo<Props>(
     return elementType;
 }
 ```
+
+### 受控与非受控组件
+
+非受控组件：表单数据都是交由 dom 元素自身去管理的。特点是数据在需要时获取（不像 state 一样随时可以获取）。
+
+```jsx
+function App() {
+    const userInput = useRef();
+    function handleSubmit() {
+        // 值是从 input 标签中获取的
+        const username = userInput.current.value
+    }
+    return <form onSubmit={handleSubmit}>
+        <input type="text" ref={userInput}/>
+        <input type="submit"/>
+    </form>
+}
+```
+
+受控组件：表单数据交由 state 管理。特点是数据可以实时获取。
+
+```jsx
+function App() {
+    // state 可以随时获取
+    const [state, setState] = useState(initState);
+    return <form>
+        <input value={state} onChange={setState}/>
+    </form>
+}
+```
+
+![image](/react/shoukong-feishoukong.png)
+
+### 为什么使用 css in js
+
+css 缺点：
+
+1. 由于不支持嵌套、选择器繁琐冗长，导致写起来费时费力。
+2. 层级结构不够清晰，难以区分它们之间的从属关系，是父子还是兄弟？
+3. 随着项目迭代，且缺乏检查机制，后期维护困难。
+4. "没有作用域概念，致使样式容易冲突、“为了避免命名污染，代码难以复用”、“缺少共用变量，无法定义全局的背景颜色、按钮颜色"等等。
+---
+
+1. 一个 react 组件中，封装了 html 结构、css 样式和 js 逻辑，这有利于组件的隔离。
+2. 解决 css 的局限性： 
+   1. 缺乏动态功能，动态增减样式，用 js 变量控制;
+   2. 作用域（用 js 的作用域来模拟 css 作用域，让 css 只用于组件内部）;
+   3. 可移植性（组件文件方便迁移，不怕会有 css 文件少引入或者漏引入，以前使用 link 的方式引入可能会有缺漏的情况），但是我们现在写，还是会把 css 独立出来。
+   
+css in js 优点：上面解决局限性的 3 点。
+
+缺点：
+
+1. 给项目增加额外的复杂性；
+2. 自动生成的选择器降低了代码的可读性。

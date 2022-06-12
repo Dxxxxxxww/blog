@@ -195,6 +195,12 @@ export const useDocumentTitle = (
 
 ### 六、useReducer
 
+22/05/25 个人理解更新：
+
+useReducer 其实就是可以当做一个特殊的 useState。可以把传入的 reducer 当做是修改状态的方法，而 dispatch 就是去通知 reducer 修改状态的手段。所以 useReducer 内部会使用 useState 或者会使用跟 useState 相同的方式来保存状态。
+
+---
+
 官方文档：useState 的替代方案。它接收一个形如 (state, action) => newState 的 reducer，并返回当前的 state 以及与其配套的 dispatch 方法。（如果你熟悉 Redux 的话，就已经知道它如何工作了。）在某些场景下，useReducer 会比 useState 更适用，例如 state 逻辑较复杂且包含多个子值，或者下一个 state 依赖于之前的 state 等。
 
 个人理解：从功能上来说，useState 与 useReducer 可以互换的，用其中一个实现的功能，使用另一个也是可以实现的。useState 适合定义单个的状态，useReducer 适合定义一群/多个互相影响的状态。
