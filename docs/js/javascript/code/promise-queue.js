@@ -10,6 +10,7 @@
 //   while (list.length) {}
 // }
 
+// tang 佬解法
 function queue(list) {
   const step = (index) => {
     const cb = () => {

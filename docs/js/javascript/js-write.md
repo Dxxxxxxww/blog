@@ -794,11 +794,11 @@ dep.notify()
 
 ### 实现 LazyMan('hank').sleep(3).eat('food').sleepFirst(1)
 
-@[code](./code/lazyman.js)
+@[code](./code/promise-lazyman.js)
 
 ### 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
 
-@[code](./code/arrange.js)
+@[code](./code/promise-arrange.js)
 
 ### 实现一个发布订阅模式
 

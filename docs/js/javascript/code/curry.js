@@ -3,6 +3,7 @@ function add(...args1) {
   let totalArgs = args1
   function fn(...args2) {
     totalArgs = args1.concat(args2)
+    return fn
   }
   fn.valueOf = () => {
     return totalArgs.reduce((total, cur) => {
@@ -13,3 +14,5 @@ function add(...args1) {
 }
 
 add(1)(2)(3).valueOf()
+
+// 使用 bind
