@@ -823,3 +823,7 @@ dep.notify()
 ### 防抖 节流
 
 @[code](./code/debounce-throttle.js)
+
+### add
+
+@[code](./code/add.js)
