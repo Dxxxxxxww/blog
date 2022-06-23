@@ -1,4 +1,4 @@
-// 实现一个Scheduler类，使下面的代码能正确输出。
+// 实现一个Scheduler类，使下面的代码能正确输出。并发控制，最多同时 2个并发任务
 // Usage
 // const timeout = (time, value) =>
 //   new Promise(resolve => {
@@ -29,7 +29,7 @@ class Scheduler {
   }
   async add(fn) {
     if (this.count >= this.limit) {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         this.queue.push(resolve)
       })
     }
@@ -44,9 +44,9 @@ class Scheduler {
 
   add2(fn) {
     // 返回值
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // 阻塞
-      new Promise(resolveFunc => {
+      new Promise((resolveFunc) => {
         if (this.count >= this.limit) {
           this.queue.push(resolveFunc)
         } else {
@@ -54,7 +54,7 @@ class Scheduler {
           resolveFunc()
         }
       }).then(() => {
-        fn().then(res => {
+        fn().then((res) => {
           this.count--
           resolve(res)
           if (this.queue.length) {
@@ -67,7 +67,7 @@ class Scheduler {
 }
 
 function timeout(time, value) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve(value)
     }, time)
@@ -79,14 +79,14 @@ const scheduler = new Scheduler(2)
 function addTask(time, order, value) {
   return scheduler
     .add2(() => timeout(time, value))
-    .then(res => {
+    .then((res) => {
       console.log(order)
       return res
     })
 }
 
-addTask(1000, '1', 'value111111').then(value => console.log(value))
+addTask(1000, '1', 'value111111').then((value) => console.log(value))
 addTask(500, '2')
-addTask(300, '3', '311111').then(value => console.log(value))
+addTask(300, '3', '311111').then((value) => console.log(value))
 addTask(400, '4')
 // // output: 2 3 1 4

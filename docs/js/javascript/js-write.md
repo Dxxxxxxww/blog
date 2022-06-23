@@ -827,3 +827,7 @@ dep.notify()
 ### add
 
 @[code](./code/add.js)
+
+### 异步并发数量控制
+
+@[code](./code/promise-scheduler.js)
