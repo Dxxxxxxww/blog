@@ -1,5 +1,7 @@
 # zshrc 配置别名
 
+[antfu 的配置](https://github.com/antfu/dotfiles/blob/main/.zshrc)
+
 打开 zshrc 文件
 
 ```shell

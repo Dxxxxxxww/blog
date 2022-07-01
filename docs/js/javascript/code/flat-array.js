@@ -35,11 +35,59 @@ function flat(array) {
 
 const arr = [1, 2, 3, [4, 5, [6]]]
 
-console.log(flat(arr))
+// 方法1
+function flat1(array) {
+  let res = []
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i]
+    if (Array.isArray(item)) {
+      res = res.concat(flat1(item))
+    } else {
+      res.push(item)
+    }
+  }
+  return res
+}
 
-// https://juejin.cn/post/6844904025993773063#heading-9
+console.log(flat1(arr))
 
-// 第五种，扩展运算符
-// while (ary.some(Array.isArray())) {
-//   ary = [].concat(...ary)
-// }
+// 方法2
+let res = []
+function flat2(array) {
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i]
+    if (Array.isArray(item)) {
+      flat2(item)
+    } else {
+      res.push(item)
+    }
+  }
+}
+flat2(arr)
+console.log(res)
+
+// 方法3
+function flat3(array) {
+  return array.reduce(
+    (res, item) =>
+      Array.isArray(item) ? res.concat(flat3(item)) : res.concat(item),
+    []
+  )
+}
+
+console.log(flat3(arr))
+
+// 方法4
+function flat4(array) {
+  while (array.some(Array.isArray())) {
+    array = [].concat(...array)
+  }
+  return array
+}
+
+const flat = (arr) => {
+  return arr.reduce((pre, cur) => {
+    return pre.concat(Array.isArray(cur) ? flat(cur) : cur)
+  }, [])
+}
+
