@@ -89,4 +89,4 @@ addTask(1000, '1', 'value111111').then((value) => console.log(value))
 addTask(500, '2')
 addTask(300, '3', '311111').then((value) => console.log(value))
 addTask(400, '4')
-// // output: 2 3 1 4
+// output: 2 3 1 4
