@@ -68,3 +68,5 @@ typings/
 .idea/
 
 /docs/source-code/vue-test/node_modules/
+
+/docs/zhibo
