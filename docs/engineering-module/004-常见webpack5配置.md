@@ -254,7 +254,7 @@ css tree-shaking 插件
 
 ### speed-measure-webpack-plugin
 
-分析 webpack-plugin，webpack-loader 的耗时。与 MiniCssExtractPlugin 有兼容问题，需要将 MiniCssExtractPlugin 降到 1.x 版本。
+分析 webpack-plugin，webpack-loader 的耗时，分析模块打包耗时。与 MiniCssExtractPlugin 有兼容问题，需要将 MiniCssExtractPlugin 降到 1.x 版本。
 
 ### webpack-bundle-analyzer
 
