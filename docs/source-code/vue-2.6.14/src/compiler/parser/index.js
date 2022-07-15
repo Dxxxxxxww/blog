@@ -93,12 +93,22 @@ export function parse (
   platformMustUseProp = options.mustUseProp || no
   platformGetTagNamespace = options.getTagNamespace || no
   const isReservedTag = options.isReservedTag || no
-  maybeComponent = (el: ASTElement) => !!(
-    el.component ||
-    el.attrsMap[':is'] ||
-    el.attrsMap['v-bind:is'] ||
-    !(el.attrsMap.is ? isReservedTag(el.attrsMap.is) : isReservedTag(el.tag))
-  )
+  // 修改源码，方便断点
+  maybeComponent = (el: ASTElement) => {
+    console.log(el)
+    return !!(
+      el.component ||
+      el.attrsMap[':is'] ||
+      el.attrsMap['v-bind:is'] ||
+      !(el.attrsMap.is ? isReservedTag(el.attrsMap.is) : isReservedTag(el.tag))
+    )
+  }
+  // maybeComponent = (el: ASTElement) => !!(
+  //   el.component ||
+  //   el.attrsMap[':is'] ||
+  //   el.attrsMap['v-bind:is'] ||
+  //   !(el.attrsMap.is ? isReservedTag(el.attrsMap.is) : isReservedTag(el.tag))
+  // )
   transforms = pluckModuleFunction(options.modules, 'transformNode')
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
@@ -124,6 +134,7 @@ export function parse (
   function closeElement (element) {
     trimEndingWhitespace(element)
     if (!inVPre && !element.processed) {
+      // 解析标签
       element = processElement(element, options)
     }
     // tree management
@@ -471,6 +482,7 @@ export function processElement (
   processSlotContent(element)
   // 处理 <slot/> 标签，获取插槽名并存储到 el.slotName 上
   processSlotOutlet(element)
+  // 处理组件，内置 component 在这里处理
   processComponent(element)
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
@@ -784,9 +796,11 @@ function processSlotOutlet (el) {
     }
   }
 }
-
+// 处理组件，内置 component 在这里处理
 function processComponent (el) {
   let binding
+  // 有 is 属性，是内置的 component，获取 is 的值并赋值给 el.component
+  // 在第三步 generate 中会使用到该属性
   if ((binding = getBindingAttr(el, 'is'))) {
     el.component = binding
   }

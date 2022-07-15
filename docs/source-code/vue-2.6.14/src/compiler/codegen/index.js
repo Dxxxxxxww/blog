@@ -88,7 +88,10 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     // component or element
     // 上面都不满足，那就当做组件/普通标签来处理
     let code
+    // 在 parse 中解析 html 生成 ast 语法树时，通过 processComponent 给 el 打上 component 标记，
+    // 值是 is 的值
     if (el.component) {
+      // 处理内置的 component 组件
       code = genComponent(el.component, el, state)
     } else {
       let data
@@ -618,12 +621,14 @@ function genSlot (el: ASTElement, state: CodegenState): string {
 }
 
 // componentName is el.component, take it as argument to shun flow's pessimistic refinement
+// 处理内置的 component，动态组件
 function genComponent (
   componentName: string,
   el: ASTElement,
   state: CodegenState
 ): string {
   const children = el.inlineTemplate ? null : genChildren(el, state, true)
+  // 动态组件最终还是会走 _c 方法，componentName 就是 is 对应的值
   return `_c(${componentName},${genData(el, state)}${
     children ? `,${children}` : ''
   })`

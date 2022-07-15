@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="b"></div>
+    <div id="c"></div>
+
+    <script src="../../dist/vue.js"></script>
+    <script>
+      // 这种组件编写方式，而不是 SFC 的方式，就会走自带的编译
+      Vue.component('Parent', {
+        template: `<div>
+          <span>{{label}}</span>
+          <span>{{a}}</span>
+        </div>`,
+        // 测试 如果组件传入了 $el 挂载会怎么样？结果在 blog/vue-source 中
+        el: '#b',
+        props: {
+          a: Number
+        },
+        data() {
+          return {
+            label: `Parent`,
+          }
+        },
+      })
+      const vm = new Vue({
+        el: '#app',
+        data() {
+          return {
+            a: 1,
+          }
+        },
+        template: `
+        <div style="font-size: 12px;">
+<!--          <Parent :a="a"></Parent>-->
+          <component is="Parent"></component>
+        </div>`,
+        methods: {
+          changeA() {
+            if (this.a % 2 === 0) {
+              this.a = 1
+            }else {
+              this.a = 2
+            }
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
