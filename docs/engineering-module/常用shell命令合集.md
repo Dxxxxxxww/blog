@@ -2,7 +2,7 @@
 
 ## 查看环境变量
 
-echo $path
+echo \$path
 
 然后就可以 cd 返回的 环境变量
 
@@ -21,3 +21,15 @@ code ~/.bash_profile
 ## 查找文件位置
 
 whereis xxx
+
+---
+
+[全局 npm 包环境变量](https://www.jianshu.com/p/64c175476acc?utm_source=gold_browser_extension)
+
+## zsh: command not found: 解决方法
+
+open ~/.zshrc
+
+source ~/.bash_profile
+
+source ~/.zshrc    
