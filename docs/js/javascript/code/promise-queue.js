@@ -12,6 +12,16 @@ function runQueue(queue) {
     Promise.resolve()
   )
 }
+// 茂神解法解读
+function runQueue(queue) {
+  queue.reduce((p, cur) => {
+    // reduce 返回 promise
+    return p.then(() => {
+      // then 的回调返回一个新的 promise，这个promise 等 cur 执行才会改变状态
+      return new Promise((resolve) => cur(resolve))
+    })
+  }, Promise.resolve())
+}
 
 // 冬瓜解法1 async
 
