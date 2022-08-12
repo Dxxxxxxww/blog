@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test page in http://test.com</title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener(
+        'error',
+        function () {
+          console.log(arguments)
+        },
+        true
+      )
+    </script>
+    <!-- 测试 src 资源加载错误 -->
+    <!-- <script src="https://yun.dui8899.com/tuia/cdn/remote/testerror.js"></script> -->
+    <!-- 测试 img 资源加载错误 -->
+    <!-- 测试结果，与 script 一致 -->
+    <!-- <img src="https://yun.dui8899.com/tuia/cdn/remote/testerror.jpeg" alt="" /> -->
+    <!-- 测试 css 资源加载错误 -->
+    <!-- 测试结果，与 script 一致 -->
+    <link
+      rel="stylesheet"
+      href="https://yun.dui8899.com/tuia/cdn/remote/testerror.css"
+    />
+    结论：addEventListener 来注册 error，返回结构都是相同的
+  </body>
+</html>
