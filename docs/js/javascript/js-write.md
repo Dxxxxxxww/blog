@@ -843,3 +843,7 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 ```
 
 @[code](./code/merge-arr.js)
+
+## 红绿灯问题
+
+@[code](./code/red-green-yellow.js)
