@@ -46,14 +46,17 @@ npx mrm lint-staged
 // 解决方案：
 // The problem is within mrm which is currently in version 3 that seems to be incompatible with lint-staged, to fix this you got to specify mrm version 2 by running npx mrm@2 lint-staged
 npx mrm@2 lint-staged
-```
+``` 
 
 5. 在 package.json 文件中增加 lint-staged 配置
 
 ```js
 // 这个配置会自动帮我们生成，但是如果想要增加一些文件的话可以在这里自定义
 lint-staged: {
-    "*.{js,jsx,css,md,ts,tsx}": "prettier --write"
+    "*.{js,jsx,css,md,ts,tsx}": [
+        "prettier --write",
+        "eslint --fix --catch", // --catch 会缓存文件记录，后续只针对有变更的文件执行cli
+    ]
 }
 ```
 

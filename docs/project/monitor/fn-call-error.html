@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>script event</title>
+  </head>
+  <body>
+    <script src="https://yun.dui88.com/tuia/cdn/remote/testerror.js"></script>
+    <script>
+      // 调用远端 js 函数报错场景
+      // 远端JS内部的事件出问题
+      // 要么在setTimeout等回调内出错
+      // 如果不包装就只会报出 script error，包装后能获得具体的错误信息
+      window.onerror = function (message, url, line, column, error) {
+        console.log(message, url, line, column, error)
+      }
+
+      function wrapErrors(fn) {
+        // don't wrap function more than once
+        if (!fn.__wrapped__) {
+          fn.__wrapped__ = function () {
+            try {
+              return fn.apply(this, arguments)
+            } catch (e) {
+              throw e // re-throw the error
+            }
+          }
+        }
+
+        return fn.__wrapped__
+      }
+
+      wrapErrors(foo)()
+    </script>
+  </body>
+</html>
