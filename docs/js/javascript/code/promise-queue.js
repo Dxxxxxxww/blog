@@ -5,7 +5,6 @@
  */
 
 // 茂神解法，promise，
-
 function runQueue(queue) {
   queue.reduce(
     (p, cur) => p.then(() => new Promise((resolve) => cur(resolve))),
@@ -24,7 +23,6 @@ function runQueue(queue) {
 }
 
 // 冬瓜解法1 async
-
 async function queue(list) {
   for (let index = 0; index < list.length; index++) {
     const element = list[index]
