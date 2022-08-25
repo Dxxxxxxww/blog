@@ -563,6 +563,8 @@ cdn 优点：通过中心平台的负载均衡、内容分发、调度等功能�
 
 ## dll
 
+dll 支持 tree-shaking。而 externals 出来的文件基本都是 umd 包，不支持。
+
 优化手段。
 
 仅做了解，在 webpackv4 起已经不需要通过 dll 来优化打包速度了。vue/react 中已移除 dll 打包操作。
