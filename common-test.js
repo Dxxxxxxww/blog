@@ -1,43 +1,81 @@
-// 生成手机验证码
+// flatArray
 
-// 允许重复
-function randomCodeV1(count) {
-  let res = String(Math.random() * Math.pow(10, count)).split('.')[0]
-  const length = res.length
-  if (count - length > 0) {
-    res = res.padStart(count, '0')
+function flatArray(arr, count = 1) {
+  if (!Array.isArray(arr)) return
+  let _count = 0
+  const dfs = (arr) => {
+    _count++
+    let res = []
+    for (let i = 0; i < arr.length; i++) {
+      const item = arr[i]
+      if (_count >= count) {
+        res = res.concat(item)
+      } else {
+        if (Array.isArray(item)) {
+          res = res.concat(dfs(item))
+        } else {
+          res = res.concat(item)
+        }
+      }
+    }
+    return res
   }
+  return dfs(arr)
+}
+
+const arr = [' ', [' ', ' '], [' ', [' ', [' ']], ' ']]
+// console.log(flatArray(arr))
+// [" ", " ", " ", " ", [" ", [" "]], " "]
+// console.log(flatArray(arr, 2))
+// [" ", " ", " ", " ", " ", [" "], " "]
+
+// function flatObject(obj) {
+//   if (typeof obj !== 'object' || !obj) return
+//   const res = {}
+//   const dfs = (obj, key = '') => {
+//     if (typeof obj === 'object') {
+//       if (Array.isArray(obj)) {
+//         obj.forEach((val, i) => {
+//           dfs(val, `${key}[${i}]`)
+//         })
+//       } else {
+//         for (const itemKey in obj) {
+//           dfs(obj[itemKey], `${key ? key + '.' : ''}${itemKey}`)
+//         }
+//       }
+//     } else {
+//       res[key] = obj
+//     }
+//   }
+//   dfs(obj)
+//   return res
+// }
+
+function flatObject(obj) {
+  const res = {}
+  const dfs = (val, key = '') => {
+    if (typeof val === 'object' && val) {
+      if (Array.isArray(val)) {
+        val.forEach((item, i) => {
+          dfs(item, `${key}[${i}]`)
+        })
+      } else {
+        for (const valKey in val) {
+          dfs(val[valKey], `${key ? key + '.' : ''}${valKey}`)
+        }
+      }
+    } else {
+      res[key] = val
+    }
+  }
+  dfs(obj)
   return res
 }
 
-// 不允许重复
-function randomCodeV2(count) {
-  let res = String(Math.random()).split('').slice(2)
-
-  const set = new Set(res)
-  res = [...set]
-  if (res.length >= count) {
-    res = res.slice(0, count)
-  } else {
-    // 保存已存在的数字
-    const cache = new Array(9)
-    for (const val of res) {
-      cache[val] = true
-    }
-    let i = 0
-    while (res.length === count) {
-      // 不存在则添加到结果中
-      if (!cache[i]) {
-        res.push(i)
-      }
-      i++
-    }
-  }
-
-  return res.join('')
+const obj = {
+  a: 1,
+  b: [1, 2, { c: true }],
+  c: { e: 2, f: 3 },
+  g: null
 }
-
-let res
-for (let i = 0; i < 100; i++) {
-  res = randomCodeV2(6)
-}
+console.log(flatObject(obj))

@@ -859,3 +859,7 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 ### 计算字符串中出现最多的字符
 
 @[code](./code/count-char.js)
+
+## 红绿灯问题
+
+@[code](./code/red-green-yellow.js)
