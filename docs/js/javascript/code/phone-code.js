@@ -39,5 +39,6 @@ function randomCodeV2(count) {
 
 let res
 for (let i = 0; i < 100; i++) {
+  res = randomCodeV1(6)
   res = randomCodeV2(6)
 }

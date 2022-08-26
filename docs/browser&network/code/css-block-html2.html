@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>css阻塞</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      h1 {
+        color: red !important;
+      }
+    </style>
+    <script>
+      function h() {
+        console.log(document.querySelectorAll('h1'))
+      }
+      setTimeout(h, 0)
+    </script>
+  </head>
+  <body>
+    <h1>css加载会阻塞DOM树的解析吗？link前</h1>
+    <!-- 不会，根据 https://medium.com/@monica1109/how-does-web-browsers-work-c95ad628a509#:~:text=A%20browser%20is%20a%20software%20application%20used%20to,that%20contacts%20the%20Web%20server%20and%20requests%20information.
+
+        https://www.cnblogs.com/hd92/p/11093834.html
+        的说法，浏览器为了用户体验，不会等到所有 dom 解析完再去构建和布局render树去渲染。而是会尽可能的提前 ，解析完一部分内容就显示一部分内容，同时，可能还在通过网络下载其余内容-->
+    <link
+      href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css"
+      rel="stylesheet"
+    />
+    <h1>css加载会阻塞DOM树的解析吗？link后</h1>
+  </body>
+</html>

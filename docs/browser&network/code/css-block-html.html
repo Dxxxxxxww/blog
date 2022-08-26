@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>css阻塞</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      h1 {
+        color: red !important;
+      }
+    </style>
+    <script>
+      function h() {
+        console.log(document.querySelectorAll('h1'))
+      }
+      setTimeout(h, 0)
+    </script>
+    <link
+      href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <h1>css加载会阻塞DOM树的解析吗？</h1>
+    <!-- 可以看到页面还是白屏的时候，上面的 h 函数已经执行了，在控制台中输出了 h1 标签。
+        这说明css 加载不会阻塞 dom 加载 -->
+    <h1>css加载会阻塞DOM树的渲染吗？</h1>
+    <!-- 可以看到，页面白屏直到css加载完，才渲染出来。所以css 加载会阻塞 dom 渲染 -->
+  </body>
+</html>
