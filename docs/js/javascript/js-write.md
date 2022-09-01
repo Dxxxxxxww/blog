@@ -863,3 +863,11 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 ## 红绿灯问题
 
 @[code](./code/red-green-yellow.js)
+
+## 快排
+
+@[code](./code/quick-sort.js)
+
+## 并发控制4
+
+@[code](./code/promise-scheduler4.js)

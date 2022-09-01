@@ -91,3 +91,36 @@ const flat = (arr) => {
   }, [])
 }
 
+
+
+// 带控制的 flat array
+// flatArray
+
+function flatArray(arr, count = 1) {
+  if (!Array.isArray(arr)) return
+  let _count = 0
+  const dfs = (arr) => {
+    _count++
+    let res = []
+    for (let i = 0; i < arr.length; i++) {
+      const item = arr[i]
+      if (_count >= count) {
+        res = res.concat(item)
+      } else {
+        if (Array.isArray(item)) {
+          res = res.concat(dfs(item))
+        } else {
+          res = res.concat(item)
+        }
+      }
+    }
+    return res
+  }
+  return dfs(arr)
+}
+
+const arr = [' ', [' ', ' '], [' ', [' ', [' ']], ' ']]
+// console.log(flatArray(arr))
+// [" ", " ", " ", " ", [" ", [" "]], " "]
+// console.log(flatArray(arr, 2))
+// [" ", " ", " ", " ", " ", [" "], " "]
