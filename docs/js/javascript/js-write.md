@@ -669,6 +669,7 @@ function myNew(constructor) {
 }
 // Object.create 传入一个对象，作为返回结果的 __proto__
 // Object.create 的实现 1
+// p 是原型
 function myOc(p) {
   // 建立中间函数
   const temp = function () {}
