@@ -867,8 +867,12 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 
 ## 快排
 
-@[code](./code/quick-sort.js)
+@[code](code/leetcode/quick-sort.js)
 
 ## 并发控制4
 
 @[code](./code/promise-scheduler4.js)
+
+## render 解析 {{}}
+
+@[code](./code/parse-moustache.js)
