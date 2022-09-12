@@ -2,10 +2,10 @@ function cloneDeep(data, map = new WeakMap()) {
   if (!data) return
   let cloneData
   // 解决循环引用
-  if (map.get(target)) {
-    return target
+  if (map.get(data)) {
+    return data
   }
-  map.set(target, true)
+  map.set(data, true)
   if (typeof data === 'object') {
     if (Array.isArray(data)) {
       cloneData = []

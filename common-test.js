@@ -1,42 +1,35 @@
-// 二分查找
-
-function solution(isBadVersion, badVersion, n) {
-  let left = 0,
-    right = n
-  while (left < right) {
-    const mid = left + Math.floor((right - left) / 2)
-    if (isBadVersion(badVersion, mid)) {
-      right = mid
-    } else {
-      left = mid + 1
+function quickSort(list, i, j) {
+  if (i > j) return
+  let l = i,
+    r = j
+  const item = list[i]
+  while (l < r) {
+    // 从右往左找，找到比目标值小的，移动到左侧
+    while (l < r && item < list[r]) {
+      r--
+    }
+    // 找到了对应的  r 放到目标值的左侧，并且 l下标 移动到下一个值
+    if (l < r) {
+      list[l++] = list[r]
+    }
+    // 从左往右找，找到比目标值大的，移动到右侧
+    while (l < r && item > list[l]) {
+      l++
+    }
+    if (l < r) {
+      list[r--] = list[l]
     }
   }
-  // 最终结果 left === right 所以随便返回哪个都可以
-  return left
+  list[l] = item
+  quickSort(list, i, l - 1)
+  quickSort(list, l + 1, j)
 }
 
-function isBadVersion(badVersion, n) {
-  return  n >= badVersion;
+const list = []
+for (let i = 0; i < 10; i++) {
+  list.push(Math.floor(Math.random() * 100 * i))
 }
 
-solution(isBadVersion, 4, 5)
-
-// var solution = function(isBadVersion) {
-//   /**
-//    * @param {integer} n Total versions
-//    * @return {integer} The first bad version
-//    */
-//   return function(n) {
-//     let left = 0, right = n
-//     while (left < right) {
-//       const mid = left + Math.floor((right - left) / 2)
-//       if (isBadVersion(mid)) {
-//         right = mid
-//       } else {
-//         left = mid + 1
-//       }
-//     }
-//     // 最终结果 left === right 所以随便返回哪个都可以
-//     return left
-//   };
-// };
+console.log('list: ', list)
+quickSort(list, 0, 9)
+console.log(list)

@@ -1,4 +1,4 @@
-// 二分查找
+// 二分查找 leetcode 278
 
 function solution(isBadVersion, badVersion, n) {
   let left = 0,
