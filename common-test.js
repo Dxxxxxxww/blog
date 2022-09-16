@@ -1,34 +1,16 @@
-function quickSort(list, i, j) {
-  if (i > j) return
-  let l = i,
-    r = j,
-    item = list[l]
-  while (l < r) {
-    // 从右往左找
-    while (l < r && item < list[r]) {
-      r--
-    }
-    if (l < r) {
-      list[l++] = list[r]
-    }
-    // 从左往右找
-    while (l < r && item > list[l]) {
-      l++
-    }
-    if (l < r) {
-      list[r--] = list[l]
+var search = function(nums, target) {
+  let left = 0 , right = nums.length, mid = 0
+  while(left < right) {
+    mid = left + Math.floor((right - left) / 2)
+    if (nums[mid] < target) {
+      left = mid + 1
+    } else if (nums[mid] > target) {
+      right = mid
+    } else {
+      return mid
     }
   }
-  list[l] = item
-  quickSort(list, i, l - 1)
-  quickSort(list, l + 1, j)
-  return list
-}
+  return -1
+};
 
-const list = []
-for (let i = 0; i < 10; i++) {
-  list.push(Math.floor(Math.random() * 100 * i))
-}
-
-console.log('list: ', list)
-console.log(quickSort(list, 0, 9))
+console.log(search([-1,0,3,5,9,12], 9))
