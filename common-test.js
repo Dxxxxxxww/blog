@@ -1,31 +1,30 @@
 function quickSort(list, i, j) {
-    if (i > j) return
-    let l = i,
-        r = j,
-        item = list[l];
-    while (l < r) {
-        while (l < r && item < list[r]) {
-            r--;
-        }
-        if (l < r) {
-            list[l++] = list[r];
-        }
-        while (l < r && item > list[l]) {
-            l++;
-        }
-        if (l < r) {
-            list[r--] = list[l];
-        }
+  if (i >= j) return
+  let left = i,
+    right = j,
+    item = list[left]
+  while (left < right) {
+    while (left < right && item < list[right]) {
+      right--
     }
-    list[l] = item;
-    quickSort(list, i, l - 1);
-    quickSort(list, l + 1, j);
-	return list
+    if (left < right) {
+      list[left++] = list[right]
+    }
+    while (left < right && item > list[left]) {
+      left++
+    }
+    if (left < right) {
+      list[right--] = list[left]
+    }
+  }
+  list[left] = item
+  quickSort(list, i, left)
+  quickSort(list, left + 1, j)
+  return list
 }
-
 const list = []
 for (let i = 0; i < 10; i++) {
-	list.push(Math.floor(Math.random() * 100 * i))
+  list.push(Math.floor(Math.random() * 100 * i))
 }
 
 console.log('list: ', list)
