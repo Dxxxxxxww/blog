@@ -16,7 +16,7 @@ function quickSort(list, i, j) {
     if (left < right) {
       list[right--] = list[left]
     }
-  }
+  }1
   list[left] = item
   quickSort(list, i, left)
   quickSort(list, left + 1, j)

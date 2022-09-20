@@ -911,7 +911,7 @@ class MyPromise {
       this.reject(error)
     }
   }
-
+  // 不能用 async await 来模拟。如果使用 async await 并发怎么办
   static all(arr) {
     const res = []
     let index = 0

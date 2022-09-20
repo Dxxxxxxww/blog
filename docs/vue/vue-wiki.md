@@ -60,6 +60,8 @@ module.exports = {
 
 ## vue 生命周期执行顺序
 
+除了 mounted updated destroyed 所有生命周期都是先父后子。 ed 结尾的生命周期都是子先。
+
 销毁：
 
 ```js
@@ -76,7 +78,7 @@ parent beforeCreate
 parent created
 parent beforeMount
 son beforeCreate
-son create
+son created
 son beforeMount
 son mounted
 parent mounted
@@ -89,10 +91,34 @@ parent beforeUpdate
 son beforeUpdate
 son updated
 parent updated
+```
 
-// keep-alive 时，activated 会比 updated 先调用
-activated
-updated
+总:
+
+```js
+// 挂载时
+parent beforeCreate
+parent created
+parent beforeMount
+son beforeCreate
+son created
+son beforeMount
+son mounted
+son activated   // keep-alive 这里没写错哦，activated 是在 mounted 之后的
+parent mounted
+parent beforeUpdate
+parent update
+// 更新时
+parent beforeUpdate
+son beforeUpdate
+son update
+parent update
+// 销毁时
+parent beforeDestroy
+son deactivated    // keep-alive 如果父级组件也销毁，keep-alive 组件还是会销毁的。这里没写错哦 deactivated 是在销毁之前的
+son beforeDestroy
+son destroyed
+parent destroyed
 ```
 
 ## 运行时编译和构建时编译
