@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      p,
+      span,
+      div {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <p>p标签</p>
+    <span>span标签 </span>
+    <link rel="stylesheet" type="text/css" href="./main.css" />
+    <!-- 没有结束标签，前面的元素还是会渲染，这是浏览器行为，会帮你规范处理好-->
+    <!-- 所以 dom 解析即便没有结束标签，还是渲染，所以即便没有body和 html 闭合标签，也会渲染页面 -->
+    <!-- 所以 css 不阻塞 dom 解析，下面的 div 还是会生成到 dom 树当中，只是因为 -->
+    <!-- <style>
+      p,
+      span,
+      div {
+        color: yellow;
+      }
+    </style>
+    <div>div标签</div>
+  </body>
+</html> -->

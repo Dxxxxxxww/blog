@@ -254,7 +254,7 @@ css tree-shaking 插件
 
 ### speed-measure-webpack-plugin
 
-分析 webpack-plugin，webpack-loader 的耗时。与 MiniCssExtractPlugin 有兼容问题，需要将 MiniCssExtractPlugin 降到 1.x 版本。
+分析 webpack-plugin，webpack-loader 的耗时，分析模块打包耗时。与 MiniCssExtractPlugin 有兼容问题，需要将 MiniCssExtractPlugin 降到 1.x 版本。
 
 ### webpack-bundle-analyzer
 
@@ -416,13 +416,50 @@ webpack5 文档中已不存在
 
 ## devtool
 
+**注意，这块的代码实践可以看 ele 项目**
+
 配置 source-map, sourcemap。默认配置跟随 mode。
 
 source-map：加密代码与源代码的映射关系，方便调试定位源代码。
 
-hidden-source-map：生产环境可以配置成这个。与 source-map 相同，但不向 bundle 添加引用注释。可以通过 SourceMaps 从错误报告映射错误堆栈跟踪，并且浏览器开发工具查看不到源代码。
+hidden-source-map：生产环境可以配置成这个。与 source-map 相同，会生成 map 文件，但不向 bundle 添加引用注释，sources 面板中也看不到 map。可以通过 add source map 从错误报告映射错误堆栈跟踪，并且浏览器开发工具查看不到源代码。
 
-nosources-source-map：生产环境可以配置成这个。生成的 map 文件不包含源码，但是会正确提示错误的行数。但是项目的目录结构和文件名称会暴露在 Sources 面板
+添加方式为 域名+文件路径。配置可以使用协议跟随的方式，也就是不带 http: 或者 https:
+e.g. http(s)://127.0.0.1:9002/js/app.f75e8a1c.js.map 
+
+只需要对一个 js 文件进行添加，所有的源码，源码结构都会暴露。如果源码不进行变更，文件的 hash 值一直不变，则 source-map 一直会存在，有安全隐患。
+
+
+![image](/webpack/hidden-source-map-1.png)
+![image](/webpack/hidden-source-map-2.png)
+![image](/webpack/hidden-source-map-3.png)
+![image](/webpack/hidden-source-map-4.png)
+
+---
+
+nosources-source-map：生产环境可以配置成这个。生成的 map 文件不包含源码，但是会正确提示错误的文件，错误的行数。并且项目的目录结构和文件名称会暴露在 Sources 面板中。看不到源码。
+
+![image](/webpack/nosources-source-map-1.png)
+![image](/webpack/nosources-source-map-2.png)
+
+---
+
+使用 webpack.SourceMapDevToolPlugin 插件。
+
+需要设置 devtool = "none"。并且 webpack.SourceMapDevToolPlugin 不能跟 TerserPlugin 共存，只能选择其他代码压缩插件，例如 CompressionPlugin。
+
+这种方式的最大好处在于不需要手动 add source map，可以设置成
+内网地址，这样的话在内网打开时，会自动打开 source map，并且外网无法访问，非常安全。
+
+```js
+// 设置成协议跟随的方式，就不需要区分 http https
+new webpack.SourceMapDevToolPlugin({
+    append: "\n//# sourceMappingURL=//127.0.0.1:9002/[url]",
+    filename: "map/[name].js.map"
+})
+```
+
+e.g. //# sourceMappingURL=//127.0.0.1:9002/../map/app.js.map
 
 ## optimization
 
@@ -562,6 +599,8 @@ preload：会与父块并行加载。
 cdn 优点：通过中心平台的负载均衡、内容分发、调度等功能模块，使用户就近获取所需内容，降低网络拥塞，提高用户访问响应速度和命中率。
 
 ## dll
+
+dll 支持 tree-shaking。而 externals 出来的文件基本都是 umd 包，不支持。
 
 优化手段。
 

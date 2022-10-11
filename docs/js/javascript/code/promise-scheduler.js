@@ -50,7 +50,9 @@ class Scheduler {
         if (this.count >= this.limit) {
           this.queue.push(resolveFunc)
         } else {
+          // 计数器在 fn 执行前增加
           this.count++
+          // 修改 Promise 状态，让 fn 可以执行
           resolveFunc()
         }
       }).then(() => {
@@ -89,4 +91,4 @@ addTask(1000, '1', 'value111111').then((value) => console.log(value))
 addTask(500, '2')
 addTask(300, '3', '311111').then((value) => console.log(value))
 addTask(400, '4')
-// // output: 2 3 1 4
+// output: 2 3 1 4

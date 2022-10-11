@@ -669,6 +669,7 @@ function myNew(constructor) {
 }
 // Object.create 传入一个对象，作为返回结果的 __proto__
 // Object.create 的实现 1
+// p 是原型
 function myOc(p) {
   // 建立中间函数
   const temp = function () {}
@@ -790,25 +791,23 @@ dep.notify()
 
 [promise](https://dxxxxxxww.github.io/blog/js/javascript/手写promise.html)
 
-## 编程挑战
-
-### 实现 LazyMan('hank').sleep(3).eat('food').sleepFirst(1)
+## 实现 LazyMan('hank').sleep(3).eat('food').sleepFirst(1)
 
 @[code](./code/promise-lazyman.js)
 
-### 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
+## 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
 
 @[code](./code/promise-arrange.js)
 
-### 实现一个发布订阅模式
+## 实现一个发布订阅模式
 
 @[code](./code/event-center.js)
 
-### 实现一个 schedular
+## 实现一个 schedular
 
 @[code](./code/schedular.js)
 
-### promise 远程服务器实现加法
+## promise 远程服务器实现加法
 
 [掘金解法](https://juejin.cn/post/6987529814324281380#heading-6)
 
@@ -816,18 +815,64 @@ dep.notify()
 
 @[code](./code/promise-add.js)
 
-### fps 计算
+## fps 计算
 
 @[code](./code/fps.js)
 
-### 防抖 节流
+## 防抖 节流
 
 @[code](./code/debounce-throttle.js)
 
-### add
+## add
 
 @[code](./code/add.js)
 
-### 异步并发数量控制
+## 异步并发数量控制
 
 @[code](./code/promise-scheduler.js)
+
+## 合并数组并排序
+
+合并两个 number 数组 a 和 b 并排序，如果有一个数出现多次，如果 a 数组有 1 个 5，b 数组有 2 个 5，合并出的数组应该有 2 个 5，即按出现次数多的保留，如：
+
+```js
+function mergeArr(a, b) {
+  // todo
+}
+mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
+// [0,1,2,2,2,5,5,100]
+```
+
+@[code](./code/merge-arr.js)
+
+### 对象拍平
+
+@[code](./code/flat-object.js)
+
+### 树转数组
+
+@[code](./code/tree2arr.js)
+
+### 千分位分割
+
+@[code](./code/千分位分割.js)
+
+### 计算字符串中出现最多的字符
+
+@[code](./code/count-char.js)
+
+## 红绿灯问题
+
+@[code](./code/red-green-yellow.js)
+
+## 快排
+
+@[code](code/leetcode/quick-sort.js)
+
+## 并发控制4
+
+@[code](./code/promise-scheduler4.js)
+
+## render 解析 {{}}
+
+@[code](./code/parse-moustache.js)

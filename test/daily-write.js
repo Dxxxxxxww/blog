@@ -1,3 +1,71 @@
+// 19
+class Scheduler {
+  constructor(limit) {
+    this.limit = limit
+    this.count = 0
+    this.queue = []
+  }
+  async add(fn) {
+    if (this.count >= this.limit) {
+      await new Promise((resolve) => {
+        this.queue.push(resolve)
+      })
+    }
+    this.count++
+    const res = await fn()
+    this.count--
+    if (this.queue.length) {
+      this.queue.shift()()
+    }
+    return res
+  }
+  add2(fn) {
+    return new Promise((resolveRes) => {
+      new Promise((resolve) => {
+        if (this.count >= this.limit) {
+          this.queue.push(resolve)
+        } else {
+          this.count++
+          resolve()
+        }
+      }).then(() => {
+        fn().then((res) => {
+          this.count--
+          resolveRes(res)
+          if (this.queue.length) {
+            this.queue.shift()()
+          }
+        })
+      })
+    })
+  }
+}
+
+const scheduler = new Scheduler(2)
+
+function timeout(time, value) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(value)
+    }, time)
+  })
+}
+
+function addTask(time, order, value) {
+  return scheduler
+    .add2(() => timeout(time, value))
+    .then((res) => {
+      console.log(order)
+      return res
+    })
+}
+
+addTask(1000, '1', 'value111111').then((value) => console.log(value))
+addTask(500, '2')
+addTask(300, '3', '311111').then((value) => console.log(value))
+addTask(400, '4')
+// output: 2 3 1 4
+
 // 18 将列表转换成级联
 // 利用引用的方法
 
@@ -136,7 +204,6 @@ const result = convert2(list)
 
 console.log(result)
 
-
 // 17
 class Scheduler {
   constructor(limit) {
@@ -147,7 +214,7 @@ class Scheduler {
   }
   async add(fn) {
     if (this.count >= this.limit) {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         this.queue.push(resolve)
       })
     }
@@ -162,9 +229,9 @@ class Scheduler {
 
   add2(fn) {
     // 返回值
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // 阻塞
-      new Promise(resolveFunc => {
+      new Promise((resolveFunc) => {
         if (this.count >= this.limit) {
           this.queue.push(resolveFunc)
         } else {
@@ -172,7 +239,7 @@ class Scheduler {
           resolveFunc()
         }
       }).then(() => {
-        fn().then(res => {
+        fn().then((res) => {
           this.count--
           resolve(res)
           if (this.queue.length) {
@@ -185,7 +252,7 @@ class Scheduler {
 }
 
 function timeout(time, value) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve(value)
     }, time)
@@ -197,15 +264,15 @@ const scheduler = new Scheduler(2)
 function addTask(time, order, value) {
   return scheduler
     .add2(() => timeout(time, value))
-    .then(res => {
+    .then((res) => {
       console.log(order)
       return res
     })
 }
 
-addTask(1000, '1', 'value111111').then(value => console.log(value))
+addTask(1000, '1', 'value111111').then((value) => console.log(value))
 addTask(500, '2')
-addTask(300, '3', '311111').then(value => console.log(value))
+addTask(300, '3', '311111').then((value) => console.log(value))
 addTask(400, '4')
 // // output: 2 3 1 4
 
@@ -218,7 +285,7 @@ class Scheduler {
   }
   async add(callback) {
     if (this.count >= this.limit) {
-      await new Promise(resolve => this.queue.push(resolve))
+      await new Promise((resolve) => this.queue.push(resolve))
     }
     this.count++
     const res = await callback()
@@ -232,22 +299,22 @@ class Scheduler {
 
 // Usage
 const timeout = (time, value) =>
-  new Promise(resolve => {
+  new Promise((resolve) => {
     setTimeout(() => resolve(value), time)
   })
 const scheduler = new Scheduler(2)
 const addTask = (time, order, value) => {
   return scheduler
     .add(() => timeout(time, value))
-    .then(value => {
+    .then((value) => {
       console.log(order)
       return value
     })
 }
 
-addTask(1000, '1', 'value111111').then(value => console.log(value))
+addTask(1000, '1', 'value111111').then((value) => console.log(value))
 addTask(5000, '2')
-addTask(3000, '3', '311111').then(value => console.log(value))
+addTask(3000, '3', '311111').then((value) => console.log(value))
 addTask(4000, '4')
 // output: 2 3 1 4
 
@@ -296,7 +363,7 @@ class EventCenter {
     const id = this.stringify(handler)
 
     if (!!eventList) {
-      const index = eventList.findIndex(eventObj => eventObj.id === id)
+      const index = eventList.findIndex((eventObj) => eventObj.id === id)
       eventList.splice(index, 1)
     }
   }
@@ -306,7 +373,7 @@ class EventCenter {
   trigger(event) {
     // 拷贝一份，防止 once 中的函数处理完直接 off 了，导致 数组长度变了，循环出问题。
     const eventList = this.center[event]?.slice() ?? []
-    eventList.forEach(eventObj => {
+    eventList.forEach((eventObj) => {
       // console.log(this.center[event].length)
       eventObj.handler()
     })
@@ -408,7 +475,7 @@ class Arrange {
   wait(time) {
     this.tasks.push(
       () =>
-        new Promise(resolve => {
+        new Promise((resolve) => {
           setTimeout(() => {
             console.log(`wake up after ${time}s`)
             resolve()
@@ -431,14 +498,9 @@ class Arrange {
   }
 }
 
-const arrange = name => new Arrange(name)
+const arrange = (name) => new Arrange(name)
 
-arrange('William')
-  .wait(3)
-  .do('commit')
-  .wait(3)
-  .do('push')
-  .execute()
+arrange('William').wait(3).do('commit').wait(3).do('push').execute()
 
 // day 11 promise 1
 const { log } = console
@@ -466,7 +528,7 @@ class _LazyMan {
   }
 
   _sleepWrapper(time, flag) {
-    new Promise(resolve => {
+    new Promise((resolve) => {
       setTimeout(() => {
         const fn = () => {
           log(`wake up after ${time}s`)
@@ -485,10 +547,7 @@ class _LazyMan {
 function LazyMan(name) {
   return new _LazyMan(name)
 }
-LazyMan('hank')
-  .sleep(3)
-  .eat('cola')
-  .sleepFirst(1)
+LazyMan('hank').sleep(3).eat('cola').sleepFirst(1)
 
 // day 10 手写科里化4
 function add(...args) {
@@ -503,7 +562,7 @@ function add() {
     _args.push(...arguments)
     return fn
   }
-  fn.valueOf = function() {
+  fn.valueOf = function () {
     return _args.reduce((sum, cur) => sum + cur)
   }
   return fn
@@ -513,7 +572,7 @@ function add() {
 function curry(fn) {
   return function curriedFn(...args) {
     if (args.length < fn.length) {
-      return function() {
+      return function () {
         // 这里一定要注意还需要递归调用 curriedFn，而不是 fn
         // 因为后续传参也不一定全部传完了
         return curriedFn.apply(this, args.concat(Array.from(arguments)))
@@ -527,7 +586,7 @@ function curry(fn) {
 function curry(func) {
   return function curriedFn(...args) {
     if (args.length < func.length) {
-      return function() {
+      return function () {
         return curriedFn(...args.concat(Array.from(arguments)))
       }
     }
@@ -561,7 +620,7 @@ class MyPromise {
     if (value instanceof MyPromise) {
       return val
     }
-    return new MyPromise(resolve => resolve(val))
+    return new MyPromise((resolve) => resolve(val))
   }
 
   static all(arr) {
@@ -582,7 +641,7 @@ class MyPromise {
       for (let i = 0; i < len; i++) {
         const current = array[i]
         if (current instanceof MyPromise) {
-          current.then(value => addItem(i, value), reject)
+          current.then((value) => addItem(i, value), reject)
         } else {
           addItem(i, current)
         }
@@ -591,7 +650,7 @@ class MyPromise {
   }
 
   // flag
-  resolve = val => {
+  resolve = (val) => {
     if (this.state !== PENDING) {
       return
     }
@@ -601,7 +660,7 @@ class MyPromise {
       this.handleSuccess.shift()()
     }
   }
-  reject = reason => {
+  reject = (reason) => {
     if (this.state !== PENDING) {
       return
     }
@@ -613,10 +672,10 @@ class MyPromise {
   }
   then(success, fail) {
     if (!isFunc(success)) {
-      success = value => value
+      success = (value) => value
     }
     if (!isFunc(fail)) {
-      fail = reason => {
+      fail = (reason) => {
         throw reason
       }
     }
@@ -670,18 +729,18 @@ class MyPromise {
   }
   finally(callback) {
     return this.then(
-      val => {
+      (val) => {
         return MyPromise.resolve(callback()).then(
           () => val,
-          err => {
+          (err) => {
             throw err
           }
         )
       },
-      error => {
+      (error) => {
         return MyPromise.resolve(callback()).then(
           () => error,
-          err => {
+          (err) => {
             throw err
           }
         )
@@ -705,7 +764,7 @@ const resolvePromise = (promise, res, resolve, reject) => {
   resolve(res)
 }
 
-const isFunc = val =>
+const isFunc = (val) =>
   Object.prototype.toString.call(val).slice(8, 16) === 'Function'
 
 // day 4
@@ -745,7 +804,7 @@ class VueRouter {
     this.initEvent()
   }
   initRouteMap() {
-    this.options.routes.forEach(route => {
+    this.options.routes.forEach((route) => {
       this.routeMap[route.path] = route.component
     })
   }
@@ -780,7 +839,7 @@ class VueRouter {
     })
 
     _Vue.component('router-view', {
-      render: h => {
+      render: (h) => {
         const component = this.routeMap[this.data.current]
         return h(component)
       }
@@ -829,7 +888,7 @@ class VueRouter {
     this.initEventListener()
   }
   initRouteMap() {
-    this.options.routes.forEach(route => {
+    this.options.routes.forEach((route) => {
       this.routeMap[route.path] = route.component
     })
   }
@@ -892,7 +951,7 @@ class Dep {
     this.subs.push(watcher)
   }
   notify() {
-    this.subs.forEach(watcher => {
+    this.subs.forEach((watcher) => {
       watcher.update()
     })
   }
@@ -929,7 +988,7 @@ class EventCenter {
     }
   }
   $emit(eventName, args) {
-    this.map[eventName].forEach(event => {
+    this.map[eventName].forEach((event) => {
       event(args)
     })
   }

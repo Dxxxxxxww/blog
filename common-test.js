@@ -1,39 +1,42 @@
-// 实现一个 promise.map，限制 promise 并发数
+var MinStack = function () {
+  this.stack = []
+  this._minStack = [Infinity]
+}
+
 /**
- * pMap([1, 2, 3, 4, 5], (x) => Promise.resolve(x + 1));
-
-pMap([Promise.resolve(1), Promise.resolve(2)], (x) => x + 1);
-
-// 注意输出时间控制
-pMap([1, 1, 1, 1, 1, 1, 1, 1], (x) => sleep(1000), { concurrency: 2 });
+ * @param {number} val
+ * @return {void}
  */
-
-// 鹏哥写法
-
-function sleep(timeout) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, timeout)
-  })
+MinStack.prototype.push = function (val) {
+  this.stack.push(val)
+  const lastMinNum = this._minStack[this._minStack - 1]
+  this._minStack.push(Math.min(lastMinNum, val))
 }
 
-function pMap(data, fn, options) {
-  data = [...data]
-  async function next() {
-    let cur = data.shift()
-    if (cur === undefined) {
-      return
-    }
-    cur = Promise.resolve(cur)
-    const x = await cur
-    const res = await fn(x)
-    console.log(res)
-    next()
-  }
-  for (let i = 0; i < (options?.concurrency || 1); i++) {
-    next()
-  }
+/**
+ * @return {void}
+ */
+MinStack.prototype.pop = function () {
+  this.stack.pop()
+  this._minStack.pop()
 }
 
-pMap([1, 2, 3, 4, 5], (x) => Promise.resolve([x + 1]))
-// pMap([Promise.resolve(1), Promise.resolve(2)], (x) => x + 1)
-// pMap([1, 1, 1, 1, 1, 1, 1, 1], (x) => sleep(1000), { concurrency: 2 })
+/**
+ * @return {number}
+ */
+MinStack.prototype.top = function () {
+  return this.stack[this.stack.length - 1]
+}
+
+/**
+ * @return {number}
+ */
+MinStack.prototype.getMin = function () {
+  return this._minStack[this._minStack.length - 1]
+}
+
+var obj = new MinStack()
+obj.push(-3)
+obj.pop()
+var param_3 = obj.top()
+var param_4 = obj.getMin()

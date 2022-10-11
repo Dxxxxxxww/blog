@@ -856,3 +856,50 @@ const filterLoop = async (_) => {
 // [ 'apple' ]
 // End
 ```
+
+### IIFE 中的函数名是常量
+
+```js
+// 为什么 b 会变成 20，而 a 不会
+// 这是因为在 iife 中，函数名当做常量来处理，不可修改，加严格模式就能看到报错了
+var a = 10
+var b = 10
+;(function a() {
+  b = 20
+  console.log(b) // 20
+  a = 20
+  console.log(a) // 函数 a
+})()
+
+a // 10
+b // 20
+```
+
+```js
+var a = 10
+var b = 10
+;(function a() {
+  'use strict'
+  b = 20
+  console.log(b) // 20
+  a = 20
+  console.log(a) // 函数 a
+})()
+
+// Uncaught TypeError: Assignment to constant variable.at a
+```
+
+[资料](https://segmentfault.com/q/1010000002810093)
+
+但是如果有形参，并且形参与函数同名，形参是可以改变的
+
+```js
+console.log(
+  (function f(f) {
+    return typeof f()
+  })(function () {
+    return 1
+  })
+)
+// number
+```
