@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+    />
+  </head>
+  <body>
+    <div>geekbang com1</div>
+    <!-- 虽然 css 阻塞 js，js 阻塞 dom，但是由于 dom 不是整个接收后才解析，而是接受多少解析多少，所以 1 会先在页面上渲染，2会等js执行完再渲染-->
+    <!-- 这也是为什么都推荐把 link 放头部，把 script 放 body 尾部。不影响 dom 渲染 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <div>geekbang com2</div>
+  </body>
+</html>
