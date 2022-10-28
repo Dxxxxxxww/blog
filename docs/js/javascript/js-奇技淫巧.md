@@ -94,3 +94,7 @@ a('123456789') // 123,456,789
 1. 写个 border-top: 0.5px
 2. 然后判断 offsetHeight === 1
 3. 如果等于就是不支持，不等于就是支持
+
+## js ast 分析站点 js-ast
+
+[js ast 分析站点](https://resources.jointjs.com/demos/javascript-ast)
