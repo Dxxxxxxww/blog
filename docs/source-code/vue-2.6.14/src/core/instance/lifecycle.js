@@ -15,7 +15,7 @@ import {
   remove,
   emptyObject,
   validateProp,
-  invokeWithErrorHandling
+  invokeWithErrorHandling,
 } from '../util/index'
 
 export let activeInstance: any = null
@@ -31,7 +31,7 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
-export function initLifecycle (vm: Component) {
+export function initLifecycle(vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
@@ -65,7 +65,7 @@ export function initLifecycle (vm: Component) {
   vm._isBeingDestroyed = false
 }
 
-export function lifecycleMixin (Vue: Class<Component>) {
+export function lifecycleMixin(Vue: Class<Component>) {
   // 会在组件渲染的时候调用
   // 传入的 vnode 都是真实 vnode，对于 keepAlive 来说是个例外，因为 keepAlive 返回的真实 vnode 是其 slot 的占位 vnode。
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
@@ -180,7 +180,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
-export function mountComponent (
+export function mountComponent(
   vm: Component,
   el: ?Element,
   // 在 $mount 调用时传递
@@ -196,12 +196,15 @@ export function mountComponent (
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
       // 并且传入了 template 则会报警，只含运行时版本是不能编译 template
-      if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
-        vm.$options.el || el) {
+      if (
+        (vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
+        vm.$options.el ||
+        el
+      ) {
         warn(
           'You are using the runtime-only build of Vue where the template ' +
-          'compiler is not available. Either pre-compile the templates into ' +
-          'render functions, or use the compiler-included build.',
+            'compiler is not available. Either pre-compile the templates into ' +
+            'render functions, or use the compiler-included build.',
           vm
         )
       } else {
@@ -252,14 +255,20 @@ export function mountComponent (
   // vm._watcher 已经被定义
   // 创建一个 Watcher 实例 渲染watcher
   // 每一个组件使用都会调用 mount，因此每一个组件都会有一个 render watcher
-  new Watcher(vm, updateComponent, noop, {
-    // 调用 beforeUpdate 生命周期钩子
-    before () {
-      if (vm._isMounted && !vm._isDestroyed) {
-        callHook(vm, 'beforeUpdate')
-      }
-    }
-  }, true /* isRenderWatcher */)
+  new Watcher(
+    vm,
+    updateComponent,
+    noop,
+    {
+      // 调用 beforeUpdate 生命周期钩子
+      before() {
+        if (vm._isMounted && !vm._isDestroyed) {
+          callHook(vm, 'beforeUpdate')
+        }
+      },
+    },
+    true /* isRenderWatcher */
+  )
   hydrating = false
 
   // manually mounted instance, call mounted on self
@@ -278,7 +287,7 @@ export function mountComponent (
 }
 
 // 更新子组件，强制重新渲染 slots
-export function updateChildComponent (
+export function updateChildComponent(
   vm: Component,
   propsData: ?Object,
   listeners: ?Object,
@@ -311,15 +320,16 @@ export function updateChildComponent (
   // 动态作用于插槽也有可能发生变化。
   // 在这些情况下，一个强制更新是必要的，以确保正确性
   const needsForceUpdate = !!(
-    renderChildren ||               // has new static slots
-    vm.$options._renderChildren ||  // has old static slots
+    renderChildren || // has new static slots
+    vm.$options._renderChildren || // has old static slots
     hasDynamicScopedSlot
   )
 
   vm.$options._parentVnode = parentVnode
   vm.$vnode = parentVnode // update vm's placeholder node without re-render
 
-  if (vm._vnode) { // update child tree's parent
+  if (vm._vnode) {
+    // update child tree's parent
     vm._vnode.parent = parentVnode
   }
   vm.$options._renderChildren = renderChildren
@@ -348,6 +358,8 @@ export function updateChildComponent (
     }
     toggleObserving(true)
     // keep a copy of raw propsData
+    // v-if v-else 切换公用同一个 vnode 的组件，会复制 propsData,
+    // 程序员小山-详解 el-button disabled 失效
     vm.$options.propsData = propsData
   }
 
@@ -371,14 +383,14 @@ export function updateChildComponent (
   }
 }
 // 递归查找父实例，如果父实例已经有 _inactive 了就返回 true
-function isInInactiveTree (vm) {
+function isInInactiveTree(vm) {
   while (vm && (vm = vm.$parent)) {
     if (vm._inactive) return true
   }
   return false
 }
 
-export function activateChildComponent (vm: Component, direct?: boolean) {
+export function activateChildComponent(vm: Component, direct?: boolean) {
   // _directInactive， _inactive 在 initLifecycle 中定义
   // 因为每个组件都会执行 patch ，都有可能执行这个函数，所以这些变量都是用来防止组件重复执行 activated 生命周期钩子函数的
   if (direct) {
@@ -401,7 +413,7 @@ export function activateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
-export function deactivateChildComponent (vm: Component, direct?: boolean) {
+export function deactivateChildComponent(vm: Component, direct?: boolean) {
   if (direct) {
     vm._directInactive = true
     if (isInInactiveTree(vm)) {
@@ -417,7 +429,7 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
-export function callHook (vm: Component, hook: string) {
+export function callHook(vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   // 在调用生命周期钩子时禁用dep 收集
   // 所以这里不传参数，让 Dep.target = undefined 让 watcher 栈顶传入 undefined 达到不触发依赖收集的目的
