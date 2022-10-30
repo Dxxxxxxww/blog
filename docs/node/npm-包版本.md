@@ -24,3 +24,14 @@ npm -v
 ## peer
 
 peer 就是是装你这个包必须要装什么。比如你 npm 包用了 lodash 然后你不想打包就添加个 peer lodash。也就是说让用户自己去下载这个包，不集成到自己的第三方包的依赖中。
+
+## module
+
+在 package.json 文件中添加 module 字段，就代表发布了 esm 版本文件，天然支持 tree-shaking
+
+```js
+{
+  "main": "dist/dist.js",
+  "module": "dist/dist.es.js"
+}
+```
