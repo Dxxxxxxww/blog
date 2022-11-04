@@ -1,4 +1,6 @@
 // 快排
+// 时间复杂度 Ο(nlogn) - Ο(n2)
+// 空间复杂度 O(1)
 function quickSort(list, i, j) {
   if (i > j) return
   let l = i,
@@ -27,10 +29,5 @@ function quickSort(list, i, j) {
   return list
 }
 
-const list = []
-for (let i = 0; i < 10; i++) {
-  list.push(Math.floor(Math.random() * 100 * i))
-}
-
-console.log('list: ', list)
-console.log(quickSort(list, 0, 9))
+const list = [0, 31, 190, 123, 46, 459, 93, 497, 734, 350, 1, 10, 100, 1000, 22]
+console.log(quickSort(list, 0, 14))
