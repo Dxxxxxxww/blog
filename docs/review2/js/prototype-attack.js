@@ -19,4 +19,3 @@ let innocentObj = {}
 innocentObj.hello // 1
 
 console.log(innocentObj.hello)
-

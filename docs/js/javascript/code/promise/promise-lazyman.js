@@ -7,6 +7,63 @@
 // 我的写法，算是结合了鸡哥和茂神的
 // 我和茂神写法的思路都是通过微任务来链式执行，在下一个 task 之前编队，下一个 task 自动执行
 // 鸡哥是使用执行栈 + task
+
+class LazyMan {
+  constructor(name) {
+    this.list = [
+      () => {
+        console.log(name)
+      }
+    ]
+    // setTimeout(async () => {
+    //   while (this.list.length) {
+    //     await this.list.shift()()
+    //   }
+    // }, 0)
+    setTimeout(() => {
+      this.list.reduce(
+        (current, next) => current.then(() => next()),
+        Promise.resolve()
+      )
+    }, 0)
+  }
+  eat(food) {
+    this.list.push(() => {
+      console.log(food)
+    })
+    return this
+  }
+  sleep(time) {
+    this.list.push(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            resolve()
+            console.log(time)
+          }, time * 1e3)
+        })
+    )
+    return this
+  }
+  sleepFirst(time) {
+    this.list.unshift(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            resolve()
+            console.log(time)
+          }, time * 1e3)
+        })
+    )
+    return this
+  }
+}
+
+function lazyMan(name) {
+  return new LazyMan(name)
+}
+lazyMan('hank').sleep(1).eat('cola').sleepFirst(3)
+
 const { log } = console
 // day 11 promise 1
 class _LazyMan {

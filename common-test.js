@@ -1,35 +1,33 @@
-// 归并排序
-// 时间复杂度 O(nlogn)1·
-// 空间复杂度 O(n)
-// 递归版本
+// 实现一个 promise.map，限制 promise 并发数
+/**
+ * pMap([1, 2, 3, 4, 5], (x) => Promise.resolve(x + 1));
 
-function mergeSort(list) {
-  if (list.length < 2) {
-    return list
-  }
-  const middle = Math.floor(list.length / 2)
-  const l = list.slice(0, middle)
-  const r = list.slice(middle, list.length)
-  return merge(mergeSort(l), mergeSort(r))
-}
+pMap([Promise.resolve(1), Promise.resolve(2)], (x) => x + 1);
 
-function merge(l, r) {
-  const res = []
-  while (l.length && r.length) {
-    if (l[0] < r[0]) {
-      res.push(l.shift())
-    } else {
-      res.push(r.shift())
+// 注意输出时间控制
+pMap([1, 1, 1, 1, 1, 1, 1, 1], (x) => sleep(1000), { concurrency: 2 });
+ */
+
+function pMap(list, fn, options) {
+  list = [...list]
+  const next = async () => {
+    while (list.length) {
+      let param = list.shift()
+      param = await param
+      const res = await fn(param)
+      console.log(res)
     }
   }
-  while (l.length) {
-    res.push(l.shift())
+  for (let i = 0; i < (options?.concurrency || 1); i++) {
+    next()
   }
-  while (r.length) {
-    res.push(r.shift())
-  }
-  return res
 }
 
-const list = [0, 31, 190, 123, 46, 459, 93, 497, 734, 350, 1, 10, 100, 1000, 22]
-console.log(mergeSort(list))
+pMap(
+  [1, 2, 3, 4, 5],
+  (x) =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(x), 1000)
+    }),
+  { concurrency: 2 }
+)

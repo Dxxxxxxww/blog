@@ -8,6 +8,31 @@ pMap([Promise.resolve(1), Promise.resolve(2)], (x) => x + 1);
 pMap([1, 1, 1, 1, 1, 1, 1, 1], (x) => sleep(1000), { concurrency: 2 });
  */
 
+function pMap(list, fn, options) {
+  list = [...list]
+  //   const next = async () => {
+  //     if (!list.length) {
+  //       return
+  //     }
+  //     let param = list.shift()
+  //     param = await param
+  //     const res = await fn(param)
+  //     console.log(res)
+  //     next()
+  //   }
+  const next = async () => {
+    while (list.length) {
+      let param = list.shift()
+      param = await param
+      const res = await fn(param)
+      console.log(res)
+    }
+  }
+  for (let i = 0; i < (options?.concurrency || 1); i++) {
+    next()
+  }
+}
+
 // 鹏哥写法
 
 function sleep(timeout) {

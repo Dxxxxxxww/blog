@@ -66,6 +66,25 @@ class Scheduler {
       })
     })
   }
+
+  add3(task) {
+    return new Promise((resolve) => {
+      if (this.count >= this.limit) {
+        this.tasks.push(resolve)
+      } else {
+        this.count++
+        resolve()
+      }
+    }).then(() => {
+      return task().then((value) => {
+        this.count--
+        if (this.tasks.length) {
+          this.tasks.shift()()
+        }
+        return value
+      })
+    })
+  }
 }
 
 function timeout(time, value) {

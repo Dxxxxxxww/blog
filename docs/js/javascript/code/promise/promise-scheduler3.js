@@ -2,3 +2,6 @@
 // 1. 实现一个串行执行的版本
 // 2. 实现一个并行执行的版本
 // 3. 实现一个可以控制并发数的版本
+const add = (a, b) => new Promise((resolve) => {
+  resolve(a + b)
+})
