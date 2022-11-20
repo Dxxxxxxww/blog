@@ -1,33 +1,41 @@
-// 实现一个 promise.map，限制 promise 并发数
-/**
- * pMap([1, 2, 3, 4, 5], (x) => Promise.resolve(x + 1));
-
-pMap([Promise.resolve(1), Promise.resolve(2)], (x) => x + 1);
-
-// 注意输出时间控制
-pMap([1, 1, 1, 1, 1, 1, 1, 1], (x) => sleep(1000), { concurrency: 2 });
- */
-
-function pMap(list, fn, options) {
-  list = [...list]
-  const next = async () => {
-    while (list.length) {
-      let param = list.shift()
-      param = await param
-      const res = await fn(param)
-      console.log(res)
-    }
+class _LazyMan {
+  constructor(name) {
+    this.queue = []
+    this.queue.push(() => {
+      console.log(name)
+    })
+    setTimeout(async () => {
+      while (this.queue.length) {
+        await this.queue.shift()()
+      }
+    })
   }
-  for (let i = 0; i < (options?.concurrency || 1); i++) {
-    next()
+  sleep(time, isFront) {
+    const fn = () =>
+      new Promise((resolve) => {
+        setTimeout(() => resolve(), time * 1e3)
+      })
+
+    if (isFront) {
+      this.queue.unshift(fn)
+    } else {
+      this.queue.push(fn)
+    }
+    return this
+  }
+  eat(food) {
+    this.queue.push(() => {
+      console.log(food)
+    })
+    return this
+  }
+  sleepFirst(time) {
+    this.sleep(time, true)
+    return this
   }
 }
 
-pMap(
-  [1, 2, 3, 4, 5],
-  (x) =>
-    new Promise((resolve) => {
-      setTimeout(() => resolve(x), 1000)
-    }),
-  { concurrency: 2 }
-)
+function LazyMan(name) {
+  return new _LazyMan(name)
+}
+LazyMan('hank').sleep(1).eat('cola').sleepFirst(3)

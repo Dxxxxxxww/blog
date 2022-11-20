@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>keepAlive</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="../../dist/vue.js"></script>
+    <script>
+      const vm = new Vue({
+        el: '#app',
+        template: `
+          <!--          @click="handleClickTwo" -->
+          <!-- 动态事件名如果同静态事件名，在 genHandlers 中动态事件的判断会因为是数组而进入静态事件的分支，后续应该还会有处理 -->
+          <div @click="handleClickOne" @[click]="handleClickTwo" @[nameClickTwo]="handleClickTwo">
+            click me
+          </div>
+        `,
+        data() {
+          return {
+            click: 'nameClickTwo',
+            // click: 'click', // 多个静态同名事件会报错（但是依然可以执行），但是用动态就可以绕过报错
+            nameClickTwo: 'handleClickTwo'
+          }
+        },
+        methods: {
+          handleClickOne() {
+            console.log(1)
+          },
+          handleClickTwo() {
+            console.log(2)
+          }
+        }
+      })
+    </script>
+  </body>
+</html>

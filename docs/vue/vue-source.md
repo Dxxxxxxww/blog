@@ -248,6 +248,26 @@ vm 实例 \_uid，从 0 开始，根实例\_uid 是 0。
 
 查看数据修改来源
 
+## vue 中 watcher 和 dep 相互收集的目的是什么？
+
+这个问题的本质其实是在问 watcher 中为什么要收集 dep？（毕竟 dep 中是肯定需要收集 watcher 的。）
+
+要回答这个问题，首先要把 watcher 分类来看。
+
+watcher 有三类：
+
+1. render watcher;
+2. computed watcher;
+3. user watcher
+
+对于 render watcher 和 user watcher 来说，收集 dep 最主要的目的是为了在取消监听时，方便 dep 中移除 watcher。
+
+对于 render watcher 来说，当在 v-if v-else 切换的场景中，如果不对旧 dep 进行 watcher 清除，会造成无效的 watcher 执行，造成不必要的性能损耗。
+
+对于 user watcher 来说，存在 unwatcher 的需求，在 unwatcher 时也需要将 dep 中删掉对应的 watcher。
+
+而对于 computed watcher，watcher 收集 dep 则是有更重要的目的。对于 computed 属性来说，在 template 中使用时，由于不是 data 所以不会进行依赖收集。当在初始化 computed watcher 时，会去执行我们定义的 computed 函数，这时候会对函数中的 data 进行依赖收集，computed watcher 也会收集到对应的 dep。当执行完 computed 函数，会将 computed watcher 从栈顶移除，这时候栈顶就会变成了 render watcher。此时会使用原来 computed watcher 来进行 depend 依赖收集，给 dep 中注入 render watcher，也让 render watcher 获取到 data 的 dep。这样一来，在 data 更新时，就会触发 computed 和 render 两个 watcher 的更新。使页面拿到最新的值并重新渲染。
+
 ## 提升
 
 1. 更好的运用 API，了解到一些特殊场景好用的操作(watch options)，更好的排查调试项目问题

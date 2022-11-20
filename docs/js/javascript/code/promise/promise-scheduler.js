@@ -1,4 +1,4 @@
-// 实现一个Scheduler类，使下面的代码能正确输出。并发控制，最多同时 2个并发任务
+// 并发控制。实现一个Scheduler类，使下面的代码能正确输出。并发控制，最多同时 2个并发任务
 // Usage
 // const timeout = (time, value) =>
 //   new Promise(resolve => {
