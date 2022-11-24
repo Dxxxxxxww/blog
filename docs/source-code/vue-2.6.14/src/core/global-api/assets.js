@@ -4,7 +4,7 @@ import { ASSET_TYPES } from 'shared/constants'
 import { isPlainObject, validateComponentName } from '../util/index'
 
 /**
- * 给component, directive, filter 三个全局api初始化，并增加前置判断
+ * 给component, directive, filter 三个静态api初始化，并增加前置判断
  */
 export function initAssetRegisters (Vue: GlobalAPI) {
   /**

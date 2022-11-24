@@ -122,6 +122,74 @@ dom 元素创建顺序：
 1. 子先挂载到父上。
 2. 父再往上挂载。
 
+
+## vue 生命周期执行顺序
+
+除了 mounted updated destroyed 所有生命周期都是先父后子。 ed 结尾的生命周期都是子先。
+
+销毁：
+
+```js
+parent beforeDestroy
+son beforeDestroy
+son destroyed
+parent destroyed
+```
+
+挂载：
+
+```js
+parent beforeCreate
+parent created
+parent beforeMount
+son beforeCreate
+son created
+son beforeMount
+son mounted
+parent mounted
+```
+
+更新：
+
+```js
+parent beforeUpdate
+son beforeUpdate
+son updated
+parent updated
+```
+
+总:
+
+```js
+// 挂载时
+parent beforeCreate
+parent created
+parent beforeMount
+son beforeCreate
+son created
+son beforeMount
+son mounted
+son activated   // keep-alive 这里没写错哦，activated 是在 mounted 之后的
+parent mounted
+parent beforeUpdate
+parent update
+// 更新时
+parent beforeUpdate
+son beforeUpdate
+son update
+parent update
+// 销毁时
+parent beforeDestroy
+son deactivated    // keep-alive 如果父级组件也销毁，keep-alive 组件还是会销毁的。这里没写错哦 deactivated 是在销毁之前的
+son beforeDestroy
+son destroyed
+parent destroyed
+```
+
+## diff 算法的流程
+
+前前后后，前后后前，有 key 找 key，没 key 遍历
+
 ### vm，占位 vnode，真实 vnode 的关系
 
 组件使用的地方，也就是占位 vnode ，他只会出现在 templat 和 vnode 树中，而不会出现在真正的 dom 里。

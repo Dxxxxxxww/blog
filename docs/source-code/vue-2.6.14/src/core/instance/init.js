@@ -128,7 +128,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 
   const vnodeComponentOptions = parentVnode.componentOptions
   opts.propsData = vnodeComponentOptions.propsData
-  // 获取父级的监听函数
+  // 获取父级的监听函数，也就是组件上的自定义事件，绑定到 $options 上，以便 initEvents 中使用  <A @selectItem="xxx"/> => selectItem
   opts._parentListeners = vnodeComponentOptions.listeners
   opts._renderChildren = vnodeComponentOptions.children
   opts._componentTag = vnodeComponentOptions.tag

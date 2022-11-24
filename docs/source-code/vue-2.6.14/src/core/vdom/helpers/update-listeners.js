@@ -88,7 +88,7 @@ export function updateListeners (
       if (isUndef(cur.fns)) {
         // 返回一个 invoker 函数，将事件添加到 invoker.fns 上
         // 意味着其后调用的 add 方法的 handler 参数就是 invoker，而不直接是我们传入的 handleClick 方法
-        // 相当于包裹了一层
+        // 相当于给我们传入的方法包裹了一层（增加  try...catch ），在事件触发时会去调用 invoker.fns。如果是数组则遍历调用，不是数组直接调用
         cur = on[name] = createFnInvoker(cur, vm)
       }
       if (isTrue(event.once)) {

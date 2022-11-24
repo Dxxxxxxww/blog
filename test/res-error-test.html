@@ -5,9 +5,9 @@
   </head>
   <body>
     <script>
-      // window.onerror = function () {
-      //   console.log('onerror====', arguments)
-      // }
+      window.onerror = function () {
+        console.log('onerror====', arguments)
+      }
 
       window.addEventListener(
         'error',
@@ -31,14 +31,14 @@
     <script>
       // 也能捕获到 js 执行错误，但是不会拦截控制台报错输出
       // ReferenceError
-      // a.b
+      a.b
       // TypeError
       // const person = void 0
       // person.name
       // RangeError 栈溢出
-      ;(function fn() {
-        fn()
-      })()
+      // ;(function fn() {
+      //   fn()
+      // })()
 
       // SyntaxError
       // const xxx

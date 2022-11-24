@@ -111,6 +111,7 @@ function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   target = vnode.elm
   // 处理与 v-model 相关的
   normalizeEvents(on)
+  // 处理事件
   updateListeners(on, oldOn, add, remove, createOnceHandler, vnode.context)
   target = undefined
 }
