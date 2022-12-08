@@ -71,7 +71,7 @@ export function memo<Props>(
 }
 ```
 
-### 受控与非受控组件
+## 受控与非受控组件
 
 非受控组件：表单数据都是交由 dom 元素自身去管理的。特点是数据在需要时获取（不像 state 一样随时可以获取）。
 
@@ -107,7 +107,7 @@ function App() {
 
 ![image](/react/shoukong-feishoukong.png)
 
-### 为什么使用 css in js
+## 为什么使用 css in js
 
 css 缺点：
 
@@ -131,7 +131,7 @@ css in js 优点：上面解决局限性的 3 点。
 1. 给项目增加额外的复杂性；
 2. 自动生成的选择器降低了代码的可读性。
 
-### react 登录态
+## react 登录态
 
 ![image](/react/react-login-1.jpg)
 ![image](/react/react-login-2.jpg)
@@ -139,3 +139,10 @@ css in js 优点：上面解决局限性的 3 点。
 ## umi 是什么，可以理解为加强版的 element-admin 吗？
 
 umi 类似于 next。跟 vue-cli 不一样的，umi 的东西更多。你要对比，就跟 next 对比吧，跟 vue-cli 没啥比的。他把开发流程都给规范了，怎么请求 怎么写 router，都给包装好了。
+
+## ssr 与 csr
+
+csr 存在的问题：
+
+1. 首屏等待时间长，用户需要等待浏览器发起 html 的请求，等待 css， js 文件的下载，最后在 c 端合成页面进行展示
+2. 页面结构为空，不利于 seo
