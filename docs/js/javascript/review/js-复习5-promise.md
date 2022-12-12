@@ -1,3 +1,8 @@
+# promise
+
+promise 就直接手写好了
+
+```js
 import instance from './docs/source-code/vue-2.6.14/src/core/instance'
 import resolve from 'resolve'
 
@@ -230,3 +235,5 @@ p.then()
       console.log('err-', err)
     }
   )
+
+```
