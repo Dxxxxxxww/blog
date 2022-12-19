@@ -301,6 +301,8 @@ function createComputedGetter (key) {
         watcher.evaluate()
       }
       // watcher.evaluate() 执行完后，计算watcher就会pop()，此时栈顶是 渲染watcher === Dep.target
+      // 这时候调用 computed watcher.depend() 来通过 computed watcher 中的 deps 来收集 render watcher
+      // 达到 template 中使用 computed 时 render watcher 也能收集到 data 依赖的目的。
       if (Dep.target) {
         // 定义了计算属性后，并在 template 中使用的场景
         // 计算watcher 调用 depend，遍历 计算watcher 上的所有 dep（访问的 data数据 生成的依赖），使 dep 与 渲染watcher 进行依赖收集

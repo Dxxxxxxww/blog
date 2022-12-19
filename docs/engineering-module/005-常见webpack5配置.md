@@ -30,6 +30,196 @@ entry 的相对路径就是相对于 context 而言的。
 
 对特定类型的文件做转换处理。像 css，图片，字体等等。工作时机确定 -> 在读取文件内容时。在 module 下配置。
 
+### babel-loader
+
+提供的语言转译能力，能在确保产物兼容性的同时，让我们大胆使用各种新的 ECMAScript 语言特性
+
+- @babel/preset-env：各种 ES6 代码转 ES5 的预设 
+
+安装方法：
+
+```shell
+npm i -D @babel/core @babel/preset-env babel-loader
+```
+
+使用方法：
+
+```js
+module.exports = {
+  /* ... */
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env'],
+            },
+          },
+        ],
+      },
+    ],
+  },
+};
+
+// 又或者
+module.exports = {
+    /* ... */
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: ['babel-loader']
+      }
+    ],
+  },
+};
+
+
+// babel.config.js
+
+module.exports = {
+  presets: ['@babel/preset-env']
+}
+```
+
+#### polyfill
+
+对 babel 一些不能做转换的语法补充。webpack4 默认携带，webpack5 为了优化打包体积默认移除，需要用时添加即可。
+
+babel7 之后只需要添加 core-js regenerator-runtime 即可。
+
+babel7 之前是 polyfill，babel 7 之后是 core js。babel7 是 core2，babel8 是 core 3。
+
+```js
+module.exports = {
+  presets: [
+    '@babel/preset-env',
+    {
+      // false: 不对当前的 js 做 polyfill 处理
+      // usage：依据代码中所使用到的代码做兼容处理
+      // entry：依据 browserslist 选择的浏览器范围做处理
+      useBuiltIns: 'usage',
+      // 安装的 corejs 版本
+      corejs: 3
+    }
+  ]
+}
+```
+
+如果一些第三方包已经使用了 @babel/polyfill，再在配置中使用 usage 做处理会有问题，这时候需要在 webpack 配置中给 babel-loader 添加 exclude: /node_modules/
+
+#### 如何根据模式有选择的使用 babel 插件
+
+可以在 webpack 配置文件中给 process.env 手动挂载值，然后在 babelrc 中通过 process.env. 获取。如果单纯的通过 webpack.mode 设置的 process.env.NODE_ENV，在诸如 babelrc 这样的非模块文件中无法获取到。
+
+#### why？
+
+究其原因是，在 webpack.mode 中设置模式，是通过 DefinePlugin 给 process.env.NODE_ENV 的值设置。这种全局变量在非模块配置文件中无法获取。而又因为配置文件的执行是归 webpack 控制，所以在 webpack 配置文件 中手动添加变量，是可以获取到的。也就是说 DefinePlugin 设置的全局变量只能在模块中使用。
+
+### ts 相关 loader
+
+提供的类型检查能力，能有效提升应用代码的健壮性
+
+- ts-loader: ts 有语法错误时可以在编译期间报错。做语法校验。
+- babel-loader: ts 只是简单完成代码转换，并未做类似 ts-loader 的类型检查工作。需要在 preset 中加上@babel/preset-typescript
+
+更推荐使用 babel-loader，原因如下：
+
+1. babel-loader 会忽略 ts 类型检查，能让整个转换操作变得更快
+2. ts-loader 用于将 typescript 转换为 javascript；babel-loader 则用于根据我们的要求将该 javascript 转换为目标浏览器友好的代码版本。（当然，使用 ts-loader 先转换 ts，再使用 babel-loader 对 js 做降级处理应该也是可以的，没实践过）
+
+使用 babel-loader，兼容类型检查的解决办法: 使用 babel-loader 并在 npm 中添加脚本，使用 tsc 来进行类型检查。
+
+```js
+scriptes: {
+  'build': 'npm run ts && webpack',
+  'ts': 'tsc --noEmit'  // noEmit 指的是不生成转换 js 文件。
+}
+```
+
+安装方法：
+```shell
+npm i -D webpack webpack-cli \
+    # babel 依赖
+    @babel/core @babel/cli @babel/preset-env babel-loader \
+    # TypeScript 依赖
+    typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin \
+    @babel/preset-typescript \
+    # ESLint 依赖
+    eslint eslint-webpack-plugin
+```
+
+也可以使用 eslint 插件的方法。使用方法：
+
+```js
+module.exports = {
+  // ...
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: {
+          loader: 'babel-loader',
+          options: { presets: ['@babel/preset-typescript'] }
+        }
+      }
+    ]
+  },
+  plugins: [new ESLintPlugin({ extensions: ['.js', '.ts'] })]
+}
+```
+
+在 eslintrc 中使用类型检查插件
+
+```json
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": ["plugin:@typescript-eslint/recommended"]
+}
+```
+
+ts-loader 安装方法：
+
+```shell
+npm i -D typescript ts-loader
+```
+
+ts-loader 使用方法：
+
+```js
+const path = require('path');
+
+module.exports = {
+  /* xxx */
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader'
+      },
+    ],
+  },
+  resolve: {
+    //  自动解析 .ts 后缀文件，在导入 ts 模块时就不需要加后缀了
+    extensions: ['.ts', '.js'],
+  }
+};
+```
+
+创建 tsconfig.json 文件来配置 ts
+```json
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "moduleResolution": "node"
+  }
+}
+```
+
 ### css 相关的 loader
 
 css 相关的 loader 有以下几种：
@@ -141,20 +331,6 @@ output: {
     generator: {
         filename: 'static/[hash][ext][query]'
     }
-}
-```
-
-### ts 相关 loader
-
-- ts-loader: ts 有语法错误时可以在编译期间报错。做语法校验。
-- babel-loader: ts 语法错误不会在编译期间报错，但是可以将一些 js 高阶语法做兼容处理。需要在 preset 中加上@babel/preset-typescript
-
-解决办法: 使用 babel-loader 并在 npm 中添加脚本
-
-```js
-scriptes: {
-    'build': 'npm run ts && webpack',
-    'ts': 'tsc --noEmit'  // noEmit 指的是不生成转换 js 文件。
 }
 ```
 
@@ -270,58 +446,54 @@ HMR 的插件
 
 ### mini-css-extract-plugin
 
-webpack 4 中 css 以 link 标签形式加载到 head 中。分离 css 并单独打包。
+webpack 5 中 css 以 link 标签形式加载到 head 中。分离 css 并单独打包。
 
-## babel
+当 Webpack 版本低于 5.0 时，使用 extract-text-webpack-plugin 代替 mini-css-extract-plugin。
 
-对 js 做兼容处理
+### eslint
 
-```js
+提供的风格检查能力，能确保多人协作时的代码一致性
+
+安装方法：
+
+```shell
+# 安装 webpack 依赖
+yarn add -D webpack webpack-cli
+
+# 安装 eslint 
+yarn add -D eslint eslint-webpack-plugin
+
+# 简单起见，这里直接使用 standard 规范
+yarn add -D eslint-config-standard eslint-plugin-promise eslint-plugin-import eslint-plugin-node eslint-plugin-n
+```
+
+使用方法：在根目录添加 .eslintrc 文件
+
+```json
 {
-    test: /\.js$/,
-    use: ['babel-loader']
-}
-
-// babel.config.js
-
-module.exports = {
-    presets: ['@babel/preset-env']
+  "extends": "standard"
 }
 ```
 
-### \* polyfill
-
-对 babel 一些不能做转换的语法补充。webpack4 默认携带，webpack5 为了优化打包体积默认移除，需要用时添加即可。
-
-babel7 之后只需要添加 core-js regenerator-runtime 即可。
-
-babel7 之前是 polyfill，babel 7 之后是 core js。babel7 是 core2，babel8 是 core 3。
+在 webpack.config.js 中增加插件
 
 ```js
+// webpack.config.js
+const path = require('path')
+const ESLintPlugin = require('eslint-webpack-plugin')
+
 module.exports = {
-  presets: [
-    '@babel/preset-env',
-    {
-      // false: 不对当前的 js 做 polyfill 处理
-      // usage：依据代码中所使用到的代码做兼容处理
-      // entry：依据 browserslist 选择的浏览器范围做处理
-      useBuiltIns: 'usage',
-      // 安装的 corejs 版本
-      corejs: 3
-    }
-  ]
+  entry: './src/index',
+  mode: 'development',
+  devtool: false,
+  output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist')
+  },
+  // 添加 eslint-webpack-plugin 插件实例
+  plugins: [new ESLintPlugin()]
 }
 ```
-
-如果一些第三方包已经使用了 @babel/polyfill，再在配置中使用 usage 做处理会有问题，这时候需要在 webpack 配置中给 babel-loader 添加 exclude: /node_modules/
-
-### 如何根据模式有选择的使用 babel 插件
-
-可以在 webpack 配置文件中给 process.env 手动挂载值，然后在 babelrc 中通过 process.env. 获取。如果单纯的通过 webpack.mode 设置的 process.env.NODE_ENV，在诸如 babelrc 这样的非模块文件中无法获取到。
-
-#### why？
-
-究其原因是，在 webpack.mode 中设置模式，是通过 DefinePlugin 给 process.env.NODE_ENV 的值设置。这种全局变量在非模块配置文件中无法获取。而又因为配置文件的执行是归 webpack 控制，所以在 webpack 配置文件 中手动添加变量，是可以获取到的。也就是说 DefinePlugin 设置的全局变量只能在模块中使用。
 
 ## output
 
@@ -648,3 +820,4 @@ vue inspect > output.js
 - path.resolve: 根据参数解析出一个绝对路径。根据参数从右往左，直到解析出一个绝对路径。
 - process.cwd: 当前执行 node 命令时候的文件夹地址。
 - 如果 webpack 配置导出的是函数，其形参 env 的值可以就是 npm script 中的 --env 传入的值。
+

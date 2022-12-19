@@ -52,7 +52,7 @@ module.exports = {
 }
 ```
 
-## vue 中实现 HOC 的三种方式
+## vue 中实现 HOC，render props 的方式
 
 1. jsx
 2. slots

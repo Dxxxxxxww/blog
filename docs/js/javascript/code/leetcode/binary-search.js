@@ -1,5 +1,5 @@
 // 二分查找 lc 704
-
+// 可以用在 a-z 这种有序排列，通讯录，商品名搜索的地方
 /**
  * @param {number[]} nums
  * @param {number} target

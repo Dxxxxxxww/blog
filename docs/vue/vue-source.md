@@ -122,6 +122,74 @@ dom 元素创建顺序：
 1. 子先挂载到父上。
 2. 父再往上挂载。
 
+
+## vue 生命周期执行顺序
+
+除了 mounted updated destroyed 所有生命周期都是先父后子。 ed 结尾的生命周期都是子先。
+
+销毁：
+
+```js
+parent beforeDestroy
+son beforeDestroy
+son destroyed
+parent destroyed
+```
+
+挂载：
+
+```js
+parent beforeCreate
+parent created
+parent beforeMount
+son beforeCreate
+son created
+son beforeMount
+son mounted
+parent mounted
+```
+
+更新：
+
+```js
+parent beforeUpdate
+son beforeUpdate
+son updated
+parent updated
+```
+
+总:
+
+```js
+// 挂载时
+parent beforeCreate
+parent created
+parent beforeMount
+son beforeCreate
+son created
+son beforeMount
+son mounted
+son activated   // keep-alive 这里没写错哦，activated 是在 mounted 之后的
+parent mounted
+parent beforeUpdate
+parent update
+// 更新时
+parent beforeUpdate
+son beforeUpdate
+son update
+parent update
+// 销毁时
+parent beforeDestroy
+son deactivated    // keep-alive 如果父级组件也销毁，keep-alive 组件还是会销毁的。这里没写错哦 deactivated 是在销毁之前的
+son beforeDestroy
+son destroyed
+parent destroyed
+```
+
+## diff 算法的流程
+
+前前后后，前后后前，有 key 找 key，没 key 遍历
+
 ### vm，占位 vnode，真实 vnode 的关系
 
 组件使用的地方，也就是占位 vnode ，他只会出现在 templat 和 vnode 树中，而不会出现在真正的 dom 里。
@@ -247,6 +315,26 @@ vm 实例 \_uid，从 0 开始，根实例\_uid 是 0。
 ## 可以给 defineReactive set 来打断点
 
 查看数据修改来源
+
+## vue 中 watcher 和 dep 相互收集的目的是什么？
+
+这个问题的本质其实是在问 watcher 中为什么要收集 dep？（毕竟 dep 中是肯定需要收集 watcher 的。）
+
+要回答这个问题，首先要把 watcher 分类来看。
+
+watcher 有三类：
+
+1. render watcher;
+2. computed watcher;
+3. user watcher
+
+对于 render watcher 和 user watcher 来说，收集 dep 最主要的目的是为了在取消监听时，方便 dep 中移除 watcher。
+
+对于 render watcher 来说，当在 v-if v-else 切换的场景中，如果不对旧 dep 进行 watcher 清除，会造成无效的 watcher 执行，造成不必要的性能损耗。
+
+对于 user watcher 来说，存在 unwatcher 的需求，在 unwatcher 时也需要将 dep 中删掉对应的 watcher。
+
+而对于 computed watcher，watcher 收集 dep 则是有更重要的目的。对于 computed 属性来说，在 template 中使用时，由于不是 data 所以不会进行依赖收集。当在初始化 computed watcher 时，会去执行我们定义的 computed 函数，这时候会对函数中的 data 进行依赖收集，computed watcher 也会收集到对应的 dep。当执行完 computed 函数，会将 computed watcher 从栈顶移除，这时候栈顶就会变成了 render watcher。此时会使用原来 computed watcher 来进行 depend 依赖收集，给 dep 中注入 render watcher，也让 render watcher 获取到 data 的 dep。这样一来，在 data 更新时，就会触发 computed 和 render 两个 watcher 的更新。使页面拿到最新的值并重新渲染。
 
 ## 提升
 

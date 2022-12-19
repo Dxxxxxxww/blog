@@ -793,11 +793,11 @@ dep.notify()
 
 ## 实现 LazyMan('hank').sleep(3).eat('food').sleepFirst(1)
 
-@[code](./code/promise-lazyman.js)
+@[code](code/promise/promise-lazyman.js)
 
 ## 实现 arrange('William').wait(5).do('commit').wait(5).do('push').execute()
 
-@[code](./code/promise-arrange.js)
+@[code](code/promise/promise-arrange.js)
 
 ## 实现一个发布订阅模式
 
@@ -813,7 +813,7 @@ dep.notify()
 
 [群友解法](https://dmekni.yuque.com/docs/share/f3dc6b1e-301b-4908-89e4-4bce33efab28)
 
-@[code](./code/promise-add.js)
+@[code](code/promise/promise-add.js)
 
 ## fps 计算
 
@@ -829,7 +829,7 @@ dep.notify()
 
 ## 异步并发数量控制
 
-@[code](./code/promise-scheduler.js)
+@[code](code/promise/promise-scheduler.js)
 
 ## 合并数组并排序
 
@@ -855,7 +855,7 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 
 ### 千分位分割
 
-@[code](./code/千分位分割.js)
+@[code](code/utils/千分位分割.js)
 
 ### 计算字符串中出现最多的字符
 
@@ -863,7 +863,7 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 
 ## 红绿灯问题
 
-@[code](./code/red-green-yellow.js)
+@[code](code/promise/red-green-yellow.js)
 
 ## 快排
 
@@ -871,7 +871,7 @@ mergeArr([1, 2, 100, 5, 5], [2, 2, 2, 5, 0])
 
 ## 并发控制4
 
-@[code](./code/promise-scheduler4.js)
+@[code](code/promise/promise-scheduler4.js)
 
 ## render 解析 {{}}
 

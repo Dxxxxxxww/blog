@@ -10,6 +10,36 @@ function yellow() {
   console.log('yellow')
 }
 
+function makePromise(fn, time) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      fn()
+      resolve()
+    }, time * 1e3)
+  })
+}
+
+function run() {
+  makePromise(red, 3)
+    .then(() => makePromise(green, 1))
+    .then(() => makePromise(yellow, 2))
+    .then(() => {
+      run()
+    })
+}
+
+run()
+
+function red() {
+  console.log('red')
+}
+function green() {
+  console.log('green')
+}
+function yellow() {
+  console.log('yellow')
+}
+
 function getWrapperTask(tasks) {
   return tasks.map((task, index) => {
     const timeMap = {

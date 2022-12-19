@@ -4,6 +4,61 @@
  *
  */
 
+function task1(next) {
+  setTimeout(() => {
+    console.log(1)
+    next()
+  }, 1000)
+}
+
+function task2(next) {
+  console.log(2)
+  next()
+}
+
+function task3(next) {
+  setTimeout(() => {
+    console.log(3)
+    next()
+  }, 200)
+}
+
+// function runQueue(list) {
+//   const tasks = [...list]
+//   const run = () => {
+//     if (tasks.length) {
+//       tasks.shift()(run)
+//     }
+//   }
+//   run()
+// }
+
+// function runQueue(list) {
+//   list.reduce((current, next) => {
+//     return new Promise((resolve) => {
+//       current.then(() => {
+//         next(resolve)
+//       })
+//     })
+//   }, Promise.resolve())
+// }
+
+async function runQueue(list) {
+  const tasks = [...list]
+  while (tasks.length) {
+    await makePromise(tasks.shift())
+  }
+}
+
+function makePromise(fn) {
+  return new Promise((resolve) => {
+    fn(resolve)
+  })
+}
+
+// queue([task1, task2, task3])
+runQueue([task1, task2, task3])
+
 // 茂神解法，promise，
 function runQueue(queue) {
   queue.reduce(

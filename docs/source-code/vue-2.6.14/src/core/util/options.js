@@ -512,7 +512,7 @@ export function mergeOptions (
     // 合并 mixins
     if (child.mixins) {
       for (let i = 0, l = child.mixins.length; i < l; i++) {
-        // 这里现将 mixin 上的选项合并到 parent 上面，然后再在下面进行遍历 child 的属性时，才会把其自身的配置合并对应的位置
+        // 这里先将 mixin 上的选项合并到 parent 上面，然后再在下面进行遍历 child 的属性时，才会把其自身的配置合并对应的位置
         parent = mergeOptions(parent, child.mixins[i], vm)
       }
     }

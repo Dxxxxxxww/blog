@@ -220,13 +220,15 @@ export function createComponent (
   }
   // 事件监听处理
   // 对于原生 DOM 事件它取的是 data.on。但对于组件而言，因为添加了 native 修饰符，
-  // 所以它会出现在 nativeOn 对象上，而不是 on 对象上。
+  // 所以原生事件出现在 nativeOn 对象上，而不是 on 对象上。
   // 又因为此时的 on 对象，是我们撰写的组件自定义事件，所以需要特殊处理一下
   // extract listeners, since these needs to be treated as
   // child component listeners instead of DOM listeners
+  // 组件自定义事件赋值
   const listeners = data.on
   // replace with listeners with .native modifier
   // so it gets processed during parent component patch.
+  // 组件原生 dom 事件赋值，然后在 patch 生成 dom 时，调用 updateListeners 会取 on 上的原生事件进行 addEventListener 事件监听
   data.on = data.nativeOn
 
   if (isTrue(Ctor.options.abstract)) {

@@ -18,7 +18,7 @@ export const createCompiler = createCompilerCreator(
     // 用户 options 和 baseOptions 合并后的 options
     options: CompilerOptions
   ): CompiledResult {
-    // 1. 把模板编译成 ast
+    // 1. 把模板编译成 ast，这里的 ast 就是个 js 对象
     const ast = parse(template.trim(), options)
     if (options.optimize !== false) {
       // 2. 优化 ast，标记ast及其子节点的静态节点和静态根节点

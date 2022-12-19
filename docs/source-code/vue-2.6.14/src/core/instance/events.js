@@ -15,7 +15,7 @@ export function initEvents (vm: Component) {
   vm._hasHookEvent = false
   // init parent attached events
   // 获取父级中添加的事件
-  // 在 _init 中 通过 initInternalComponent 绑定到 $options 上
+  // 在 _init 中 通过 initInternalComponent 绑定到 $options 上，这里就拿到了组件上的自定义事件 <A @selectItem="xxx"/> => selectItem
   const listeners = vm.$options._parentListeners
   if (listeners) {
     // 监听父级上添加的事件
@@ -49,7 +49,8 @@ export function updateComponentListeners (
   oldListeners: ?Object
 ) {
   target = vm
-  // 这个与原生事件添加里的 updateListeners 是同一个，区别是 add，remove 不同
+  // 这个与原生事件添加里的 updateListeners 是同一个，区别是 add，remove 不同。
+  // 原生的 add remove 调用的是 dom api addEventListener removeEventListener 这里则是 $on $off
   // updateListeners src/core/vdom/helpers/update-listeners.js
   updateListeners(listeners, oldListeners || {}, add, remove, createOnceHandler, vm)
   target = undefined
