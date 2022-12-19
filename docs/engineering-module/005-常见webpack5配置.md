@@ -446,7 +446,9 @@ HMR 的插件
 
 ### mini-css-extract-plugin
 
-webpack 4 中 css 以 link 标签形式加载到 head 中。分离 css 并单独打包。
+webpack 5 中 css 以 link 标签形式加载到 head 中。分离 css 并单独打包。
+
+当 Webpack 版本低于 5.0 时，使用 extract-text-webpack-plugin 代替 mini-css-extract-plugin。
 
 ### eslint
 
