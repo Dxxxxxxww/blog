@@ -8,11 +8,12 @@
 
 1. promise
 2. mutationObserver
-3. Process.nextTick（node 独有）
+3. queueMicrotask
+4. Process.nextTick（node 独有，并且具有高优先级）
 
 常见的宏任务有：
+
 1. script 代码
 2. dom 渲染类事件
 3. setTimeout 等延时线程回调函数
 4. I/O
-

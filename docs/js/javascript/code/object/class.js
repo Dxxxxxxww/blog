@@ -20,9 +20,8 @@ function myObjectCreate(pt) {
 }
 
 function myNew(c) {
-  const obj = {}
-  obj.__proto__ = Object.create(c.prototype)
-//   Object.setPrototypeOf
+  // Object.setPrototypeOf(c.prototype)
+  const obj = Object.create(c.prototype)
   const res = c.call(obj)
   return typeof res === 'object' || typeof res === 'function' ? res : obj
 }

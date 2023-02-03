@@ -23,7 +23,7 @@ console.log(b1)
 console.log(b1.toString()) */
 
 // indexOf 在 buffer 中查找数据
-/* buf = Buffer.from('zce爱前端，爱发财，爱大家，我爱所有')
+/* buf = Buffer.from('dx爱前端，爱发财，爱大家，我爱所有')
 console.log(buf)
 console.log(buf.indexOf('爱qc', 4)) */
 

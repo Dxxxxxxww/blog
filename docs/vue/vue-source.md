@@ -330,7 +330,7 @@ watcher 有三类：
 
 对于 render watcher 和 user watcher 来说，收集 dep 最主要的目的是为了在取消监听时，方便 dep 中移除 watcher。
 
-对于 render watcher 来说，当在 v-if v-else 切换的场景中，如果不对旧 dep 进行 watcher 清除，会造成无效的 watcher 执行，造成不必要的性能损耗。
+对于 render watcher 来说，当在 v-if v-else 切换的场景中，如果不对旧 dep 进行 watcher 清除，会造成无效的 watcher 执行，造成不必要的性能损耗。（vue.js 设计与实现P52）
 
 对于 user watcher 来说，存在 unwatcher 的需求，在 unwatcher 时也需要将 dep 中删掉对应的 watcher。
 

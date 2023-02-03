@@ -6,6 +6,13 @@ pMap([Promise.resolve(1), Promise.resolve(2)], (x) => x + 1);
 
 // 注意输出时间控制
 pMap([1, 1, 1, 1, 1, 1, 1, 1], (x) => sleep(1000), { concurrency: 2 });
+
+function sleep(timeout) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout)
+  })
+}
+
  */
 
 async function pMap(list, fn, options = {}) {
