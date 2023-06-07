@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        width: 120px;
+        background: red;
+      }
+
+      #content button {
+        background-color: #4caf50;
+        color: white;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        white-space: nowrap; /* 防止文字折行 */
+      }
+
+      #sub {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+
+      #d,
+      #e {
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+      @media screen and (max-width: 640px) {
+        /* 当宽度小于等于 640px 时，只显示一行，每行两个按钮 */
+        #content button {
+          flex-basis: calc(50% - 5px);
+          margin-right: 10px;
+        }
+
+        #sub button {
+          flex-basis: calc(50% - 5px);
+          margin-right: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <button id="a">a</button>
+      <button id="b">b</button>
+      <button id="c">c</button>
+      <div id="sub">
+        <button id="d">d</button>
+        <button id="e">e</button>
+      </div>
+    </div>
+  </body>
+</html>
