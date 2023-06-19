@@ -61,3 +61,64 @@ export class AppController {
     }
 }
 ```
+
+
+## Metadata 和 Reflector
+
+Reflect.metadata 装饰器应该是会返回一个函数，因为它在使用的时候只有传递 key 和 value，但是没有传递 target。nest 应该会自动传入。
+
+使用方法如下：
+
+```ts
+@Reflect.metadata(metadataKey, metadataValue)
+class C {
+
+  @Reflect.metadata(metadataKey, metadataValue)
+  method() {
+  }
+}
+
+
+function Type(type) {
+    return Reflect.metadata("design:type", type);
+}
+function ParamTypes(...types) {
+    return Reflect.metadata("design:paramtypes", types);
+}
+function ReturnType(type) {
+    return Reflect.metadata("design:returntype", type);
+}
+
+@ParamTypes(String, Number)
+class Guang {
+    constructor(text, i) {
+    }
+
+    @Type(String)
+    get name() { return "text"; }
+
+    @Type(Function)
+    @ParamTypes(Number, Number)
+    @ReturnType(Number)
+    add(x, y) {
+        return x + y;
+    }
+}
+
+```
+
+**虽然一般不会用这个，而是会使用 @SetMetadata。**
+
+@SetMetadata 和 @Reflect.metadata 应该都是 Reflect.defineMetadata 的装饰器实现。
+
+```ts
+Reflect.defineMetadata(metadataKey, metadataValue, target);
+
+Reflect.defineMetadata(metadataKey, metadataValue, target, propertyKey);
+
+
+let result1 = Reflect.getMetadata(metadataKey, target);
+
+let result2 = Reflect.getMetadata(metadataKey, target, propertyKey);
+
+```
