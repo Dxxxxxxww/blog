@@ -787,6 +787,9 @@ dep.addSubs(watcher)
 dep.notify()
 ```
 
+## 实现一个发布订阅模式
+
+@[code](./code/event-center.js)
 ## 手写 promise
 
 [promise](https://dxxxxxxww.github.io/blog/js/javascript/手写promise.html)
@@ -799,9 +802,6 @@ dep.notify()
 
 @[code](code/promise/promise-arrange.js)
 
-## 实现一个发布订阅模式
-
-@[code](./code/event-center.js)
 
 ## 实现一个 schedular
 

@@ -10,7 +10,7 @@ http 数据传输一共有以下 5 种：
 
 ## url param
 
-```js
+```
 http://www.baidu.com/info/123
 ```
 
@@ -20,7 +20,7 @@ http://www.baidu.com/info/123
 
 通过 url 种 ? 后面的字符串传递数据
 
-```js
+```
 http://www.baidu.com/info?name=a&age=1
 ```
 

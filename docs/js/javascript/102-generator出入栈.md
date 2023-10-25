@@ -1,15 +1,16 @@
 # generator 的出入栈
 
 ```js
-function\* createIdMaker() {
-let i = 1
-while (true) {
-yield i++
+function createIdMaker() {
+    let i = 1
+    while (true) {
+        yield i++
+    }
 }
-}
+
 const sayHi = () => {
-let str = 'hello'
-console.log(str)
+    let str = 'hello'
+    console.log(str)
 }
 const c = createIdMaker()
 console.log(c.next())
