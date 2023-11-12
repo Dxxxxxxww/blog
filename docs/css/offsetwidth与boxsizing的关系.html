@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    #app {
+      box-sizing: content-box;
+      width: 200px;
+      height: 200px;
+      padding: 20px;
+      border: 10px dashed black;
+      background-color: red;
+    }
+    .box {
+      padding-top: 100%;
+      background-color: aqua;
+    }
+  </style>
+  <body>
+    <div id="app">
+      <div class="box"></div>
+    </div>
+    <script>
+      const el = document.querySelector('#app')
+      // 结论，没有关系，不管 box-sizing 是啥，offsetWidth 始终是 content width + padding + border
+      console.log(el.offsetWidth)
+    </script>
+  </body>
+</html>
