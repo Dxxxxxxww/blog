@@ -20,7 +20,7 @@ React 团队从一开始就很注重 React 的代码复用性。
 
 ## HOC
 
-HOC 可以当做是 vue 中的作用域 slot。
+一种组件优化方式，能把单一功能组件，通过公共的组件包装，返回一个包含公共逻辑的新组件。
 
 HOC 采用了装饰器模式来复用代码。经典案例就是 redux 中的 connect。
 
@@ -33,6 +33,7 @@ HOC 采用了装饰器模式来复用代码。经典案例就是 redux 中的 co
 
 1. 嵌套层过多；
 2. 不直观，难以阅读。
+3. props 透传问题，ref 透传问题。
 
 高阶组件其实就是声明两个组件，一个是专门处理数据的(A)容器，一个是负责渲染不管数据从哪来的(B)渲染组件。
 
@@ -40,25 +41,25 @@ A 会接受一个组件作为参数，在 render 渲染它，同时会将数据�
 
 ```js
 class A {
-    constructor(Base) {
-        // 数据处理
-    }
-    componentDidMount() {
-        // 数据处理
-    }
-    render() {
-        return <Base {...this.props} {...this.state} />;
-    }
+  constructor(Base) {
+    // 数据处理
+  }
+  componentDidMount() {
+    // 数据处理
+  }
+  render() {
+    return <Base {...this.props} {...this.state} />
+  }
 }
 
 class B {
-    constructor() {}
-    render() {
-        return <div>{this.props.xxx}</div>;
-    }
+  constructor() {}
+  render() {
+    return <div>{this.props.xxx}</div>
+  }
 }
 
-A(B);
+A(B)
 ```
 
 ## Render props
@@ -80,38 +81,38 @@ Render props 可以当做是 vue 中的作用域 slot。
 
 ```js
 class A {
-    constructor() {
-        // 数据处理
-    }
-    componentDidMount() {
-        // 数据处理
-    }
-    render() {
-        return this.props.children(this.state);
-    }
+  constructor() {
+    // 数据处理
+  }
+  componentDidMount() {
+    // 数据处理
+  }
+  render() {
+    return this.props.children(this.state)
+  }
 }
 
 const B = () => {
-    return <A>{value => <div> value from A is {value}</div>}</A>;
-};
+  return <A>{(value) => <div> value from A is {value}</div>}</A>
+}
 
 function SplitPane(props) {
-    return (
-        <div className="SplitPane">
-            <div className="SplitPane-left">{props.left}</div>
-            <div className="SplitPane-right">{props.right}</div>
-        </div>
-    );
+  return (
+    <div className="SplitPane">
+      <div className="SplitPane-left">{props.left}</div>
+      <div className="SplitPane-right">{props.right}</div>
+    </div>
+  )
 }
 
 function App() {
-    const state = "abc";
-    return (
-        <SplitPane
-            left={<Contacts stateA={state} />}
-            right={<Chat stateA={state} />}
-        />
-    );
+  const state = 'abc'
+  return (
+    <SplitPane
+      left={<Contacts stateA={state} />}
+      right={<Chat stateA={state} />}
+    />
+  )
 }
 ```
 

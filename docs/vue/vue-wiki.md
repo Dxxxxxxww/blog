@@ -60,7 +60,7 @@ module.exports = {
 
 ## vue 生命周期执行顺序
 
-除了 mounted updated destroyed 所有生命周期都是先父后子。 ed 结尾的生命周期都是子先。
+除了 created ed 结尾的生命周期都是子先。
 
 销毁：
 

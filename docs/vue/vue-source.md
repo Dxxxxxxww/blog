@@ -122,70 +122,6 @@ dom 元素创建顺序：
 1. 子先挂载到父上。
 2. 父再往上挂载。
 
-
-## vue 生命周期执行顺序
-
-除了 mounted updated destroyed 所有生命周期都是先父后子。 ed 结尾的生命周期都是子先。
-
-销毁：
-
-```js
-parent beforeDestroy
-son beforeDestroy
-son destroyed
-parent destroyed
-```
-
-挂载：
-
-```js
-parent beforeCreate
-parent created
-parent beforeMount
-son beforeCreate
-son created
-son beforeMount
-son mounted
-parent mounted
-```
-
-更新：
-
-```js
-parent beforeUpdate
-son beforeUpdate
-son updated
-parent updated
-```
-
-总:
-
-```js
-// 挂载时
-parent beforeCreate
-parent created
-parent beforeMount
-son beforeCreate
-son created
-son beforeMount
-son mounted
-son activated   // keep-alive 这里没写错哦，activated 是在 mounted 之后的
-parent mounted
-parent beforeUpdate
-parent update
-// 更新时
-parent beforeUpdate
-son beforeUpdate
-son update
-parent update
-// 销毁时
-parent beforeDestroy
-son deactivated    // keep-alive 如果父级组件也销毁，keep-alive 组件还是会销毁的。这里没写错哦 deactivated 是在销毁之前的
-son beforeDestroy
-son destroyed
-parent destroyed
-```
-
 ## diff 算法的流程
 
 前前后后，前后后前，有 key 找 key，没 key 遍历
@@ -330,7 +266,7 @@ watcher 有三类：
 
 对于 render watcher 和 user watcher 来说，收集 dep 最主要的目的是为了在取消监听时，方便 dep 中移除 watcher。
 
-对于 render watcher 来说，当在 v-if v-else 切换的场景中，如果不对旧 dep 进行 watcher 清除，会造成无效的 watcher 执行，造成不必要的性能损耗。
+对于 render watcher 来说，当在 v-if v-else 切换的场景中，如果不对旧 dep 进行 watcher 清除，会造成无效的 watcher 执行，造成不必要的性能损耗。（vue.js 设计与实现 P52）
 
 对于 user watcher 来说，存在 unwatcher 的需求，在 unwatcher 时也需要将 dep 中删掉对应的 watcher。
 

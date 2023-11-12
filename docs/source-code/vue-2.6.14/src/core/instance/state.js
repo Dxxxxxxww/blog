@@ -79,7 +79,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
   // 缓存 props keys 以便以后的 prop 更新可以使用 Array 进行迭代
-  // instead of dynamic object key enumeration.
+  // instead of dynamic object key enumeration.s
   // 代替动态对象键枚举
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent

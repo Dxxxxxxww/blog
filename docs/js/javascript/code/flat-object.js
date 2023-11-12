@@ -8,6 +8,24 @@ const obj = {
   c: 3
 }
 
+// 对象拍平
+function flatObject(val, res = {}, path = '') {
+  if (Object(val) !== val) {
+    if (path) {
+      res[path] = val
+    }
+  } else if (Array.isArray(val)) {
+    for (let i = 0; i < val.length; i++) {
+      flatObject(val[i], res, `${path}[${i}]`)
+    }
+  } else {
+    Object.keys(val).forEach((key) => {
+      flatObject(val[key], res, path ? `${path}.${key}` : key)
+    })
+  }
+  return res
+}
+
 function isObject(obj) {
   return !!obj && typeof obj === 'object'
 }

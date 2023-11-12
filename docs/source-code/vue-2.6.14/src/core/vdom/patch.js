@@ -35,6 +35,7 @@ export const emptyNode = new VNode('', {}, [])
 // 模块钩子函数
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 /**
+ * 如果 key 不同，直接就不往下继续对比，也是一种设置了 key 之后的优化
  * 对比是否是相同节点
  * 通过以下几个维度对比
  * key，asyncFactory，tag，isComment，data，sameInputType，isAsyncPlaceholder，asyncFactory.error。

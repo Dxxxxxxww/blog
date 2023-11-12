@@ -59,6 +59,7 @@ export function initMixin (Vue: Class<Component>) {
         // 内部还会一直溯源合并到 Vue 构造函数，也就是说 Vue 实例的 $options 会包含其构造函数的选项
         resolveConstructorOptions(vm.constructor),
         options || {},
+
         vm
       )
     }

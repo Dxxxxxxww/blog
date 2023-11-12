@@ -31,6 +31,8 @@ class EventCenter {
     if (!!eventList) {
       const index = eventList.findIndex((eventObj) => eventObj.id === id)
       eventList.splice(index, 1)
+      // 使用 indexOf 也可以
+      // 使用 filter 过滤也可以
     }
   }
   clear(event) {

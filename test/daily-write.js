@@ -319,10 +319,10 @@ addTask(4000, '4')
 // output: 2 3 1 4
 
 //  15
-function myNew(Fn, ...args) {
-  const obj = Object.create(Fn.prototype)
-  const res = Fn.apply(obj, args)
-  return typeof res === 'object' || typeof res === 'function' ? res : obj
+function myNew(c) {
+  const obj = Object.create(c.prototype)
+  const res = c.call(obj)
+  return typeof res === 'object' || typeof res === 'function' ? res || obj : obj
 }
 // Object.create 模拟
 function ObjectCreate(proto) {
@@ -595,10 +595,10 @@ function curry(func) {
 }
 
 // day 6 手写 new
-function myNew(ctor) {
-  const obj = Object.create(ctor.prototype)
-  const res = ctor.apply(obj, Array.prototype.slice.call(arguments, 1))
-  return typeof res === 'object' || typeof res === 'function' ? res : obj
+function myNew(c) {
+  const obj = Object.create(c.prototype)
+  const res = c.call(obj)
+  return typeof res === 'object' || typeof res === 'function' ? res || obj : obj
 }
 
 // day 5

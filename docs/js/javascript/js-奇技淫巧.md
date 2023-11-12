@@ -98,3 +98,7 @@ a('123456789') // 123,456,789
 ## js ast 分析站点 js-ast
 
 [js ast 分析站点](https://resources.jointjs.com/demos/javascript-ast)
+
+## 判断是否为循环引用
+
+1. JSON.stringify() 如果是循环引用对象会报循环引用的错
