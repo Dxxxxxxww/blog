@@ -29,7 +29,6 @@ sidebar: auto
 
 不管 state 是否在 jsx 中使用，只要使用了 setCount，就会触发重新渲染。
 
-[sandbox](https://codesandbox.io/s/usecallback1-forked-k35zr0?file=/src/App.js)
 
 ---
 
@@ -50,13 +49,53 @@ const [count, setCount] = useState(0)
 const [cb, setCb] = useState(() => () => {})
 ```
 
+
+> **何时使用状态？官网回答如下：**
+> <br/>A state variable is only necessary to keep information between re-renders of a component.
+> <br/>否则直接使用普通变量即可。
+
+
+> State variables might look like regular JavaScript variables that you can read and write to. However, state behaves more like a snapshot. Setting it does not change the state variable you already have, but instead triggers a re-render.
+> <br/>根据官网文档的意思，可以理解为设置 state 并不是修改值，而是将设置的值存到内部 fiber 节点（可以理解为 vnode）上，然后去触发重新渲染，重新渲染再从节点上获取新值。
+
+[sandbox](https://codesandbox.io/s/usecallback1-forked-k35zr0?file=/src/App.js)
+
+> **A state variable’s value never changes within a render**
+> <br/>这实际上也很好理解，因为每一次的 render 中的 state 都是一个闭包变量，在函数执行时就确立了，直到 setState 致使 re-render 才会改变 state。因此不管是否异步，同一 render 时刻的 state 都是不变的。
+
+ 
+> **React waits until all code in the event handlers has run before processing your state updates.**
+> <br/> 也就是说 set 方法是一个异步的过程，应该是个微任务。所以多次调用 set 时，会存到一个 queue 中，延后执行。
+> <br/> 只不过对于 set(n+1) 来说，n 的状态一直不变，对于 set(n => n+1) 来说，n 的状态一直在变。
+
+```js
+import { useState } from 'react';
+
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={() => {
+        setNumber(number + 5);
+        setNumber(n => n + 1);
+      }}>Increase the number</button>
+    </>
+  )
+}
+
+// 按钮的点击结果最终是 6
+```
+
+`set(n => n+1)`  有点像是作用域的概念，如果有 n 这个局部状态，就取局部状态，没有就取组件函数初始化时的状态
+
 ---
 
-改变状态的函数是异步的
+> To summarize, here’s how you can think of what you’re passing to the setNumber state setter:
+> <br/>An updater function (e.g. n => n + 1) gets added to the queue. 
+> <br/>Any other value (e.g. number 5) adds “replace with 5” to the queue, **ignoring what’s already queued.**
 
-useState 返回的 set\* 函数是异步的。
-
----
 
 ### 二、useEffect
 
@@ -106,10 +145,13 @@ useEffect 还可以传递第二个参数，旨在通过跳过 Effect 进行性�
 
 如果数组中有多个元素，即使只有一个元素发生变化，React 也会执行 effect。**注意：它会在调用一个新的 effect 之前对前一个 effect 进行清理（执行返回的函数）。**
 
+
+究其根本，其实是组件函数重新执行时，useEffect 判断到依赖不变（因为是[]），所以跳过了执行。而非不执行。
+
 ```js
 useEffect(() => {
   document.title = `You clicked ${count} times`
-}, [count]) // 仅在 count 更改时更新
+}, [count]) // 仅在 count 更改时，初次挂载时更新
 ```
 
 ```js

@@ -28,9 +28,34 @@ export class AppModule implements NestModule {
 
 ## interceptor
 
-对某个 controller 执行前和执行后做一些操作。
+对某个 controller 执行前和执行后做一些操作。内部集成了 rxjs，所以可以使用一些 rxjs 的操作方法。
 
 作用范围：可以用在单独的 controller 上，也可以用在全局。
+
+interceptor 用在全局时，因为是手动 new 实例，没法注入依赖。这种时候要怎么做呢？nest 给我们提供了一个 token。
+用这个 token 在 AppModule 里声明的 interceptor，Nest 会把它作为全局 interceptor。
+
+```ts
+@Module({
+    imports: [],
+    controllers: [AppController],
+    providers: [AppService,
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: AaaInterceptor
+        }
+    ]
+})
+```
+
+这样，在 AaaInterceptor 中就可以使用 app 的服务了。
+
+这里列举一些在 interceptor 中常用的操作方法：
+
+1. tap: 不修改响应数据，执行一些额外逻辑，比如记录日志、更新缓存等；
+2. map：对响应数据做修改，一般都是改成 {code, data, message} 的格式； 
+3. catchError：在 exception filter 之前处理抛出的异常，可以记录或者抛出别的异常； 
+4. timeout：处理响应超时的情况，抛出一个 TimeoutError，配合 catchErrror 可以返回超时的响应。
 
 ### @UseFilters
 
