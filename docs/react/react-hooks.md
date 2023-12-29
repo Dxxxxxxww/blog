@@ -66,7 +66,15 @@ const [cb, setCb] = useState(() => () => {})
  
 > **React waits until all code in the event handlers has run before processing your state updates.**
 > <br/> 也就是说 set 方法是一个异步的过程，应该是个微任务。所以多次调用 set 时，会存到一个 queue 中，延后执行。
-> <br/> 只不过对于 set(n+1) 来说，n 的状态一直不变，对于 set(n => n+1) 来说，n 的状态一直在变。
+> <br/> 只不过对于 set(n1 + 1) 来说，n1 是在初始化函数时接到的参数变量，是不变的，对于 set(n2 => n2 + 1) 来说，n2 是回调函数的参数，是内部 fiber节点已经更新后的值重新传递。
+
+
+`set(n => n+1)`  有点像是作用域的概念，如果有 n 这个局部状态，就取局部状态，没有就取组件函数初始化时的状态
+
+
+> To summarize, here’s how you can think of what you’re passing to the setNumber state setter:
+> <br/>An updater function (e.g. n => n + 1) gets added to the queue.
+> <br/>Any other value (e.g. number 5) adds “replace with 5” to the queue, **ignoring what’s already queued.**
 
 ```js
 import { useState } from 'react';
@@ -88,13 +96,7 @@ export default function Counter() {
 // 按钮的点击结果最终是 6
 ```
 
-`set(n => n+1)`  有点像是作用域的概念，如果有 n 这个局部状态，就取局部状态，没有就取组件函数初始化时的状态
-
 ---
-
-> To summarize, here’s how you can think of what you’re passing to the setNumber state setter:
-> <br/>An updater function (e.g. n => n + 1) gets added to the queue. 
-> <br/>Any other value (e.g. number 5) adds “replace with 5” to the queue, **ignoring what’s already queued.**
 
 
 ### 二、useEffect
