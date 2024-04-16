@@ -23,12 +23,9 @@ sidebar: auto
 
 ### 一、useState
 
-渲染
-
 用于给函数组件引入状态。通常来说，函数中的变量在函数执行完就会释放，而这里能保存状态的原理就是闭包。
 
 不管 state 是否在 jsx 中使用，只要使用了 setCount，就会触发重新渲染。
-
 
 ---
 
@@ -36,8 +33,6 @@ sidebar: auto
 
 ```js
 const [count, setCount] = useState(0)
-// 等同于 vue3 的 const count = ref(0)
-// 只不过针对 count 的修改操作，需要使用 useState 返回的操作函数—— setCount。
 ```
 
 如果需要在 useState 保存一个函数状态，则需要使用返回真正所需的函数的函数。
@@ -49,46 +44,42 @@ const [count, setCount] = useState(0)
 const [cb, setCb] = useState(() => () => {})
 ```
 
-
-> **何时使用状态？官网回答如下：**
-> <br/>A state variable is only necessary to keep information between re-renders of a component.
+> **何时使用状态？官网回答如下：** > <br/>A state variable is only necessary to keep information between re-renders of a component.
 > <br/>否则直接使用普通变量即可。
-
 
 > State variables might look like regular JavaScript variables that you can read and write to. However, state behaves more like a snapshot. Setting it does not change the state variable you already have, but instead triggers a re-render.
 > <br/>根据官网文档的意思，可以理解为设置 state 并不是修改值，而是将设置的值存到内部 fiber 节点（可以理解为 vnode）上，然后去触发重新渲染，重新渲染再从节点上获取新值。
 
 [sandbox](https://codesandbox.io/s/usecallback1-forked-k35zr0?file=/src/App.js)
 
-> **A state variable’s value never changes within a render**
-> <br/>这实际上也很好理解，因为每一次的 render 中的 state 都是一个闭包变量，在函数执行时就确立了，直到 setState 致使 re-render 才会改变 state。因此不管是否异步，同一 render 时刻的 state 都是不变的。
+> **A state variable’s value never changes within a render** > <br/>这实际上也很好理解，因为每一次的 render 中的 state 都是一个闭包变量，在函数执行时就确立了，直到 setState 致使 re-render 才会改变 state。因此不管是否异步，同一 render 时刻的 state 都是不变的。
 
- 
-> **React waits until all code in the event handlers has run before processing your state updates.**
-> <br/> 也就是说 set 方法是一个异步的过程，应该是个微任务。所以多次调用 set 时，会存到一个 queue 中，延后执行。
-> <br/> 只不过对于 set(n1 + 1) 来说，n1 是在初始化函数时接到的参数变量，是不变的，对于 set(n2 => n2 + 1) 来说，n2 是回调函数的参数，是内部 fiber节点已经更新后的值重新传递。
+> **React waits until all code in the event handlers has run before processing your state updates.** > <br/> 也就是说 set 方法是一个异步的过程，应该是个微任务。所以多次调用 set 时，会存到一个 queue 中，延后执行。
+> <br/> 只不过对于 set(n1 + 1) 来说，n1 是此时渲染，函数时接到的参数变量，是不变的，对于 set(n2 => n2 + 1) 来说，n2 是回调函数的参数，是内部 fiber 节点已经更新后的值重新传递。
 
-
-`set(n => n+1)`  有点像是作用域的概念，如果有 n 这个局部状态，就取局部状态，没有就取组件函数初始化时的状态
-
+`set(n => n+1)` **有点像是作用域的概念，如果有 n 这个局部状态，就取局部状态，没有就取组件函数初始化时的状态**
 
 > To summarize, here’s how you can think of what you’re passing to the setNumber state setter:
 > <br/>An updater function (e.g. n => n + 1) gets added to the queue.
 > <br/>Any other value (e.g. number 5) adds “replace with 5” to the queue, **ignoring what’s already queued.**
 
 ```js
-import { useState } from 'react';
+import { useState } from 'react'
 
 export default function Counter() {
-  const [number, setNumber] = useState(0);
+  const [number, setNumber] = useState(0)
 
   return (
     <>
       <h1>{number}</h1>
-      <button onClick={() => {
-        setNumber(number + 5);
-        setNumber(n => n + 1);
-      }}>Increase the number</button>
+      <button
+        onClick={() => {
+          setNumber(number + 5)
+          setNumber((n) => n + 1)
+        }}
+      >
+        Increase the number
+      </button>
     </>
   )
 }
@@ -97,7 +88,6 @@ export default function Counter() {
 ```
 
 ---
-
 
 ### 二、useEffect
 
@@ -113,9 +103,12 @@ useEffect(() => {
 按照 react 官方文档的解释：
 
 它跟 class 组件中的 componentDidMount、componentDidUpdate 和 componentWillUnmount 具有相同的用途，只不过被合并成了一个 API。
-默认情况下，React 会在**每次渲染后(强调!!!) 调用副作用函数 —— 包括第一次渲染的时候。**
 
 等同于 vue 中的 onMounted，onUpdated, watch。
+
+> Effects run at the end of a commit after the screen <br/>
+> Every time your component renders, React will update the screen and then run the code inside useEffect <br/>
+> 也就是说，React 会在**每次渲染后调用副作用函数 —— 包括第一次渲染的时候。执行时机是在 commit 阶段之后**
 
 ———
 
@@ -131,6 +124,7 @@ useEffect(() => {
 而使用 \$once 这种程序化的事件侦听器 就能避免以上两个问题。
 
 ```js
+
 mounted() {
   var picker = new Pikaday({
     field: this.$refs.input,
@@ -147,8 +141,11 @@ useEffect 还可以传递第二个参数，旨在通过跳过 Effect 进行性�
 
 如果数组中有多个元素，即使只有一个元素发生变化，React 也会执行 effect。**注意：它会在调用一个新的 effect 之前对前一个 effect 进行清理（执行返回的函数）。**
 
-
 究其根本，其实是组件函数重新执行时，useEffect 判断到依赖不变（因为是[]），所以跳过了执行。而非不执行。
+
+避免将对象和函数（特殊的对象）作为依赖项，每次渲染时对象和函数都不同，会导致 effect 一直重复执行，如果有场景下一定要使用对象和函数作为依赖，需要考虑使用 useMemo 和 useCallback。依赖项需要是状态值。
+
+状态值： props 或 state，或者在组件函数中根据这两个计算而来的值。
 
 ```js
 useEffect(() => {
@@ -189,6 +186,8 @@ ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange) // 清除最后一�
 
 我对 useRef 理解就是，**它不是一个状态，只是个变量。**它生成了一个容器对象，这个容器对象在组件的整个生命周期是不变的，而它的属性 .current 的值是可变的。**常用于获取 dom 元素(可以理解为 vue 中的 ref)。**
 
+> React sets ref.current during the **commit**. **Before updating the DOM**, React sets the affected ref.current values to **null**. **After updating the DOM**, React immediately sets them to the corresponding **DOM nodes**. <br/>
+
 实用例子：当函数组件中存在某种非状态变量对象，并且该变量对象在整个组件生命周期中保持不变，且需要被 useEffect 所依赖，这时候可以使用 useRef 来生成这个变量对象。
 
 ```js
@@ -225,17 +224,24 @@ export const useDocumentTitle = (
 
 注：传入 useMemo 的函数会在渲染期间执行。如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
 
-**可以理解为 vue 中的 computed。**
+**可以理解为 vue 中的 computed。计算属性**
 
 **基本数据类型，组件状态可以放入依赖中。非基本数据类型非组件状态不可放入依赖中。如果我们定义了非基本类型想要做依赖，就要用到 useMemo。**这样就能限制住非基本类型在每次渲染时的重新创建。
 
 ### 五、useCallback
 
-官方文档：把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。
+仅在以下两个方面有意义：
+1. 函数作为参数传递给子组件，并且子组件通过 memo 包裹了，想要配合子组件的 memo 生效。
+2. 函数作为 effect 或是其他 hook 的依赖，并且不想组件本身引起 hook 重新执行。
 
-个人理解：可以理解为特殊版本的 useMemo，专门用于函数的情况。性能优化，缓存函数，使组件重新渲染的时候得到相同的函数。
+**请注意，useCallback 不会阻止创建函数。你总是在创建一个函数（这很好！），但是如果没有任何东西改变，React 会忽略它并返回缓存的函数。**
 
-**如果使用的是非原生 dom 节点(自定义组件)，那么回调函数都应该用 useCallback 进行封装。**
+```js
+// useCallback 在 React 内部的简化实现
+function useCallback(fn, dependencies) {
+  return useMemo(() => fn, dependencies);
+}
+```
 
 ### 六、useReducer
 
@@ -253,7 +259,58 @@ useReducer 其实就是可以当做一个特殊的 useState。可以把传入的
 
 可以用来替代 redux，作为跨组件状态共享的手段。
 
-个人理解：hooks 里的局部全局状态管理
+个人理解：hooks 里的局部全局状态管理。
+
+#### 何时使用 useContext？
+
+优先考虑如下两个方案是否满足需求：
+1. props
+2. 抽离组件，传递组件（也就是slot）
+
+### 八、useImperativeHandle
+
+配合 useRef, forwardRef 使用，让子组件被父组件通过 ref 操控时，只暴露特定的方法。
+
+```js
+import { forwardRef, useRef, useImperativeHandle } from 'react'
+
+const MyInput = forwardRef((props, ref) => {
+  const realInputRef = useRef(null)
+  useImperativeHandle(ref, () => ({
+    // Only expose focus and nothing else
+    focus() {
+      realInputRef.current.focus()
+    }
+  }))
+  return <input {...props} ref={realInputRef} />
+})
+
+export default function Form() {
+  const inputRef = useRef(null)
+
+  function handleClick() {
+    inputRef.current.focus()
+  }
+
+  return (
+    <>
+      <MyInput ref={inputRef} />
+      <button onClick={handleClick}>Focus the input</button>
+    </>
+  )
+}
+```
+
+### 九、flushSync
+
+严格来说 flushSync 不是一个 hook ，它是 react-dom 提供的一个同步修改 dom 的方法。通过该方法包裹的 setXXX 会变为同步。但是不建议使用，真要等到 dom 渲染后执行某些操作，可以使用 effect。
+
+```js
+flushSync(() => {
+  setTodos([...todos, newTodo])
+})
+listRef.current.lastChild.scrollIntoView()
+```
 
 ## react 事件
 
@@ -285,7 +342,7 @@ react 中想要阻止冒泡的办法：
 ```js
 const form = () => {
   const [value, setValue] = useState('')
-  const handleChange = evt => {
+  const handleChange = (evt) => {
     setValue(evt.target.value)
   }
   return <input value={value} onChange={handleChange} />
@@ -297,7 +354,7 @@ const form = () => {
 ```js
 const form = () => {
   const iptRef = useRef()
-  const handleSubmit = evt => {
+  const handleSubmit = (evt) => {
     evt.preventDefault()
     alert(iptRef.current.value)
   }
