@@ -39,3 +39,25 @@ pnpm add lint-staged -D
   }
 }
 ```
+
+
+## iframe.contentWindow
+
+在父级页面获取 iframe.contentWindow 去调用 postMessage 发送消息时的踩坑。 
+
+```js
+// 可以正常发起
+iframe.contentWindow.postMessage()
+
+// 可以正常输出 window 对象
+console.log(iframe.contentWindow);
+
+function postFn(sourceObject) {
+    // 当 iframe.contentWindow 作为参数传递时，会被浏览器包装成 proxy 对象，并且会丢失很多属性和方法，例如 postMessage
+    console.log(sourceObject)
+    // 这里就会发送失败
+    sourceObject.postMessage()
+}
+
+postFn(iframe.contentWindow)
+```

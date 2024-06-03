@@ -106,12 +106,6 @@ useEffect(() => {
 
 等同于 vue 中的 onMounted，onUpdated, watch。
 
-> Effects run at the end of a commit after the screen <br/>
-> Every time your component renders, React will update the screen and then run the code inside useEffect <br/>
-> 也就是说，React 会在**每次渲染后调用副作用函数 —— 包括第一次渲染的时候。执行时机是在 commit 阶段之后**
-
-———
-
 不同的是，useEffect 还会返回一个函数来指定如何“清除”副作用。React 会在**组件销毁时执行返回的函数**，然后在后续渲染时重新执行 useEffect。
 
 这里类比 vue 来理解就是，在 mounted 中使用 \$once 监听 hook:beforeDestroy 事件，这样就不需要在 beforeDestroy 写销毁逻辑。
@@ -179,6 +173,15 @@ ChatAPI.subscribeToFriendStatus(300, handleStatusChange) // 运行下一个 effe
 // Unmount
 ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange) // 清除最后一个 effect
 ```
+
+
+#### useEffect 执行时机
+
+> Effects run at the end of a commit after the screen <br/>
+> Every time your component renders, React will update the screen and then run the code inside useEffect <br/>
+> 也就是说，React 会在**每次页面渲染后调用副作用函数 —— 包括第一次渲染的时候。执行时机是在 commit 阶段之后，页面真正更新渲染之后才执行，是一个宏任务**
+
+———
 
 ### 三、useRef
 
@@ -311,6 +314,16 @@ flushSync(() => {
 })
 listRef.current.lastChild.scrollIntoView()
 ```
+
+### 十、useLayoutEffect
+
+useLayoutEffect 的使用方式，参数都与 useEffect 类似，唯一差别就是执行时机。
+
+#### 执行时机
+
+useLayoutEffect 的执行时机是在 commit 之后，页面真正渲染之前，是一个微任务。
+
+useEffect 的执行时机是在页面真正渲染之后，是一个宏任务。
 
 ## react 事件
 
