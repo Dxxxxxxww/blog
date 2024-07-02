@@ -321,9 +321,59 @@ useLayoutEffect 的使用方式，参数都与 useEffect 类似，唯一差别�
 
 #### 执行时机
 
-useLayoutEffect 的执行时机是在 commit 之后，页面真正渲染之前，是一个微任务。
+useLayoutEffect 的执行时机是在 commit 之后，页面真正渲染之前，是一个同步任务。
 
-useEffect 的执行时机是在页面真正渲染之后，是一个宏任务。
+useEffect 的**默认**执行时机是在页面真正页面渲染之后，是一个宏任务。
+
+[If your Effect wasn’t caused by an interaction](https://react.dev/reference/react/useEffect#caveats)
+
+useEffect 的执行时机还会收到事件影响（离散型事件和非离散型事件）。
+
+当一个组件受到事件驱动时，并且它的渲染时间长时，useEffect 会在页面渲染后执行。当组件渲染时间短时，useEffect 会同步执行。
+
+这里的时间长短，经过测试，在 react v18 下判断标准为 2ms 。
+
+测试代码：
+
+```js
+import { useEffect, useState } from 'react'
+
+const UseEffectTest = () => {
+  const [count, setCount] = useState(0)
+
+  console.log(1)
+
+  const flag = Date.now()
+  while (Date.now() - flag < 2) { /* empty */ } // 100
+
+  useEffect(() => {
+    console.log(2)
+  }, [count])
+
+  Promise.resolve().then(() => console.log(3))
+
+  setTimeout(() => console.log(4), 0)
+
+
+  const handleClick = () => {
+    setCount(preC => preC + 1)
+  }
+  const handleMouseEnter = () => {
+    setCount(preC => preC + 1)
+  }
+
+  return <div onClick={handleClick} onMouseEnter={handleMouseEnter}>useEFfect 执行时机</div>
+}
+
+export default UseEffectTest
+```
+
+
+##### 离散型事件和非离散型事件
+
+离散型事件即 click 这种用户有意为之的事件。也就是高优先级事件
+
+非离散型事件即 mouseenter 这种用户可能只是鼠标滑过的非有意的事件。也是持续输入的事件。也就是非高优先级事件
 
 ## react 事件
 
