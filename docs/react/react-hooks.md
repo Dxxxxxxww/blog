@@ -174,7 +174,6 @@ ChatAPI.subscribeToFriendStatus(300, handleStatusChange) // 运行下一个 effe
 ChatAPI.unsubscribeFromFriendStatus(300, handleStatusChange) // 清除最后一个 effect
 ```
 
-
 #### useEffect 执行时机
 
 > Effects run at the end of a commit after the screen <br/>
@@ -234,6 +233,7 @@ export const useDocumentTitle = (
 ### 五、useCallback
 
 仅在以下两个方面有意义：
+
 1. 函数作为参数传递给子组件，并且子组件通过 memo 包裹了，想要配合子组件的 memo 生效。
 2. 函数作为 effect 或是其他 hook 的依赖，并且不想组件本身引起 hook 重新执行。
 
@@ -242,7 +242,7 @@ export const useDocumentTitle = (
 ```js
 // useCallback 在 React 内部的简化实现
 function useCallback(fn, dependencies) {
-  return useMemo(() => fn, dependencies);
+  return useMemo(() => fn, dependencies)
 }
 ```
 
@@ -267,8 +267,26 @@ useReducer 其实就是可以当做一个特殊的 useState。可以把传入的
 #### 何时使用 useContext？
 
 优先考虑如下两个方案是否满足需求：
+
 1. props
-2. 抽离组件，传递组件（也就是slot）
+2. 抽离组件，传递组件（也就是 slot）
+
+#### 原理
+
+createContext 创建了一个对象（以下简称 cco）。可以看做是一个数据中心。
+
+然后 provider 是一个特殊的组件，作用就是接收传进来的 value ，在内部对 cco 的值(\_currentValue)进行修改。所以其实我们也可以不利用 provider ，直接通过 cco 就能修改，当然这是不推荐的。
+
+最后是 useContext，它其实就是返回了 cco.\_currentValue。对于类组件上的 Consumer，也是一样的。只不过它需要调用组件 render(value) 把值传进去。
+
+当然了，如果仅仅只是一个全局数据中心，那我们自己也可以实现，或者 hack。而 react 对 context 还有一个处理就是，provider 中的修改，只会对子组件造成影响。而不会对父级造成影响。
+
+这是怎么做到的呢？
+
+在 react 内部，有两个函数叫作，pushProvider, popProvider。他俩会对当前的 fiber 和 context 维护了 value 栈和 fiber 栈。也就是说，在每一个 provider 使用的地方，都会对栈 push（fiber 栈和 value 栈中， fiber 和 value 的 index 是对应的），
+再在使用 useContext 获取值的地方通过 pop 来获取栈顶的值。这样一来，假如说现在有一个 A->B->C 三层组件，A 和 B 都使用了 provider，那么在 C 中获取的值就是 B 推入栈的值。而在其他树节点中，使用的都是 A 组件的值。
+
+push 是在 beginWork/updateContextProvider 中调用的。 pop 是在 completeWork 中调用的。
 
 ### 八、useImperativeHandle
 
@@ -325,6 +343,8 @@ useLayoutEffect 的执行时机是在 commit 之后，页面真正渲染之前�
 
 useEffect 的**默认**执行时机是在页面真正页面渲染之后，是一个宏任务。
 
+useLayoutEffect 始终会比 useEffect 先执行。
+
 [If your Effect wasn’t caused by an interaction](https://react.dev/reference/react/useEffect#caveats)
 
 useEffect 的执行时机还会收到事件影响（离散型事件和非离散型事件）。
@@ -336,7 +356,7 @@ useEffect 的执行时机还会收到事件影响（离散型事件和非离散�
 测试代码：
 
 ```js
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useLayoutEffect } from 'react'
 
 const UseEffectTest = () => {
   const [count, setCount] = useState(0)
@@ -344,36 +364,44 @@ const UseEffectTest = () => {
   console.log(1)
 
   const flag = Date.now()
-  while (Date.now() - flag < 2) { /* empty */ } // 100
+  while (Date.now() - flag < 2000) {
+    /* empty */
+  }
 
   useEffect(() => {
-    console.log(2)
+    console.log(2, 'useEffect')
   }, [count])
 
-  Promise.resolve().then(() => console.log(3))
+  useLayoutEffect(() => {
+    console.log(3, 'useLayoutEffect')
+  }, [count])
 
-  setTimeout(() => console.log(4), 0)
+  Promise.resolve().then(() => console.log(4, 'Promise'))
 
+  setTimeout(() => console.log(5, 'setTimeout'), 0)
 
   const handleClick = () => {
-    setCount(preC => preC + 1)
+    setCount((preC) => preC + 1)
   }
   const handleMouseEnter = () => {
-    setCount(preC => preC + 1)
+    setCount((preC) => preC + 1)
   }
 
-  return <div onClick={handleClick} onMouseEnter={handleMouseEnter}>useEFfect 执行时机</div>
+  return (
+    <div onClick={handleClick} onMouseEnter={handleMouseEnter}>
+      useEFfect 执行时机
+    </div>
+  )
 }
 
 export default UseEffectTest
 ```
 
-
 ##### 离散型事件和非离散型事件
 
-离散型事件即 click 这种用户有意为之的事件。也就是高优先级事件
+离散型事件即 click 这种用户有意为之的事件。也就是高优先级事件。**高优先级事件即便时间再长，也会是同步执行**
 
-非离散型事件即 mouseenter 这种用户可能只是鼠标滑过的非有意的事件。也是持续输入的事件。也就是非高优先级事件
+非离散型事件即 mouseenter 这种用户可能只是鼠标滑过的非有意的事件。也是持续输入的事件。也就是非高优先级事件。
 
 ## react 事件
 
