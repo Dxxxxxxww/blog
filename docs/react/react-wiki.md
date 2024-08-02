@@ -11,9 +11,9 @@ React 使用的错误/踩坑记录
 在 react 上如果同时做组件的静态属性赋值及 memo 的话，要注意先后顺序。
 
 这样使用会报错：
-![image](/react/memo-error.png)
+![image](./assets/memo-error.png)
 这样不会：
-![image](/react/memo-success.png)
+![image](./assets/memo-success.png)
 
 查看源码可知，memo 包裹后会返回新生成的对象，所以在 memo 之前做的所有操作都没用了。因为组件会作为新对象的属性，层级改变导致获取不到了。
 
@@ -105,7 +105,7 @@ function App() {
 }
 ```
 
-![image](/react/shoukong-feishoukong.png)
+![image](./assets/shoukong-feishoukong.png)
 
 ## 为什么使用 css in js
 
@@ -133,8 +133,8 @@ css in js 优点：上面解决局限性的 3 点。
 
 ## react 登录态
 
-![image](/react/react-login-1.jpg)
-![image](/react/react-login-2.jpg)
+![image](./assets/react-login-1.jpg)
+![image](./assets/react-login-2.jpg)
 
 ## umi 是什么，可以理解为加强版的 element-admin 吗？
 

@@ -1,0 +1,168 @@
+{
+  "main": {
+    "id": "0c07a85428fd30eb",
+    "type": "split",
+    "children": [
+      {
+        "id": "cf88cb519a409c5c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c43b7749439b0a39",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/react/react-学习笔记.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "21abc376731b3b83",
+    "type": "split",
+    "children": [
+      {
+        "id": "7040ddee87cbd701",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ba7f391462fe6733",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "429a648b70d3c49b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "669ba60eee1506c1",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "68c2788244504198",
+    "type": "split",
+    "children": [
+      {
+        "id": "50e9b0277f5ffea0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "faff4e23573532d1",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/react/react-学习笔记.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "453eb3b92b82c198",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/react/react-学习笔记.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "f229045e7c61dc33",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "4ee40f1d4ae52a39",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/react/react-学习笔记.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false
+    }
+  },
+  "active": "c43b7749439b0a39",
+  "lastOpenFiles": [
+    "docs/react/react-逻辑复用发展历程.md",
+    "docs/react/assets/shoukong-feishoukong.png",
+    "docs/react/assets/react-login-2.jpg",
+    "docs/react/assets/memo-success.jpg",
+    "docs/react/assets/react-login-1.jpg",
+    "docs/react/assets/WechatIMG468.png",
+    "docs/react/assets/memo-error.png",
+    "docs/react/assets",
+    "docs/react/react/shoukong-feishoukong.png",
+    "docs/react/react/react-login-2.jpg",
+    "docs/react/react/react-login-1.jpg",
+    "docs/react/react/memo-success.jpg",
+    "docs/react/react",
+    "node_modules/unset-value/README.md",
+    "docs/react/react-学习笔记.md"
+  ]
+}
