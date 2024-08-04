@@ -79,9 +79,11 @@ class Parent extends React.Component {
 
 ref 的原理很简单，只是一个包含 `current` 属性的对象，只不过内部会对它使用 [Object.seal](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/seal) 处理，让这个对象不能添加新属性，不能删除现有属性，也不能更改枚举性和可配置性，也不能重新分配原型。
 
+在使用 ref 时，react 并不关心 ref 是怎么来的，用 createRef、useRef 创建的，或者 forwardRef 传过来的都行，甚至普通对象也可以（只要提供了 current 属性）。
+
 ### forwardRef 的原理是什么
 
-forwardRef 函数会返回一个对象：
+forwardRef 函数创建了 vdom 类型为 ForwardRef 的对象：
 
 ```jsx
 var elementType = {
