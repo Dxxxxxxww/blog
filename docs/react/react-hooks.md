@@ -271,23 +271,6 @@ useReducer 其实就是可以当做一个特殊的 useState。可以把传入的
 1. props
 2. 抽离组件，传递组件（也就是 slot）
 
-#### 原理
-
-createContext 创建了一个对象（以下简称 cco）。可以看做是一个数据中心。
-
-然后 provider 是一个特殊的组件，作用就是接收传进来的 value ，在内部对 cco 的值(\_currentValue)进行修改。所以其实我们也可以不利用 provider ，直接通过 cco 就能修改，当然这是不推荐的。
-
-最后是 useContext，它其实就是返回了 cco.\_currentValue。对于类组件上的 Consumer，也是一样的。只不过它需要调用组件 render(value) 把值传进去。
-
-当然了，如果仅仅只是一个全局数据中心，那我们自己也可以实现，或者 hack。而 react 对 context 还有一个处理就是，provider 中的修改，只会对子组件造成影响。而不会对父级造成影响。
-
-这是怎么做到的呢？
-
-在 react 内部，有两个函数叫作，pushProvider, popProvider。他俩会对当前的 fiber 和 context 维护了 value 栈和 fiber 栈。也就是说，在每一个 provider 使用的地方，都会对栈 push（fiber 栈和 value 栈中， fiber 和 value 的 index 是对应的），
-再在使用 useContext 获取值的地方通过 pop 来获取栈顶的值。这样一来，假如说现在有一个 A->B->C 三层组件，A 和 B 都使用了 provider，那么在 C 中获取的值就是 B 推入栈的值。而在其他树节点中，使用的都是 A 组件的值。
-
-push 是在 beginWork/updateContextProvider 中调用的。 pop 是在 completeWork 中调用的。
-
 ### 八、useImperativeHandle
 
 配合 useRef, forwardRef 使用，让子组件被父组件通过 ref 操控时，只暴露特定的方法。
