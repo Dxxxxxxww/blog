@@ -248,11 +248,37 @@ React.createElement(
 
 ## scheduler 和时间分片
 
-### 什么是 scheduler
+### 什么是 scheduler，时间分片
+
+scheduler 就是一个任务调度器，用来调度多个任务的工具。
+
+时间分片就是把时间分割成一片一片，然后任务会在这一个片区中执行，超过了这一个时间片区范围就会取消继续执行剩余任务。每一个时间切片为 5ms
 
 ### 为什么要有 scheduler 和时间分片
 
+现在浏览器普遍都是 60fps，也就是 1s 渲染 60 次，每次约 16.7ms。在浏览器中，js 和页面渲染共用一条线程，这就会导致如果有诸如用户在输入，js执行等事件触发过多，执行时间过长时会占用线程，使页面渲染在当前这一帧渲染不及时，导致卡顿。又或者是反过来，线程中在执行其他任务时，无法响应用户操作，给用户造成不好的使用体验。
+
+使用 scheduler 和 时间分片，通过调度，分片执行多个不同优先级的任务，以这种方式让出线程，让更高优先级的任务先执行（浏览器渲染或者用户输入），解决卡顿现象。
+
 ### scheduler 原理
+
+1. 将多个任务，根据优先级的不同，加上对应的优先级时间，以排队时间长短的方式来区分任务，塞入任务队列（最小堆）中。
+2. 通过 `MessageChannel` 宏任务来批处理任务队列，从任务队列（最小堆）中取出过期任务执行，如果在一个时间切片中（5ms）执行完一个任务，还有时间剩余，则会再从队列中取出任务执行，直到当前时间切片耗尽。
+3. 如果一个时间切片耗尽后，任务队列中还有任务，则开启下一个通过 `MessageChannel` 宏任务，先让出主线程处理浏览器渲染或是用户输入，等待下一次宏任务时期再度执行任务。
+
+### schedule 的执行流程是怎样的
+
+1. 在 `ensureRootIsScheduled` 中调用 `scheduleCallback` ，将不同优先级和任务作为参数传入。
+2. `scheduleCallback` 中会把优先级转化成不同的排队时间，并生成任务对象放入 `taskQueue` 任务队列（如果是入参有延时，则放入 `timeQueue` 延时任务队列）。
+3. 如果当前没有在任务调度，则执行 `requestHostCallback` 将 `flushWork` 赋值给全局任务变量 `scheduledHostCallback` ，并通过 `schedulePerformWorkUntilDeadline` 也就是 `MessageChannel` 发起通知。
+4. 当 `MessageChannel` 监听到时，会执行宏任务 `performWorkUntilDeadline`。
+5. `performWorkUntilDeadline` 中会执行 `scheduledHostCallback` 也就是 `flushWork` ，去调用 `workLoop` 消费任务队列中的任务。
+6. `workLoop` 中会从任务队列（最小堆）中取出已过期任务进行执行，若时间切片还有时间剩余，则会继续取出任务执行。注1。若已经超时会被 `shouldYieldToHost` 打断。任务队列中若还有任务，则会给 `performWorkUntilDeadline` 返回 true，发起下一个 `MessageChannel` 宏任务，如果没有则完成此次调度。
+
+> 注解解释
+> 注1：
+> 在 `workLoop` 执行前后，都会调用 `advanceTimers` 从延时任务队列中获取过期任务，添加到普通任务队列中排队执行。
+> 当普通任务队列清空时，还会判断延时任务队列是否还有任务，如果还有的话则会去发起延时任务队列的调度。
 
 ### react 为什么要用最小堆？
 
@@ -262,18 +288,10 @@ sortIndex 就是过期时间，通过任务开始时间 + 优先级对应时间�
 
 halfLength
 
-### 如何划分优先级，任务怎么排序的？
-
-shouldYeild 之后，任务会根据最小堆来判断优先级进行 schedule。
-
-目前理解：
-即便是多个 setState 一起触发。或者是在某个函数执行中又触发了 setState ，并且这个新的 setState 是个高优先级事件，那也没关系。因为 react 会将这个事件推到 queue 中。然后按优先级排序。在当前处理的这轮 fiber 循环中，如果有超过 5ms 的处理，会被打断，然后从 queue 中获取高优先任务执行。如果没有超过 5ms 也没事，因为 5ms 很快就执行过去了。不会延迟多少。
-
 ### continuationCallback 任务中断如何恢复的？
 
 首先，一个函数在执行过程中肯定是不可以打断的，
 
-### schedule 的执行流程是怎样的
 
 ## diff
 
@@ -325,20 +343,20 @@ completeWork：
 ## 简述下初次挂载时的流程
 
 1. 因为 react 转换 fiber 的流程是在当前节点转换下一级节点，所以首先 react 会构造一个虚拟 fiber 根节点。
-2. 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot，执行 `mountIndeterminateComponent`。注 1
-3. 在`mountIndeterminateComponent`中，**会调用`renderWithHooks`执行函数组件，获取 ReactElement（vdom）。**注 2
-4. 接着会执行 reconcileChildren，将刚刚执行函数组件获取到的 vdom 转换成 fiberNode。并把第一个子节点挂到父级 fiberNode.child 上。如果有多个子节点，会把子节点挂到前一个子节点的 sibling 上。注 3
+2. 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot，执行 `mountIndeterminateComponent`。注1
+3. 在`mountIndeterminateComponent`中，**会调用`renderWithHooks`执行函数组件，获取 ReactElement（vdom）。**注2
+4. 接着会执行 reconcileChildren，将刚刚执行函数组件获取到的 vdom 转换成 fiberNode。并把第一个子节点挂到父级 fiberNode.child 上。如果有多个子节点，会把子节点挂到前一个子节点的 sibling 上。注3
 5. 如果第 4 步返回了子级 fiber，则会继续“递”的过程。如果返回了 null。则会进入 completeWork 过程。
 6. 在 completeWork 中，首先会创建 dom，其次会进行“归”的过程，也就是返回兄弟节点或者父节点本身。
 
 > 注解解释
-> 注 1：
+> 注1：
 > 这里只看函数组件的逻辑
 > 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot
 > React.StrictMode 节点会进入 case Mode
 > App 根组件，以及其子组件会进入 case IndeterminateComponentApp
 > 元素会进入 case HostComponent
-> 注 2：
+> 注2：
 > ReactElement（vdom）的生成时机。如果是函数组件，则是在 renderWithHooks 中调用组件函数时，如果是类组件，则是在 instance.render() 执行时。
 > 比如 \<App/\> 组件，它本身的 fiberNode 是在其父组件执行时创建的。而它组件函数则是在 wip 等于它自己的 fiberNode 时去执行，产生子级的 vdom。
 > 在组件函数执行完后，\<App/\> 产生了子级 vdom ，它的根节点（假设是 div 元素）的 vdom 上的 props 属性会包含 children（也就是 div 的子级）。
@@ -346,7 +364,7 @@ completeWork：
 > 当下一轮递归，wip === div fiberNode 时，经过 beginWork 进入 case HostComponent，会从 fiberNode.pendingProps.children 上拿到子级 vdom ，去生成子级的 fiberNode。
 > fiberNode.pendingProps === vdom.props ，是在生成 fiberNode 时传递的。
 > 无论是 html 元素，还是组件，在 react 中都会生成 vdom 对象。区别只是 html 元素的 vdom type 是字符串，而组件则是组件函数。
-> 注 3：
+> 注3：
 > 针对多个子节点的情况，在 reconcileChildrenArray 函数中会有变量存储第一个子节点和前一个子节点。多个子节点在 reconcileChildrenArray 中循环创建 fiberNode
 
 在虚拟根节点创建严格模式节点的 fiber 这一步。 严格模式节点 vdom 是绑定在 虚拟根节点的 memoizedState.element 上的。但不知道哪一个时机从 renderWithHooks 去调用然后绑定上去。应该是 index.js
