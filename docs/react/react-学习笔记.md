@@ -105,6 +105,348 @@ function Son({ name }) {
 </Parent>
 ```
 
+## React.createRoot() 做了什么工作
+
+在 `React.createRoot()` 中主要做了两件事：
+
+1. 创建 react app 根实例 FiberRoot，虚拟 fiberNode HostRoot。
+2. 通过事件委托，在 #app 上绑定所有划分好优先级的事件。
+
+### 创建 react app 根实例
+
+react app 根实例 是一个全局唯一实例，用于切换两棵 fiber tree。 react app 根实例的 current 属性会绑定虚拟 fiberNode（ HostRootFiber ），而虚拟 fiberNode （ HostRootFiber ）的 stateNode 则会绑定 react app 根实例。
+
+```js
+HostRootFiber.stateNode = FiberRoot
+
+FiberRoot.current = HostRootFiber
+```
+
+FiberRoot 并发模式下 tag 是 ConcurrentRoot = 1，通过 React.createRoot 来执行 react ，默认都是 并发模式。如果是传统模式的话，则是 LegacyRoot = 0。
+
+HostRootFiber tag 是 HostRoot = 3。
+
+函数组件类型 FunctionComponent = 0，类组件类型 ClassComponent = 1 虽然 ConcurrentRoot 和 LegacyRoot 与它俩的值相同，但是 FiberRoot react 全局 app 实例并不会进入 fiber 循环，所以无需担心无法区分的问题。
+
+### 优先级事件
+
+react 在 #app 上通过捕获，冒泡绑定携带优先级的包裹事件（一个高阶函数）。根据事件不同，分为不同的优先级：
+
+1. 离散事件优先级。包括 click， input， change 等事件
+2. 连续性事件优先级。包括 scroll，drag 等事件
+3. 默认事件。包括 error。
+
+后续会根据优先级来决定谁先被调度。
+
+### 事件都绑定到根节点上了，那事件是怎么触发的呢
+
+在 react 中，我们绑定在组件上的原生事件，都是先触发根节点上的包裹事件，在包裹事件中会去做一些优先级的设置，把全局变量 currentUpdatePriority 设置成当前的优先级，然后调用真正绑定的函数。
+
+#### 如何处理的 evt.stopPropagation ？
+
+#### 额外的小知识
+
+当事件触发时，window.event 会指向触发的事件对象 event。react-dom/getCurrentEventPriority 中用这个变量判断是否是事件触发。
+
+## 通过 `updateContainer` 学习优先级
+
+### 什么是事件优先级，更新优先级，任务优先级，以及 Lane 优先级模型
+
+#### Lane 优先级模型
+
+Lane 优先级模型是 react 使用二级制划分的 31 种优先级模型，因其长得像 lane（车道）而得名。
+
+#### 事件优先级
+
+事件优先级就是跟事件相关的优先级，通过 Lane 的值来初始化，分为如下几种优先级：
+
+1. 离散事件优先级 `DiscreteEventPriority = SyncLane`
+2. 持续性事件优先级 `ContinuousEventPriority = InputContinuousLane`
+3. 默认优先级 `DefaultEventPriority = DefaultLane`
+4. 空闲优先级 `IdleEventPriority = IdleLane`
+
+更新优先级则是会根据当前 fiberNode 情况，在挂载，更新时获取的优先级。react 内部会通过 `requestUpdateLane` 函数来获取。
+
+批量更新原理？
+为什么会有任务优先级？
+任务优先级如何跟调度优先级进行映射的？
+如何实现高优先级打断低优先级的？
+reactv18 在挂载时两种模式的表现区别？
+
+#### `requestUpdateLane`
+
+在 react 中调用了 render、setState、setXXX、forceUpdate 等更新相关的 API 都会执行，来获取当前更新优先级。
+
+#### 更新优先级
+
+更新优先级会分为如下几种：
+
+1. 同步优先级，SyncLane 。如果不是并发模式会直接返回该优先级。
+2. transition 优先级，如果使用了 useTransition，会返回该优先级。
+3. 更新优先级，react 的更新相关的 api，基本上都会通过事件调用触发，所以更新优先级基本上等同于事件优先级。`updateLane = getCurrentUpdatePriority()`，通过调用 `getCurrentUpdatePriority` 返回全局变量 `currentUpdatePriority` ，`currentUpdatePriority` 的值大部分情况下都为离散事件优先级。
+4. 事件优先级，`eventLane = getCurrentEventPriority()` ，作为兜底的优先级，会根据事件的不同返回对应事件优先级，但是这段优先级的处理基本上都是非事件触发的优先级，所以会返回默认优先级。
+
+总结一下，不管是 事件优先级，还是更新优先级，最终其实都是 Lane 优先级模型的值。最终都会转换成 schedule 优先级。
+
+关于 schedule 优先级，我们放到 schedule 模块中讲解。
+
+### 为什么要区分事件优先级和更新优先级？
+
+因为事件和更新并非一一对应，比如说如下代码：
+
+```jsx
+function TabContainer() {
+  const [isPending, startTransition] = useTransition()
+  const [tab, setTab] = useState('about')
+  const [count, setCount] = useState(0)
+
+  function selectTab(nextTab) {
+    startTransition(() => {
+      setTab(nextTab)
+    })
+    setCount(++1)
+  }
+  // ...
+}
+```
+
+setCount 的优先级和 setTab 的优先级就不是同一个，但是它俩都在 selectTab 这个事件中。
+
+### fiber 上的 updateQueue 是什么结构，优势是什么？
+
+每个 fiberNode 上都有一个 updateQueue 属性，它是一个环形链表，尾结点指向头结点。这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
+
+## scheduler 和时间分片
+
+### 什么是 scheduler，时间分片
+
+scheduler 就是一个任务调度器，用来调度多个任务的工具。
+
+时间分片就是把时间分割成一片一片，然后任务会在这一个片区中执行，超过了这一个时间片区范围就会取消继续执行剩余任务。每一个时间切片为 5ms
+
+### 为什么要有 scheduler 和时间分片
+
+现在浏览器普遍都是 60fps，也就是 1s 渲染 60 次，每次约 16.7ms。在浏览器中，js 和页面渲染共用一条线程，这就会导致如果有诸如用户在输入，js 执行等事件触发过多，执行时间过长时会占用线程，使页面渲染在当前这一帧渲染不及时，导致卡顿。又或者是反过来，线程中在执行其他任务时，无法响应用户操作，给用户造成不好的使用体验。
+
+使用 scheduler 和 时间分片，通过调度，分片执行多个不同优先级的任务，以这种方式让出线程，让更高优先级的任务先执行（浏览器渲染或者用户输入），解决卡顿现象。
+
+### schedule 优先级
+
+### scheduler 原理
+
+1. 将多个任务，根据优先级的不同，加上对应的优先级时间，以排队时间长短的方式来区分任务，塞入任务队列（最小堆）中。
+2. 通过 `MessageChannel` 宏任务来批处理任务队列，从任务队列（最小堆）中取出过期任务执行，如果在一个时间切片中（5ms）执行完一个任务，还有时间剩余，则会再从队列中取出任务执行，直到当前时间切片耗尽。
+3. 如果一个时间切片耗尽后，任务队列中还有任务，则开启下一个通过 `MessageChannel` 宏任务，先让出主线程处理浏览器渲染或是用户输入，等待下一次宏任务时期再度执行任务。
+
+### schedule 的执行流程是怎样的
+
+1. 在 `ensureRootIsScheduled` 中调用 `scheduleCallback` ，将不同优先级和任务作为参数传入。
+2. `scheduleCallback` 中会把优先级转化成不同的排队时间，并生成任务对象放入 `taskQueue` 任务队列（如果是入参有延时，则放入 `timeQueue` 延时任务队列）。
+3. 如果当前没有在任务调度，则执行 `requestHostCallback` 将 `flushWork` 赋值给全局任务变量 `scheduledHostCallback` ，并通过 `schedulePerformWorkUntilDeadline` 也就是 `MessageChannel` 发起通知。
+4. 当 `MessageChannel` 监听到时，会执行宏任务 `performWorkUntilDeadline`。
+5. `performWorkUntilDeadline` 中会执行 `scheduledHostCallback` 也就是 `flushWork` ，去调用 `workLoop` 消费任务队列中的任务。
+6. `workLoop` 中会从任务队列（最小堆）中取出已过期任务进行执行，若时间切片还有时间剩余，则会继续取出任务执行。注 1。若已经超时会被 `shouldYieldToHost` 打断。任务队列中若还有任务，则会给 `performWorkUntilDeadline` 返回 true，发起下一个 `MessageChannel` 宏任务，如果没有则完成此次调度。
+
+> 注解解释
+> 注 1：
+> 在 `workLoop` 执行前后，都会调用 `advanceTimers` 从延时任务队列中获取过期任务，添加到普通任务队列中排队执行。
+> 如果任务被打断了，会返回一个 `continuationCallback` 赋值给`currentTask.callback` 属性，这样一来，这个任务节点就不会被清除出队列，下一次还可以继续执行。
+> 当普通任务队列清空时，还会判断延时任务队列是否还有任务，如果还有的话则会去发起延时任务队列的调度。
+
+### react 为什么要用最小堆？
+
+方便取出排序在最前的任务执行。
+
+#### 最小堆实现中的一些代码详解
+
+x >>> 1 表示的就是除以 2 后取整。
+
+在 `siftUp` 中通过这种方式获取父节点索引
+
+```js
+// 获取父节点的索引位置，父节点索引刚好是子节点索引 -1 后 /2 取整
+const parentIndex = (index - 1) >>> 1
+```
+
+在 `siftDown` 中获取一半队列长度
+
+```js
+const halfLength = length >>> 1
+```
+
+sortIndex 就是过期时间，通过任务开始时间 + 优先级对应时间得来，sortIndex 越小，优先级越高，在最小堆中越靠近根节点。
+
+halfLength
+
+## render
+
+render 的入口有如下两个：
+
+1. `performSyncWorkOnRoot` ，同步模式入口，v18 以前不通过 `React.createRoot` 创建组件
+2. `performConcurrentWorkOnRoot` ，并发模式模式入口，v18 通过 `React.createRoot` 创建组件
+
+最终都是执行 `performUnitOfWork` 函数，构建 fiber tree。
+
+### 前置准备
+
+在执行 workLoopSync 或 workLoopConcurrent 之前，react 会先执行 prepareFreshStack ，复制一个虚拟 fiberNode 出来，并赋值给 wIP，作为新的 fiber tree 的根节点。此时内存中的结构为：
+
+![image](./assets/render_prepare1.png)
+
+> 图片来自 https://juejin.cn/post/7353451512205492278 作者：Story
+
+经过 render 之后，这棵树会变成这样：
+
+![image](./assets/render_prepare2.png)
+
+> 图片来自 https://juejin.cn/post/7353451512205492278 作者：Story
+
+最终只要修改 FiberRoot 的 current 指向就好。
+
+#### 两棵树
+
+在整个 react 运行时，总会有两棵 fiber 树存在在内存中，render 阶段的任务就是不断基于当前的 current 树，构建接下来要渲染的 workInProgress 树
+
+### beginWork 在 mount 和 update 场景中的异同点？
+
+### react 是如何复用 fiber 节点的？
+
+### 为什么要有 IndeterminateComponent 这种中间状态
+
+### 多个优先级时状态的计算机制是什么？
+
+### beginWork 和 completeWork 具体做了什么
+
+beginWork：
+
+1.在当前 fiberNode，创建子级 fiberNode，并建立联系。 2.做递的过程
+completeWork：
+
+1.创建 dom 2.做归的过程
+
+当然里面还会涉及到标记设置和根据标记做其他工作。这里暂时先不涉及
+
+### 简述下初次挂载时的流程
+
+1. 因为 react 转换 fiber 的流程是在当前节点转换下一级节点，所以首先 react 会构造一个虚拟 fiber 根节点。
+2. 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot，执行 `mountIndeterminateComponent`。注 1
+3. 在`mountIndeterminateComponent`中，**会调用`renderWithHooks`执行函数组件，获取 ReactElement（vdom）。**注 2
+4. 接着会执行 reconcileChildren，将刚刚执行函数组件获取到的 vdom 转换成 fiberNode。并把第一个子节点挂到父级 fiberNode.child 上。如果有多个子节点，会把子节点挂到前一个子节点的 sibling 上。注 3
+5. 如果第 4 步返回了子级 fiber，则会继续“递”的过程。如果返回了 null。则会进入 completeWork 过程。
+6. 在 completeWork 中，首先会创建 dom，其次会进行“归”的过程，也就是返回兄弟节点或者父节点本身。
+
+> 注解解释
+> 注 1：
+> 这里只看函数组件的逻辑
+> 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot
+> React.StrictMode 节点会进入 case Mode
+> App 根组件，以及其子组件会进入 case IndeterminateComponentApp
+> 元素会进入 case HostComponent
+> 注 2：
+> ReactElement（vdom）的生成时机。如果是函数组件，则是在 renderWithHooks 中调用组件函数时，如果是类组件，则是在 instance.render() 执行时。
+> 比如 \<App/\> 组件，它本身的 fiberNode 是在其父组件执行时创建的。而它组件函数则是在 wip 等于它自己的 fiberNode 时去执行，产生子级的 vdom。
+> 在组件函数执行完后，\<App/\> 产生了子级 vdom ，它的根节点（假设是 div 元素）的 vdom 上的 props 属性会包含 children（也就是 div 的子级）。
+> \<App/\> 生成完子级 vdom 然后进行子级 fiber 转换。
+> 当下一轮递归，wip === div fiberNode 时，经过 beginWork 进入 case HostComponent，会从 fiberNode.pendingProps.children 上拿到子级 vdom ，去生成子级的 fiberNode。
+> fiberNode.pendingProps === vdom.props ，是在生成 fiberNode 时传递的。
+> 无论是 html 元素，还是组件，在 react 中都会生成 vdom 对象。区别只是 html 元素的 vdom type 是字符串，而组件则是组件函数。
+> 注 3：
+> 针对多个子节点的情况，在 reconcileChildrenArray 函数中会有变量存储第一个子节点和前一个子节点。多个子节点在 reconcileChildrenArray 中循环创建 fiberNode
+
+在虚拟根节点（HostRoot）创建严格模式节点的 fiber 这一步。 严格模式节点 vdom 是绑定在 虚拟根节点的 memoizedState.element 上的。但不知道哪一个时机从 renderWithHooks 去调用然后绑定上去。应该是 index.js。
+
+虚拟根节点（HostRoot）是第一个 fiberNode，也是唯一一个没有 return 的 fiberNode（return 是 null）。react app 根实例绑定在虚拟根节点的 stateNode 属性上。而虚拟根节点（HostRoot）则绑定在 react app 根实例的 current 上。
+
+### 那么它是生成一个 vdom 就转一次 fiberNode 咯？
+
+也并不是。因为当生成 vdom 时，它的 children 也已经转成 vdom 了。这时候已经是一棵 vdom 树了。会深度优先遍历的进行 fiberNode 转换。
+
+### 为什么会有 IndeterminateComponent 未决状态
+
+我们知道，在挂载时，对于函数组件来说，在 `createFiberFromTypeAndProps` 函数中已经根据 type 判断过组件类型了，但是还是给函数组件的 tag 赋值为 `IndeterminateComponent = 2` 未决类型。这是为什么呢？
+
+其实这是为了解决一种特殊的写法——在一个函数组件中，返回类组件的实例，如下图所示：
+
+```js
+// 类
+class ClassComponent extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      num: 1
+    }
+  }
+  render() {
+    const { num } = this.state
+    const onClick = () => {
+      this.setState({
+        num: num + 1
+      })
+    }
+    return (
+      <div>
+        <button onClick={onClick}>{num}</button>
+      </div>
+    )
+  }
+}
+// 函数
+const FunctionComponent = () => {
+  const [count, setCount] = React.useState(1)
+  const onClick = () => {
+    setNum(num + 1)
+  }
+
+  const instance = new ClassComponent()
+
+  return instance
+}
+
+ReactDOM.createRoot(<FunctionComponent />).redner(container)
+
+// 代码来自于 https://juejin.cn/post/7354309874669797414#heading-2 作者：Story
+```
+
+对于这种代码，先将其标记为未决类型，然后再在 `mountIndeterminateComponent` 中进行真正的类型判断，上述代码会被判断成类组件，生成一个节点 。这样做的目的是为了提升性能，否则当成两个节点处理的话需要多做一次 beginWork 的轮回。在之后的处理中，这种组件都会被当成类组件处理。
+
+> 个人认为是函数组件与类组件在一个项目中都出现，对兼容代码的优化代码。
+
+判断过程：
+
+在 `case IndeterminateComponent` 中调用了 `mountIndeterminateComponent` ，会判断是函数组件还是类组件。会对 `wip.tag` 打上不同的标记。对函数组件会执行 `renderWithHooks` ，对类组件会执行 `finishClassComponent` 。并在后续的调用中，走 `case FunctionComponent` 或 `case ClassComponent` 。
+
+### 那么是怎么判断的呢
+
+在 mountIndeterminateComponent 中 react 会先执行一次 renderWithHooks 查看返回值。
+
+如果返回值是对象（value），并且有 render 方法，并且$$typeof 是 undefined 则是类组件。
+
+如果是类组件，则还需要调用 `finishClassComponent` ，最终调用 `value.render()` 执行真正的函数渲染。
+
+如果是函数组件，则此时已经获得了函数组件的 vdom。只需要给 wip.tag 打上 FunctionComponent 的标记。
+
+此外，如果是严格模式，在这时候还会再执行一次 `renderWithHooks`。
+
+> 需要注意的是，在通过 `renderWithHooks` 执行组件函数时，函数内的各种 hooks，函数，变量声明都会执行。
+
+### 函数调用轨迹
+
+单子节点：
+
+`reconcileChildren -> reconcileChildFibers -> reconcileSingleElement-> createFiberFromElement -> createFiberFromTypeAndProps -> createFiber`
+
+多子节点：
+
+`reconcileChildren -> reconcileChildFibers -> reconcileChildrenArray -> (updateSlot/createChild/updateFromMap) -> createFiberFromElement -> createFiberFromTypeAndProps -> createFiber`
+
+### fiber 的 tag 是什么时候生成的
+
+在生成 `fiberNode` 时生成，在 `createFiberFromTypeAndProps` 函数中通过不同的条件判断来设置值。
+
+## commit 阶段中三个小阶段，各对 fiber 遍历了 1 次吗
+
+## diff
+
 ## refs 使用
 
 react 禁止在一个类组件中使用了函数式组件，并给这个函数式组件设置 ref。因为类组件是有实例，而函数组件没有实例。例如以下代码：
@@ -246,70 +588,6 @@ React.createElement(
 )
 ```
 
-## scheduler 和时间分片
-
-### 什么是 scheduler，时间分片
-
-scheduler 就是一个任务调度器，用来调度多个任务的工具。
-
-时间分片就是把时间分割成一片一片，然后任务会在这一个片区中执行，超过了这一个时间片区范围就会取消继续执行剩余任务。每一个时间切片为 5ms
-
-### 为什么要有 scheduler 和时间分片
-
-现在浏览器普遍都是 60fps，也就是 1s 渲染 60 次，每次约 16.7ms。在浏览器中，js 和页面渲染共用一条线程，这就会导致如果有诸如用户在输入，js执行等事件触发过多，执行时间过长时会占用线程，使页面渲染在当前这一帧渲染不及时，导致卡顿。又或者是反过来，线程中在执行其他任务时，无法响应用户操作，给用户造成不好的使用体验。
-
-使用 scheduler 和 时间分片，通过调度，分片执行多个不同优先级的任务，以这种方式让出线程，让更高优先级的任务先执行（浏览器渲染或者用户输入），解决卡顿现象。
-
-### scheduler 原理
-
-1. 将多个任务，根据优先级的不同，加上对应的优先级时间，以排队时间长短的方式来区分任务，塞入任务队列（最小堆）中。
-2. 通过 `MessageChannel` 宏任务来批处理任务队列，从任务队列（最小堆）中取出过期任务执行，如果在一个时间切片中（5ms）执行完一个任务，还有时间剩余，则会再从队列中取出任务执行，直到当前时间切片耗尽。
-3. 如果一个时间切片耗尽后，任务队列中还有任务，则开启下一个通过 `MessageChannel` 宏任务，先让出主线程处理浏览器渲染或是用户输入，等待下一次宏任务时期再度执行任务。
-
-### schedule 的执行流程是怎样的
-
-1. 在 `ensureRootIsScheduled` 中调用 `scheduleCallback` ，将不同优先级和任务作为参数传入。
-2. `scheduleCallback` 中会把优先级转化成不同的排队时间，并生成任务对象放入 `taskQueue` 任务队列（如果是入参有延时，则放入 `timeQueue` 延时任务队列）。
-3. 如果当前没有在任务调度，则执行 `requestHostCallback` 将 `flushWork` 赋值给全局任务变量 `scheduledHostCallback` ，并通过 `schedulePerformWorkUntilDeadline` 也就是 `MessageChannel` 发起通知。
-4. 当 `MessageChannel` 监听到时，会执行宏任务 `performWorkUntilDeadline`。
-5. `performWorkUntilDeadline` 中会执行 `scheduledHostCallback` 也就是 `flushWork` ，去调用 `workLoop` 消费任务队列中的任务。
-6. `workLoop` 中会从任务队列（最小堆）中取出已过期任务进行执行，若时间切片还有时间剩余，则会继续取出任务执行。注1。若已经超时会被 `shouldYieldToHost` 打断。任务队列中若还有任务，则会给 `performWorkUntilDeadline` 返回 true，发起下一个 `MessageChannel` 宏任务，如果没有则完成此次调度。
-
-> 注解解释
-> 注1：
-> 在 `workLoop` 执行前后，都会调用 `advanceTimers` 从延时任务队列中获取过期任务，添加到普通任务队列中排队执行。
-> 如果任务被打断了，会返回一个 `continuationCallback` 赋值给`currentTask.callback` 属性，这样一来，这个任务节点就不会被清除出队列，下一次还可以继续执行。
-> 当普通任务队列清空时，还会判断延时任务队列是否还有任务，如果还有的话则会去发起延时任务队列的调度。
-
-### react 为什么要用最小堆？
-
-方便取出排序在最前的任务执行。
-
-#### 最小堆实现中的一些代码详解
-
-x >>> 1 表示的就是除以 2 后取整。
-
-在 `siftUp` 中通过这种方式获取父节点索引 
-
-```js
-// 获取父节点的索引位置，父节点索引刚好是子节点索引 -1 后 /2 取整
-const parentIndex = (index - 1) >>> 1
-```
-
-在 `siftDown` 中获取一半队列长度
-
-```js
-const halfLength = length >>> 1
-```
-
-sortIndex 就是过期时间，通过任务开始时间 + 优先级对应时间得来，sortIndex 越小，优先级越高，在最小堆中越靠近根节点。
-
-halfLength
-
-## diff
-
-## commit 阶段中三个小阶段，各对 fiber 遍历了 1 次吗
-
 是的。
 
 在 xxx_begin 都 执行了 while(nextEffect != null) 循环，进行深度遍历（child）。
@@ -328,9 +606,7 @@ nextEffect 就是(被标记了的?存疑) fiber 节点。
 
 是宏任务，因为 useEffect 是在页面真正渲染之后才执行
 
-## useEffect 的存储点 updateQueue 的数据结构是怎样的
-
-每个 fiberNode 上都有一个 updateQueue 属性，它是一个环形链表。这样设计的好处是方便插入。尾结点指向头结点。
+useEffect 存储在 fiberNode.updateQueue 上
 
 ### 还有一个串行链表，记录的是 fiberNode
 
@@ -341,82 +617,6 @@ nextEffect 就是(被标记了的?存疑) fiber 节点。
 父节点的 firstEffect 中。**记录的是 fiberNode！！！**
 
 firstEffect -> nextEffect -> lastEffect~~
-
-## beginWork 和 completeWork 具体做了什么
-
-beginWork：
-
-1.在当前 fiberNode，创建子级 fiberNode，并建立联系。 2.做递的过程
-completeWork：
-
-1.创建 dom 2.做归的过程
-
-当然里面还会涉及到标记设置和根据标记做其他工作。这里暂时先不涉及
-
-## 简述下初次挂载时的流程
-
-1. 因为 react 转换 fiber 的流程是在当前节点转换下一级节点，所以首先 react 会构造一个虚拟 fiber 根节点。
-2. 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot，执行 `mountIndeterminateComponent`。注1
-3. 在`mountIndeterminateComponent`中，**会调用`renderWithHooks`执行函数组件，获取 ReactElement（vdom）。**注2
-4. 接着会执行 reconcileChildren，将刚刚执行函数组件获取到的 vdom 转换成 fiberNode。并把第一个子节点挂到父级 fiberNode.child 上。如果有多个子节点，会把子节点挂到前一个子节点的 sibling 上。注3
-5. 如果第 4 步返回了子级 fiber，则会继续“递”的过程。如果返回了 null。则会进入 completeWork 过程。
-6. 在 completeWork 中，首先会创建 dom，其次会进行“归”的过程，也就是返回兄弟节点或者父节点本身。
-
-> 注解解释
-> 注1：
-> 这里只看函数组件的逻辑
-> 虚拟 fiber 根节点会在 beginWork 中进入 case HostRoot
-> React.StrictMode 节点会进入 case Mode
-> App 根组件，以及其子组件会进入 case IndeterminateComponentApp
-> 元素会进入 case HostComponent
-> 注2：
-> ReactElement（vdom）的生成时机。如果是函数组件，则是在 renderWithHooks 中调用组件函数时，如果是类组件，则是在 instance.render() 执行时。
-> 比如 \<App/\> 组件，它本身的 fiberNode 是在其父组件执行时创建的。而它组件函数则是在 wip 等于它自己的 fiberNode 时去执行，产生子级的 vdom。
-> 在组件函数执行完后，\<App/\> 产生了子级 vdom ，它的根节点（假设是 div 元素）的 vdom 上的 props 属性会包含 children（也就是 div 的子级）。
-> \<App/\> 生成完子级 vdom 然后进行子级 fiber 转换。
-> 当下一轮递归，wip === div fiberNode 时，经过 beginWork 进入 case HostComponent，会从 fiberNode.pendingProps.children 上拿到子级 vdom ，去生成子级的 fiberNode。
-> fiberNode.pendingProps === vdom.props ，是在生成 fiberNode 时传递的。
-> 无论是 html 元素，还是组件，在 react 中都会生成 vdom 对象。区别只是 html 元素的 vdom type 是字符串，而组件则是组件函数。
-> 注3：
-> 针对多个子节点的情况，在 reconcileChildrenArray 函数中会有变量存储第一个子节点和前一个子节点。多个子节点在 reconcileChildrenArray 中循环创建 fiberNode
-
-在虚拟根节点创建严格模式节点的 fiber 这一步。 严格模式节点 vdom 是绑定在 虚拟根节点的 memoizedState.element 上的。但不知道哪一个时机从 renderWithHooks 去调用然后绑定上去。应该是 index.js
-
-### 那么它是生成一个 vdom 就转一次 fiberNode 咯？
-
-也并不是。因为当生成 vdom 时，它的 children 也已经转成 vdom 了。这时候已经是一棵 vdom 树了。会深度优先遍历的进行 fiberNode 转换。
-
-### 什么时候会走 case FunctionComponent
-
-在初次挂载的时候，react 并不知道一个组件是类组件还是函数组件，所以会先走 case IndeterminateComponent ，表示不确定的组件。
-
-在 `case IndeterminateComponent` 中调用了 `mountIndeterminateComponent` ，会判断是函数组件还是类组件。会对 `wip.tag` 打上不同的标记。对函数组件会执行 `renderWithHooks` ，对类组件会执行 `finishClassComponent` 。并在后续的调用中，走 `case FunctionComponent` 或 `case ClassComponent` 。
-
-### 那么是怎么判断的呢
-
-在 mountIndeterminateComponent 中 react 会先执行一次 renderWithHooks 查看返回值。
-
-如果返回值是对象（value），并且有 render 方法，并且$$typeof 是 undefined 则是类组件。
-
-如果是类组件，则还需要调用 `finishClassComponent` ，最终调用 `value.render()` 执行真正的函数渲染。
-
-如果是函数组件，则此时已经获得了函数组件的 vdom。只需要给 wip.tag 打上 FunctionComponent 的标记。
-
-此外，如果是严格模式，在这时候还会再执行一次 `renderWithHooks`。
-
-### 函数调用轨迹
-
-单子节点：
-
-`reconcileChildren -> reconcileChildFibers -> reconcileSingleElement-> createFiberFromElement -> createFiberFromTypeAndProps -> createFiber`
-
-多子节点：
-
-`reconcileChildren -> reconcileChildFibers -> reconcileChildrenArray -> (updateSlot/createChild/updateFromMap) -> createFiberFromElement -> createFiberFromTypeAndProps -> createFiber`
-
-### fiber 的 tag 是什么时候生成的
-
-在生成 `fiberNode` 时生成，在 `createFiberFromTypeAndProps` 函数中通过不同的条件判断来设置值。
 
 ## 组件生命周期
 
