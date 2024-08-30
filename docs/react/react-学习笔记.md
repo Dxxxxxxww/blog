@@ -109,24 +109,27 @@ function Son({ name }) {
 
 在 `React.createRoot()` 中主要做了两件事：
 
-1. 创建 react app 根实例 FiberRoot，虚拟 fiberNode HostRoot。
+1. 创建 react app 根实例 FiberRootNode ，虚拟 fiberNode HostRoot。
 2. 通过事件委托，在 #app 上绑定所有划分好优先级的事件。
 
 ### 创建 react app 根实例
 
-react app 根实例 是一个全局唯一实例，用于切换两棵 fiber tree。 react app 根实例的 current 属性会绑定虚拟 fiberNode（ HostRootFiber ），而虚拟 fiberNode （ HostRootFiber ）的 stateNode 则会绑定 react app 根实例。
+react app 根实例 是一个全局唯一实例，用于切换两棵 fiber tree。可以理解为保存 fiber 树的容器
+
+react app 根实例的 current 属性会绑定虚拟 fiberNode（ HostRootFiber ），而虚拟 fiberNode （ HostRootFiber ）的 stateNode 则会绑定 react app 根实例。
 
 ```js
-HostRootFiber.stateNode = FiberRoot
+FiberRootNode.containerInfo = #root
+FiberRootNode.current = HostRootFiber
 
-FiberRoot.current = HostRootFiber
+HostRootFiber.stateNode = FiberRootNode
 ```
 
-FiberRoot 并发模式下 tag 是 ConcurrentRoot = 1，通过 React.createRoot 来执行 react ，默认都是 并发模式。如果是传统模式的话，则是 LegacyRoot = 0。
+FiberRootNode 并发模式下 tag 是 ConcurrentRoot = 1，通过 React.createRoot 来执行 react ，默认都是 并发模式。如果是传统模式的话，则是 LegacyRoot = 0。
 
 HostRootFiber tag 是 HostRoot = 3。
 
-函数组件类型 FunctionComponent = 0，类组件类型 ClassComponent = 1 虽然 ConcurrentRoot 和 LegacyRoot 与它俩的值相同，但是 FiberRoot react 全局 app 实例并不会进入 fiber 循环，所以无需担心无法区分的问题。
+函数组件类型 FunctionComponent = 0，类组件类型 ClassComponent = 1 虽然 ConcurrentRoot 和 LegacyRoot 与它俩的值相同，但是 FiberRootNode react 全局 app 实例并不会进入 fiber 循环，所以无需担心无法区分的问题。
 
 ### 优先级事件
 
@@ -214,7 +217,13 @@ setCount 的优先级和 setTab 的优先级就不是同一个，但是它俩都
 
 ### fiber 上的 updateQueue 是什么结构，优势是什么？
 
-每个 fiberNode 上都有一个 updateQueue 属性，它是一个环形链表，尾结点指向头结点。这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
+**updateQueue，只是一个普通对象，并不是一个环形链表！！！**
+
+`updateQueue` 上的 `shared` 属性的 `interleaved` 属性指向了一个由 `update` 对象组成的环形链表。在 updateContainer() 函数中查看
+
+`updateQueue` 的 `lastEffect` 属性指向的是一个由 useEffect 组成的环形链表。
+
+这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
 
 ## scheduler 和时间分片
 
@@ -287,21 +296,28 @@ render 的入口有如下两个：
 
 最终都是执行 `performUnitOfWork` 函数，构建 fiber tree。
 
+**在 render 阶段，执行完两个小阶段 beginWork 和 completeWork 时，就已经操作了 dom 生成了真实 dom 树，只不过此时还没挂载到 #root 上**
+
+render 阶段最主要的工作：
+
+1. 创建 fiber 树和真实 dom 树
+2. 打标记
+
 ### 前置准备
 
 在执行 workLoopSync 或 workLoopConcurrent 之前，react 会先执行 prepareFreshStack ，复制一个虚拟 fiberNode 出来，并赋值给 wIP，作为新的 fiber tree 的根节点。此时内存中的结构为：
 
 ![image](./assets/render_prepare1.png)
 
-> 图片来自 https://juejin.cn/post/7353451512205492278 作者：Story
+> 图片来自 <https://juejin.cn/post/7353451512205492278> 作者：Story
 
 经过 render 之后，这棵树会变成这样：
 
 ![image](./assets/render_prepare2.png)
 
-> 图片来自 https://juejin.cn/post/7353451512205492278 作者：Story
+> 图片来自 <https://juejin.cn/post/7353451512205492278> 作者：Story
 
-最终只要修改 FiberRoot 的 current 指向就好。
+最终只要修改 FiberRootNode 的 current 指向就好。
 
 #### 两棵树
 
@@ -311,20 +327,25 @@ render 的入口有如下两个：
 
 ### react 是如何复用 fiber 节点的？
 
-### 为什么要有 IndeterminateComponent 这种中间状态
-
 ### 多个优先级时状态的计算机制是什么？
 
 ### beginWork 和 completeWork 具体做了什么
 
 beginWork：
 
-1.在当前 fiberNode，创建子级 fiberNode，并建立联系。 2.做递的过程
+通过递
+
+1. 在当前 fiberNode，创建子级 fiberNode，并建立联系。如果是更新状态还有 diff。
+2. 标记副作用。
+
 completeWork：
 
-1.创建 dom 2.做归的过程
+通过归
 
-当然里面还会涉及到标记设置和根据标记做其他工作。这里暂时先不涉及
+1. HostComponent，HostText，创建 dom
+2. 打标记 flags，自下而上收集 lanes 和 flags（副作用标记）
+3. 构建副作用链表（v17）
+4. 构建离屏 dom 树
 
 ### 简述下初次挂载时的流程
 
@@ -411,6 +432,8 @@ ReactDOM.createRoot(<FunctionComponent />).redner(container)
 
 > 个人认为是函数组件与类组件在一个项目中都出现，对兼容代码的优化代码。
 
+**正常写法的类组件，是不会进入 `case IndeterminateComponent` 分支，中调用了 `mountIndeterminateComponent` 的。**
+
 判断过程：
 
 在 `case IndeterminateComponent` 中调用了 `mountIndeterminateComponent` ，会判断是函数组件还是类组件。会对 `wip.tag` 打上不同的标记。对函数组件会执行 `renderWithHooks` ，对类组件会执行 `finishClassComponent` 。并在后续的调用中，走 `case FunctionComponent` 或 `case ClassComponent` 。
@@ -443,7 +466,34 @@ ReactDOM.createRoot(<FunctionComponent />).redner(container)
 
 在生成 `fiberNode` 时生成，在 `createFiberFromTypeAndProps` 函数中通过不同的条件判断来设置值。
 
-## commit 阶段中三个小阶段，各对 fiber 遍历了 1 次吗
+### v17 上的副作用链表 v18 上放哪了
+
+难道说就是 flags 的向上收集？
+
+应该是的。v18 不再有额外的一个链表来记录，而是标记副作用，然后再在 commit 中遍历 fiber tree。通过标记来进行过滤。
+
+## commit
+
+commit 是同步的，一旦开始就无法停止
+
+### commit 阶段中三个小阶段，各对 fiber 遍历了 1 次吗
+
+是的，三个阶段都会遍历~~副作用链表~~。遍历 fiber tree。
+
+1. commitBeforeMutationEffects
+2. commitMutationEffects
+3. commitLayoutEffects
+
+#### commitBeforeMutationEffects
+
+`commitBeforeMutationEffects` ：遍历 fiber tree，过滤出有 `Snapshot` 标记的节点进行处理。只有类组件，`HostRootFiber` 有可能打上这个标记。
+
+类组件上的 `Snapshot` 标记是表示有 `getSnapshotBeforeUpdate` 钩子函数需要执行。<br/>
+`HostRootFiber` 上的 `Snapshot` 标记是在 `completeWork` 中打上的。意味着要清空现有 dom 树，即 #root 的子级。
+
+如何理解副作用？
+commit 阶段分为哪几个阶段？
+useEffect 异步执行原理？
 
 ## diff
 
@@ -606,7 +656,7 @@ nextEffect 就是(被标记了的?存疑) fiber 节点。
 
 是宏任务，因为 useEffect 是在页面真正渲染之后才执行
 
-useEffect 存储在 fiberNode.updateQueue 上
+useEffect 存储在 fiberNode.updateQueue.lastEffect 上,通过 next 连接它是一个环形链表，尾结点指向头结点。这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
 
 ### 还有一个串行链表，记录的是 fiberNode
 
