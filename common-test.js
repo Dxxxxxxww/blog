@@ -10,3 +10,7 @@ function abc(instance) {
   }
   return res
 }
+
+function name(params) {
+  
+}
