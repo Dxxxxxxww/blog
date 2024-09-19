@@ -764,6 +764,74 @@ React.createElement(
 )
 ```
 
+## scheduler 和时间分片
+
+### 什么是 scheduler，时间分片
+
+scheduler 就是一个任务调度器，用来调度多个任务的工具。
+
+时间分片就是把时间分割成一片一片，然后任务会在这一个片区中执行，超过了这一个时间片区范围就会取消继续执行剩余任务。每一个时间切片为 5ms
+
+### 为什么要有 scheduler 和时间分片
+
+现在浏览器普遍都是 60fps，也就是 1s 渲染 60 次，每次约 16.7ms。在浏览器中，js 和页面渲染共用一条线程，这就会导致如果有诸如用户在输入，js执行等事件触发过多，执行时间过长时会占用线程，使页面渲染在当前这一帧渲染不及时，导致卡顿。又或者是反过来，线程中在执行其他任务时，无法响应用户操作，给用户造成不好的使用体验。
+
+使用 scheduler 和 时间分片，通过调度，分片执行多个不同优先级的任务，以这种方式让出线程，让更高优先级的任务先执行（浏览器渲染或者用户输入），解决卡顿现象。
+
+### scheduler 原理
+
+1. 将多个任务，根据优先级的不同，加上对应的优先级时间，以排队时间长短的方式来区分任务，塞入任务队列（最小堆）中。
+2. 通过 `MessageChannel` 宏任务来批处理任务队列，从任务队列（最小堆）中取出过期任务执行，如果在一个时间切片中（5ms）执行完一个任务，还有时间剩余，则会再从队列中取出任务执行，直到当前时间切片耗尽。
+3. 如果一个时间切片耗尽后，任务队列中还有任务，则开启下一个通过 `MessageChannel` 宏任务，先让出主线程处理浏览器渲染或是用户输入，等待下一次宏任务时期再度执行任务。
+
+### schedule 的执行流程是怎样的
+
+1. 在 `ensureRootIsScheduled` 中调用 `scheduleCallback` ，将不同优先级和任务作为参数传入。
+2. `scheduleCallback` 中会把优先级转化成不同的排队时间，并生成任务对象放入 `taskQueue` 任务队列（如果是入参有延时，则放入 `timeQueue` 延时任务队列）。
+3. 如果当前没有在任务调度，则执行 `requestHostCallback` 将 `flushWork` 赋值给全局任务变量 `scheduledHostCallback` ，并通过 `schedulePerformWorkUntilDeadline` 也就是 `MessageChannel` 发起通知。
+4. 当 `MessageChannel` 监听到时，会执行宏任务 `performWorkUntilDeadline`。
+5. `performWorkUntilDeadline` 中会执行 `scheduledHostCallback` 也就是 `flushWork` ，去调用 `workLoop` 消费任务队列中的任务。
+6. `workLoop` 中会从任务队列（最小堆）中取出已过期任务进行执行，若时间切片还有时间剩余，则会继续取出任务执行。注1。若已经超时会被 `shouldYieldToHost` 打断。任务队列中若还有任务，则会给 `performWorkUntilDeadline` 返回 true，发起下一个 `MessageChannel` 宏任务，如果没有则完成此次调度。
+
+> 注解解释
+> 注1：
+> 在 `workLoop` 执行前后，都会调用 `advanceTimers` 从延时任务队列中获取过期任务，添加到普通任务队列中排队执行。
+> 如果任务被打断了，会返回一个 `continuationCallback` 赋值给`currentTask.callback` 属性，这样一来，这个任务节点就不会被清除出队列，下一次还可以继续执行。
+> 当普通任务队列清空时，还会判断延时任务队列是否还有任务，如果还有的话则会去发起延时任务队列的调度。
+
+### react 为什么要用最小堆？
+
+方便取出排序在最前的任务执行。
+
+#### 最小堆实现中的一些代码详解
+
+x >>> 1 表示的就是除以 2 后取整。
+
+在 `siftUp` 中通过这种方式获取父节点索引 
+
+```js
+// 获取父节点的索引位置，父节点索引刚好是子节点索引 -1 后 /2 取整
+const parentIndex = (index - 1) >>> 1
+```
+
+在 `siftDown` 中获取一半队列长度
+
+```js
+const halfLength = length >>> 1
+```
+
+sortIndex 就是过期时间，通过任务开始时间 + 优先级对应时间得来，sortIndex 越小，优先级越高，在最小堆中越靠近根节点。
+
+halfLength
+
+### react schedule 不会有饥饿问题吗
+
+不会，因为 react schedule 中任务的优先级是通过时间来设置的，通过时间对比来决定任务的执行先后顺序。随着时间的推移，即使再低优先级的任务，优先级都会变高。
+
+## diff
+
+## commit 阶段中三个小阶段，各对 fiber 遍历了 1 次吗
+
 是的。
 
 在 xxx_begin 都 执行了 while(nextEffect != null) 循环，进行深度遍历（child）。
