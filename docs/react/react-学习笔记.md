@@ -248,7 +248,7 @@ setCount 的优先级和 setTab 的优先级就不是同一个，但是它俩都
 
 `updateQueue` 上的 `shared` 属性的 `interleaved` 属性指向了一个由 `update` 对象组成的环形链表。在 updateContainer() 函数中查看
 
-`updateQueue` 的 `lastEffect` 属性指向的是一个由 useEffect 组成的环形链表。
+`updateQueue` 的 `lastEffect` 属性指向的是一个由 effect 对象组成的环形链表。
 
 这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
 
@@ -533,11 +533,67 @@ commit 是同步的，一旦开始就无法停止
 
 ## hooks
 
-useState 的状态保存在哪里？
-函数式组件是怎么维护多个 hook 的?
+在函数组件中使用 hooks 时，都会创建 hook 对象，并挂到 fiber.memoizedState 上，形成单向链表。
+
+而对于 useEffect 类 hooks，除此之外还会创建 effect 对象，挂到 updateQueue.lastEffect 上，形成环形链表。不同的 effect hook 都会生成 effect 对象，并放到这个环形链表中，只不过不同的 effect，打的标记不同。
+
+### useState
+
+mount 阶段：
+
+1. 创建 hook 对象。
+2. 创建更新队列对象（queue）。
+
+update 阶段：
+
+updateState 的本质是 updateReduce
+
+执行 useState dispatch 不会立即更新状态，而是会创建更新对象（update），把新的值或者更新函数保存在更新对象（update）上，然后挂到更新队列对象的属性上，形成环形链表。
+
+最后起一个调度，发起更新，在更新节点的 renderWithHooks 中 updateState 中从队列中拿出对象来进行状态更新。
+
+在 update 中会遍历更新队列对象中保存的链表，执行所有的更新操作，返回一个最终的状态
+
+#### useState 的状态保存在哪里？
+
+状态存在 hook 对象的 memoizedState 上
+
 useEffect 的依赖是如何起作用的？
 
-## refs 使用
+### useEffect
+
+mount 阶段：
+
+1. 创建 hook 对象。
+2. 创建 effect 对象。
+
+useEffect
+
+![image](./assets/hook_effect.png)
+
+effect 更新阶段与挂载阶段类似，只是多了根据依赖判断是否重新赋值新的 create ，destory 从上次的获取。
+
+如果依赖一致没有变动，则不会打上 HasEffect 标记，在 commit 阶段就不会执行这个 effect。
+
+#### useEffect 的异步是微任务还是宏任务
+
+是宏任务，因为 useEffect 是在页面真正渲染之后才执行
+
+#### 存储位置
+
+useEffect 存储在 fiberNode.updateQueue.lastEffect 上,通过 next 连接它是一个环形链表，尾结点指向头结点。这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
+
+#### 执行阶段
+
+会在 commit 阶段中，三个小阶段之前，通过 schedule 异步调用 flushPassiveEffects 来执行，先执行 destroy ，后执行 create 。
+
+### useMemo 和 useCallback
+
+这俩 hook 比较简单，且非常类似。
+
+在挂载阶段，会把值和依赖保存下来。在更新阶段判断是否需要更新值，如果需要则重新保存下值。唯一区别是， useMemo 需要执行下传入的函数，而 useCallback 不需要。
+
+### refs
 
 react 禁止在一个类组件中使用了函数式组件，并给这个函数式组件设置 ref。因为类组件是有实例，而函数组件没有实例。例如以下代码：
 
@@ -567,7 +623,7 @@ class App extends React.Component {
 
 对于函数组件来说只能转发 ref 给具体的 html 元素。比如说使用 `forwardRef`。
 
-### 那如果不使用 forwardRef 还可以怎么转发 ref 呢？
+#### 那如果不使用 forwardRef 还可以怎么转发 ref 呢？
 
 可以把父组件中定义的 ref 通过 props 传给子组件，然后绑定到子组件中的元素上。
 
@@ -603,7 +659,7 @@ class Parent extends React.Component {
     }, 2000)
   }
   render() {
-    // 2. 因为 ref 属性不能通过 this.props 获取，所以这里换了一个属性名
+    // 2. 因为 ref 属性不能通过 props 获取，所以这里换了一个属性名
     return <Child inputRef={this.inputRef} />
   }
 }
@@ -611,11 +667,23 @@ class Parent extends React.Component {
 
 不过最好还是使用 `forwardRef` 。
 
-## ref 的原理是什么
+### ref 的原理是什么
+
+useRef 中没有使用 Object.seal() 。React.createRef() 中使用了 Object.seal()
 
 ref 的原理很简单，只是一个包含 `current` 属性的对象，只不过内部会对它使用 [Object.seal](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/seal) 处理，让这个对象不能添加新属性，不能删除现有属性，也不能更改枚举性和可配置性，也不能重新分配原型。
 
 在使用 ref 时，react 并不关心 ref 是怎么来的，用 createRef、useRef 创建的，或者 forwardRef 传过来的都行，甚至普通对象也可以（只要提供了 current 属性）。
+
+### ref 的几种值类型
+
+1. 常量，只是想在组件更新时保存
+2. 类组件，类组件实例
+3. HostComponent ， Dom 元素
+4. 函数组件，第二个参数，接收的 forwardRef 返回对象 ，可以使用 useImperativeHandle 进行修改
+
+ref 会先在 render 阶段给类组件， HostComponent 打上标记，然后 commit 阶段中 commitAttachRef 来将 fiberNode.stateNode 赋值给 ref.current 。
+stateNode 在类组件上保存的就是组件实例。在 HostComponent 上就是 dom 元素
 
 ### forwardRef 的原理是什么
 
@@ -635,11 +703,17 @@ var elementType = {
 
 ### useImperativeHandle 的原理是什么
 
-seImperativeHandle 的底层实现就是 useLayoutEffect。所以在 fiber 中存储的地方也就是存到 effect 存储的地方—— updateQueue。
+简单记忆：把 useImperativeHandle 当做是 useLayoutEffect 就行。
+
+useImperativeHandle 的底层实现就是 useLayoutEffect。所以在 fiber 中存储的地方也就是存到 effect 存储的地方—— updateQueue 。
 
 只不过执行的函数是 react 内部的 imperativeHandleEffect，并且 bind 了 我们传入的 create 函数和 ref，这样在 layout 阶段调用 hook 的 effect 函数的时候，执行了传入的 create 函数，并把返回值赋给了 ref.current ，这样就更新 ref 了。所以其实 useImperativeHandle 的作用就是改变 ref 引用。
 
-## context
+### context
+
+不管是类组件还是函数组件使用 context，不管是在挂载阶段还是更新阶段， useContext 都是通过 readContext 来读取 context 的值的。 readContext 内部还会通过传入的 context 创建 contextItem ，绑定到 fiber.depdencies 上形成单向链表。但其实在 readContext 中，并不会遍历这个单向链表。这个链表只在 beginWork 中 ContextProvider case 中使用，进行一些优先级向上合并，创建更新对象的操作。
+
+简单来说：context 就是提供了一个数据中心，提供了数据的存储和操作
 
 createContext 创建了一个对象（以下简称 cco）。可以看做是一个数据中心。
 
@@ -649,18 +723,12 @@ createContext 创建了一个对象（以下简称 cco）。可以看做是一�
 
 当然了，如果仅仅只是一个全局数据中心，那我们自己也可以实现，或者 hack。而 react 对 context 还有一个处理就是，provider 中的修改，只会对子组件造成影响。而不会对父级造成影响。
 
-这是怎么做到的呢？
+#### 这是怎么做到的呢？
 
 在 react 内部，有两个函数叫作，pushProvider, popProvider。他俩会对当前的 fiber 和 context 维护了 value 栈和 fiber 栈。也就是说，在每一个 provider 使用的地方，都会对栈 push（fiber 栈和 value 栈中， fiber 和 value 的 index 是对应的），
 再在使用 useContext 获取值的地方通过 pop 来获取栈顶的值。这样一来，假如说现在有一个 A->B->C 三层组件，A 和 B 都使用了 provider，那么在 C 中获取的值就是 B 推入栈的值。而在其他树节点中，使用的都是 A 组件的值。
 
 push 是在 beginWork/updateContextProvider 中调用的。 pop 是在 completeWork 中调用的。
-
-## useEffect 的异步是微任务还是宏任务
-
-是宏任务，因为 useEffect 是在页面真正渲染之后才执行
-
-useEffect 存储在 fiberNode.updateQueue.lastEffect 上,通过 next 连接它是一个环形链表，尾结点指向头结点。这样设计的好处是方便插入，因为单向链表如果插入节点，需要遍历整个链表。
 
 ### v17 副作用链表
 
@@ -709,6 +777,10 @@ nextEffect 就是(被标记了的?存疑) fiber 节点。
 比如设置了 ref 的节点，就会在 mutation 阶段进行 ref 清空。在 layout 阶段进行 ref 的更新。
 
 比如 useLayoutEffect 就会在 layout 阶段（commitLayoutEffects/commitLayoutEffects_begin/commitLayoutMountEffects_complete/commitLayoutEffectOnFiber/commitHookEffectListMount）执行。
+
+## 和 vue 的对比
+
+从 react 的背景，设计与 vue 的不同说起，由于没有监控数据，导致只能全量更新。又因为全量更新的性能问题，导致需要并发，由此需要 lane 这种优先级分类模型和 schedule 调控。
 
 ## 组件生命周期
 
