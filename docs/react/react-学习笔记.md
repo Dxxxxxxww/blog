@@ -135,6 +135,8 @@ HostRootFiber tag 是 HostRoot = 3。
 
 #### 事件优先级
 
+**除了 #root 元素， react 在所有 dom 元素上都没有注册事件，都是通过 #root 上监听到事件然后去触发合成事件来执行事件的。**
+
 react 在 #app 上通过捕获，冒泡绑定携带优先级的包裹事件（一个高阶函数）。根据事件不同，分为不同的优先级：
 
 1. 离散事件优先级。包括 click， input， change 等事件
