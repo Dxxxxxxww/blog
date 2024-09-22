@@ -694,6 +694,7 @@ console.log(myNew(Foo, '123'))
 ```js
 // Object.create 的实现 2
 function myOc(o, p) {
+  // setPrototypeOf 设置的是对象的 __proto__ 属性
   Object.setPrototypeOf(o, p)
   return o
 }
