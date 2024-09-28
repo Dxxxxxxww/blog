@@ -5,7 +5,7 @@
 作用有两个：
 
 1. 标记节点类型
-2. 安全考虑。因为 $$typeof 是一个 react 内部生成的 Symbol 属性。
+2. 安全考虑。因为 $$typeof 是一个 react 内部**生成的 Symbol 属性**。
 
 比如说如下代码：
 
@@ -16,7 +16,7 @@ function Hi() {
 }
 ```
 
-后端返回的 msg 是一个字符串，但受到了 xss 攻击，返回的是伪造的元素，这时候因为 $$typeof 不存在或者不合规，react 就不会渲染这个元素。从而保证了安全性。
+后端返回的 msg 是一个字符串，但受到了 xss 攻击，返回的是伪造的元素，这时候因为 $$typeof 不存在或者不合规（也就是即便使用相同的值生成了 symbol，但因为 symbol 的特性也不相同），react 就不会渲染这个元素。从而保证了安全性。
 
 ### 节点类型
 
@@ -145,7 +145,7 @@ react 在 #app 上通过捕获，冒泡绑定携带优先级的包裹事件（�
 
 在 react 中，我们绑定在组件上的原生事件，都是先触发根节点上的包裹事件，在包裹事件中会去做一些优先级的设置，把全局变量 currentUpdatePriority 设置成当前的优先级，然后调用真正绑定的函数。
 
-#### 如何处理的 evt.stopPropagation ？
+#### 如何处理的 evt.stopPropagation ？\*
 
 #### 额外的小知识
 
@@ -267,6 +267,31 @@ scheduler 就是一个任务调度器，用来调度多个任务的工具。
 使用 scheduler 和 时间分片，通过调度，分片执行多个不同优先级的任务，以这种方式让出线程，让更高优先级的任务先执行（浏览器渲染或者用户输入），解决卡顿现象。
 
 ### schedule 优先级
+
+```js
+const NoPriority = 0
+const ImmediatePriority = 1
+const UserBlockingPriority = 2
+const NormalPriority = 3
+const LowPriority = 4
+const IdlePriority = 5
+
+var IMMEDIATE_PRIORITY_TIMEOUT = -1
+var USER_BLOCKING_PRIORITY_TIMEOUT = 250
+var NORMAL_PRIORITY_TIMEOUT = 5000
+var LOW_PRIORITY_TIMEOUT = 10000
+// 为什么是 1073741823，查看：https://juejin.cn/post/7171633315336683528
+var IDLE_PRIORITY_TIMEOUT = 1073741823
+```
+
+#### schedule 优先级与事件优先级对应关系
+
+事件——lane——schedule
+
+1. 离散事件优先级 `DiscreteEventPriority = SyncLane = ImmediatePriority`
+2. 持续性事件优先级 `ContinuousEventPriority = InputContinuousLane =UserBlockingPriority`
+3. 默认优先级 `DefaultEventPriority = DefaultLane = NormalPriority`
+4. 空闲优先级 `IdleEventPriority = IdleLane = IdlePriority`
 
 ### scheduler 原理
 
@@ -548,7 +573,7 @@ update 阶段：
 
 updateState 的本质是 updateReduce
 
-执行 useState dispatch 不会立即更新状态，而是会创建更新对象（update），把新的值或者更新函数保存在更新对象（update）上，然后挂到更新队列对象的属性上，形成环形链表。
+执行 useState dispatch 不会立即更新状态，而是会创建更新对象（update），把新的值或者更新函数保存在更新对象（update）上，然后挂到更新队列对象（queue）的属性上，形成环形链表。
 
 最后起一个调度，发起更新，在更新节点的 renderWithHooks 中 updateState 中从队列中拿出对象来进行状态更新。
 
@@ -774,7 +799,7 @@ scheduler 就是一个任务调度器，用来调度多个任务的工具。
 
 ### 为什么要有 scheduler 和时间分片
 
-现在浏览器普遍都是 60fps，也就是 1s 渲染 60 次，每次约 16.7ms。在浏览器中，js 和页面渲染共用一条线程，这就会导致如果有诸如用户在输入，js执行等事件触发过多，执行时间过长时会占用线程，使页面渲染在当前这一帧渲染不及时，导致卡顿。又或者是反过来，线程中在执行其他任务时，无法响应用户操作，给用户造成不好的使用体验。
+现在浏览器普遍都是 60fps，也就是 1s 渲染 60 次，每次约 16.7ms。在浏览器中，js 和页面渲染共用一条线程，这就会导致如果有诸如用户在输入，js 执行等事件触发过多，执行时间过长时会占用线程，使页面渲染在当前这一帧渲染不及时，导致卡顿。又或者是反过来，线程中在执行其他任务时，无法响应用户操作，给用户造成不好的使用体验。
 
 使用 scheduler 和 时间分片，通过调度，分片执行多个不同优先级的任务，以这种方式让出线程，让更高优先级的任务先执行（浏览器渲染或者用户输入），解决卡顿现象。
 
@@ -791,10 +816,10 @@ scheduler 就是一个任务调度器，用来调度多个任务的工具。
 3. 如果当前没有在任务调度，则执行 `requestHostCallback` 将 `flushWork` 赋值给全局任务变量 `scheduledHostCallback` ，并通过 `schedulePerformWorkUntilDeadline` 也就是 `MessageChannel` 发起通知。
 4. 当 `MessageChannel` 监听到时，会执行宏任务 `performWorkUntilDeadline`。
 5. `performWorkUntilDeadline` 中会执行 `scheduledHostCallback` 也就是 `flushWork` ，去调用 `workLoop` 消费任务队列中的任务。
-6. `workLoop` 中会从任务队列（最小堆）中取出已过期任务进行执行，若时间切片还有时间剩余，则会继续取出任务执行。注1。若已经超时会被 `shouldYieldToHost` 打断。任务队列中若还有任务，则会给 `performWorkUntilDeadline` 返回 true，发起下一个 `MessageChannel` 宏任务，如果没有则完成此次调度。
+6. `workLoop` 中会从任务队列（最小堆）中取出已过期任务进行执行，若时间切片还有时间剩余，则会继续取出任务执行。注 1。若已经超时会被 `shouldYieldToHost` 打断。任务队列中若还有任务，则会给 `performWorkUntilDeadline` 返回 true，发起下一个 `MessageChannel` 宏任务，如果没有则完成此次调度。
 
 > 注解解释
-> 注1：
+> 注 1：
 > 在 `workLoop` 执行前后，都会调用 `advanceTimers` 从延时任务队列中获取过期任务，添加到普通任务队列中排队执行。
 > 如果任务被打断了，会返回一个 `continuationCallback` 赋值给`currentTask.callback` 属性，这样一来，这个任务节点就不会被清除出队列，下一次还可以继续执行。
 > 当普通任务队列清空时，还会判断延时任务队列是否还有任务，如果还有的话则会去发起延时任务队列的调度。
@@ -807,7 +832,7 @@ scheduler 就是一个任务调度器，用来调度多个任务的工具。
 
 x >>> 1 表示的就是除以 2 后取整。
 
-在 `siftUp` 中通过这种方式获取父节点索引 
+在 `siftUp` 中通过这种方式获取父节点索引
 
 ```js
 // 获取父节点的索引位置，父节点索引刚好是子节点索引 -1 后 /2 取整
@@ -845,6 +870,16 @@ nextEffect 就是(被标记了的?存疑) fiber 节点。
 比如设置了 ref 的节点，就会在 mutation 阶段进行 ref 清空。在 layout 阶段进行 ref 的更新。
 
 比如 useLayoutEffect 就会在 layout 阶段（commitLayoutEffects/commitLayoutEffects_begin/commitLayoutMountEffects_complete/commitLayoutEffectOnFiber/commitHookEffectListMount）执行。
+
+## memo
+
+memo 会创建一个 `$$typeof` 为 REACT_MEMO_TYPE 的 ReactElement 。这个 ReactElement 会存储传入的组件函数和自定义比较函数。在更新时，如果传入了自定义比较函数，则会使用自定义比较函数来进行比较，如果没有，则使用默认的浅比较函数（原理是 Object.is ），如果没有更新，则直接返回老的 fiber 不用重新 render。
+
+## createPortal
+
+createPortal 会创建一个 `$$typeof` 为 REACT_PORTAL_TYPE 的 ReactElement 。
+
+核心点在于，在 completeWork 中会创建 dom 并 自下而上的挂载到父级 dom ，最终形成一棵离屏 dom 树，在 commit 阶段挂载到页面上。但是遇到 REACT_PORTAL_TYPE 类型的 fiber 时，创建的 dom 会跳过，不会被收集到父级，而是在 commit 的 mutation 阶段会挂载到 createPortal 所传递的容器 dom 中。
 
 ## 和 vue 的对比
 
