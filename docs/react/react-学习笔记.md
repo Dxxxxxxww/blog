@@ -648,6 +648,17 @@ commit 是同步的，一旦开始就无法停止
 
 ## diff
 
+diff 是在 `reconcileChildFibers` 中执行的，对于单子节点是在 `reconcileSingleElement` 函数中进行，对于多子节点是在 `reconcileChildrenArray` 中执行
+
+单子节点 diff ，会先对比 key 是否相同，如果 key 不同，再会对比 elementType 是否相同
+
+多子节点 diff ，只会对比 key，如果 key 不同，就会走右移策略。右移策略中，会根据 index 获取节点，再会对比 elementType 是否相同。
+
+总结一下 react 中的 diff ，会优先判断 key ，没有 key 再去判断 elementType 。
+
+> fiber 上会存储 vdom 中排序的 index ，在右移策略中，如果没有设置 key ，就会通过 index 来设置 map 。<br/>
+> elementType 就是 ReactElement ，即 vdom
+
 ### 参与 react 的 diff 的对象是什么？
 
 新 vdom 数组 和旧 fiber 链表
