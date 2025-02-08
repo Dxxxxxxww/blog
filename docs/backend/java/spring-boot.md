@@ -8,7 +8,7 @@
 - Autowired：用于依赖注入，一般用于引用类型注入，可以用于字段、构造函数和方法。
 - Qualifier：指定名称，用于在多个相同类型的 bean 中指定要注入哪一个。 必须跟 Autowired 配合使用。
 - Primary：用于在多个相同类型的 bean 中指定默认要注入哪一个。
-- Value: 注入简单类型，或者说值类型的。
+- Value: 注入简单类型，或者说值类型的，可以用来获取 yml 中的配置， @Value("${server.port}")。
 - Scope：用于指定 bean 的作用域，如 singleton、prototype、request、session 等。 默认为 singleton。
 - Lazy：用于延迟加载 bean，即在第一次使用时才初始化。
 - PostConstruct 生命周期注解，等于 init，在构造函数执行后执行，指定在 bean 初始化后要执行的方法。
@@ -46,4 +46,6 @@
 
 ### 辅助功能
 
-内嵌 tomcat
+内嵌 tomcat。spring-boot 内嵌了三种服务器定义。 tomcat, jetty, undertow 。 默认都用 tomcat。
+
+tomcat 是用 java 语言编写的一款服务器，所以 tomcat 的运行也是通过对象来执行的。sprint-boot 通过将 tomcat 对象内嵌到自身的容器中，就可以达到内嵌 tomcat 服务，统一管理的目的。而不是需要通过启动 tomcat 服务器来跑 spring-boot 程序。
