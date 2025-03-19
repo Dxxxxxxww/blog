@@ -49,3 +49,42 @@
 内嵌 tomcat。spring-boot 内嵌了三种服务器定义。 tomcat, jetty, undertow 。 默认都用 tomcat。
 
 tomcat 是用 java 语言编写的一款服务器，所以 tomcat 的运行也是通过对象来执行的。sprint-boot 通过将 tomcat 对象内嵌到自身的容器中，就可以达到内嵌 tomcat 服务，统一管理的目的。而不是需要通过启动 tomcat 服务器来跑 spring-boot 程序。
+
+## 临时属性
+
+一般而言，我们在开发 java 项目时， 配置文件都是写在 application.yml 配置中。但是我们在命令行中启动 java 时，可以在启动命令后添加 --xx=bb yy=mm 这种方式来添加临时属性，从而覆盖 application.yml 配置。
+
+临时属性中所配置的属性，最终会通过入口类中的 main(String[] args) 函数的 args 传递。如果我们不想外部临时属性影响到我们的项目的话，只需要把 args 项目不传就行。
+
+## 四层配置
+
+为了方便开发人员，项目经理，以及运维的使用，spring-boot 项目有四层优先级配置，方便不同人员进行配置管理，不需要在一个文件中进行修改。这四层配置从高到低分别是：
+
+1. 项目打包后的 jar 包所在目录的 config/application.yml 运维使用
+2. 项目打包后的 jar 包所在目录的 application.yml 运维使用
+3. 项目 resources/config/application.yml 项目管理者使用
+4. 项目 resources/application.yml 开发使用
+
+## 多环境配置文件
+
+spring 项目中如果要为多个环境（dev，st，uat，prd）设置不同的配置，则需要创建不同环境下的配置文件。
+
+在 resources 目录下创建：
+
+- application.yml
+- application-dev.yml
+- application-st.yml
+- application-uat.yml
+- application-prd.yml
+
+将环境冲突的配置分别设置在不同的配置文件中，将公共配置放在 application.yml 中。
+
+需要切换环境时，只需要修改 application.yml 中 spring.profiles.active: dev/st/uat/prd 就行。
+
+### 多环境配置文件分组
+
+在 spring-boot 项目中，还可以更细粒度的划分配置文件，方便线上管理。然后通过 group 属性(2.4 版本之后，之前使用 include)来设定激活配置。如下图：
+
+![image](./imgs/多环境配置文件分组.jpg)
+
+需要注意的是，group 中的配置，如果有相同配置，是后面的文件中的配置覆盖前面文件中的配置。

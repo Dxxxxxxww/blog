@@ -6,6 +6,14 @@
 4. dto: data transfer object，数据传输对象，是一种传输层概念，java 系统跟其他系统交互的数据，vo 也是一种 dto。do 也是一种 dto。
 5. dao: data access object，数据访问对象，是一种数据层概念，实际由实体类+mapper 接口+maper.xml 组成。
 
+## 基础容器
+
+java 提供了一些基础容器类，可以用特定的方式组织、存储和操作对象数据。这些集合框架分为两大分支： Collection 接口和 Map 接口。
+
+Collection 常用的三种接口为： List 接口、 Queue 接口、 Set 接口。
+
+简单来说， Collection 的子接口都对应 js 中的“数组” ，强调的是**值**。 而 Map 对应 js 中的对象（或者是 map），强调**键和值**。
+
 ## 数组
 
 Java 语言中提供的数组是用来存储**固定大小**的同类型元素。
